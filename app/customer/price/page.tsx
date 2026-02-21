@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useBookingStore, getPriceEstimate } from "@/components/store/bookingStore";
-import { ArrowLeft, ReceiptText, ShieldCheck, ChevronRight, Info } from "lucide-react";
+import { ArrowLeft, ShieldCheck, ChevronRight, Wallet, Clock } from "lucide-react";
 
 export default function PricePage() {
   const router = useRouter();
@@ -15,65 +15,34 @@ export default function PricePage() {
 
   const handleConfirm = () => {
     confirmBooking(total);
-    router.push("/customer/searching");
+    router.push("/customer/track");
   };
 
-  if (!service || !pickup) {
-    return <div className="p-10 text-center">Loading...</div>;
-  }
-
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 p-6">
-      <div className="max-w-xl mx-auto pt-8">
-        <button onClick={() => router.back()} className="flex items-center gap-2 text-slate-400 mb-8 hover:text-slate-900">
-          <ArrowLeft className="w-5 h-5" /> Back
-        </button>
-
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-[40px] shadow-xl border border-slate-100 overflow-hidden">
-          <div className="p-6 bg-blue-50/50 border-b border-slate-50 flex justify-between items-center">
-             <div className="flex items-center gap-3">
-                <ReceiptText className="w-5 h-5 text-blue-600" />
-                <span className="font-bold text-blue-600 uppercase text-sm">Booking Summary</span>
-             </div>
-             <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-lg text-[10px] font-bold text-green-600 shadow-sm">
-                <ShieldCheck className="w-3 h-3" /> INSURED
+    <div className="min-h-screen bg-[#0a0a0b] text-white p-6 flex flex-col items-center justify-center">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-lg bg-[#0d0d0f] rounded-[40px] border border-white/5 overflow-hidden shadow-2xl">
+        <div className="p-8 bg-blue-600/10 border-b border-white/5 flex justify-between items-center">
+           <h2 className="text-xl font-black uppercase italic tracking-tighter">Order Summary</h2>
+           <div className="px-3 py-1 bg-emerald-500/20 text-emerald-400 text-[10px] font-black rounded-full border border-emerald-500/20">INSURED</div>
+        </div>
+        <div className="p-8 space-y-6">
+          <div className="space-y-4">
+             <div><p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Pickup</p><p className="font-bold text-sm truncate">{pickup}</p></div>
+             <div><p className="text-[10px] text-zinc-500 font-black uppercase mb-1">Destination</p><p className="font-bold text-sm truncate">{dropoff}</p></div>
+          </div>
+          <div className="bg-white/5 p-6 rounded-3xl space-y-3">
+             <div className="flex justify-between text-sm font-medium text-zinc-400"><span>Base Fare</span><span>₦{baseAmount.toLocaleString()}</span></div>
+             <div className="flex justify-between text-sm font-medium text-emerald-400"><span>Insurance</span><span>+₦{insurance.toLocaleString()}</span></div>
+             <div className="pt-4 border-t border-white/5 flex justify-between items-end">
+                <p className="text-xs font-black uppercase text-zinc-500">Total Payable</p>
+                <p className="text-4xl font-black text-white">₦{total.toLocaleString()}</p>
              </div>
           </div>
-
-          <div className="p-8">
-            <div className="space-y-6 mb-10 text-sm">
-              <div className="flex justify-between">
-                <span className="text-slate-400">Pickup</span>
-                <span className="font-semibold text-slate-700 truncate max-w-[200px]">{pickup}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Destination</span>
-                <span className="font-semibold text-slate-700 truncate max-w-[200px]">{dropoff}</span>
-              </div>
-              <div className="h-px bg-slate-50" />
-              <div className="flex justify-between">
-                <span className="text-slate-400">Base Fare</span>
-                <span className="font-semibold text-slate-700">₦{baseAmount.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <div className="flex items-center gap-1 text-slate-400">
-                  Insurance <Info className="w-3 h-3" />
-                </div>
-                <span className="font-semibold text-slate-700">₦{insurance.toLocaleString()}</span>
-              </div>
-            </div>
-
-            <div className="bg-slate-50 rounded-3xl p-6 mb-8 flex justify-between items-center">
-              <span className="font-bold text-slate-500">Total</span>
-              <span className="text-3xl font-black text-blue-600">₦{total.toLocaleString()}</span>
-            </div>
-
-            <button onClick={handleConfirm} className="w-full py-5 bg-slate-900 text-white rounded-[24px] font-bold shadow-lg hover:bg-blue-600 transition-all flex items-center justify-center gap-2">
-              Confirm Booking <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-        </motion.div>
-      </div>
+          <button onClick={handleConfirm} className="w-full py-6 bg-blue-600 hover:bg-blue-500 text-white rounded-[24px] font-black uppercase text-xs tracking-[0.2em] transition-all shadow-xl shadow-blue-600/20">
+            Confirm Booking
+          </button>
+        </div>
+      </motion.div>
     </div>
   );
 }
