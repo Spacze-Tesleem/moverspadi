@@ -16,12 +16,12 @@ import {
   ArrowRight
 } from "lucide-react";
 
-type Role = "customer" | "mover" | "dispatch";
+type Role = "customer" | "mover" | "company";
 
 const ROLE_CONFIG: Record<Role, { label: string; icon: any; color: string }> = {
   customer: { label: "Customer", icon: User, color: "blue" },
   mover: { label: "Mover", icon: Sparkles, color: "indigo" },
-  dispatch: { label: "Company", icon: Building2, color: "violet" },
+  company: { label: "Company", icon: Building2, color: "violet" },
 };
 
 export default function LoginPage() {
@@ -44,14 +44,14 @@ export default function LoginPage() {
     // Validation
     if (role === "customer" && (!email || !password)) return setError("Credentials required");
     if (role === "mover" && !phone) return setError("Phone number required");
-    if (role === "dispatch" && (!companyId || !adminPassword)) return setError("Company auth required");
+    if (role === "company" && (!companyId || !adminPassword)) return setError("Company auth required");
 
     try {
       setIsSubmitting(true);
       login({ name: "Test User" }, role, "fake-token");
 
       // Maintain Routes
-      const paths = { customer: "/customer", mover: "/mover", dispatch: "/company" };
+      const paths = { customer: "/customer", mover: "/mover", company: "/company" };
       router.push(paths[role]);
     } catch (err) {
       setError("Authentication failed. Please try again.");
@@ -114,7 +114,7 @@ export default function LoginPage() {
 
           {/* ROLE SWITCHER */}
           <div className="flex p-1 bg-slate-100 rounded-[20px] mb-8 relative">
-            {(["customer", "mover", "dispatch"] as Role[]).map((item) => {
+            {(["customer", "mover", "company"] as Role[]).map((item) => {
               const Icon = ROLE_CONFIG[item].icon;
               const isActive = role === item;
               return (
@@ -169,7 +169,7 @@ export default function LoginPage() {
                   </div>
                 )}
 
-                {role === "dispatch" && (
+                {role === "company" && (
                   <>
                     <Input icon={Building2} type="text" placeholder="Company ID" value={companyId} onChange={setCompanyId} />
                     <Input icon={Lock} type="password" placeholder="Admin Password" value={adminPassword} onChange={setAdminPassword} />
