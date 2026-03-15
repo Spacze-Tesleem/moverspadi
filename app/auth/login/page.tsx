@@ -4,13 +4,13 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/components/store/authStore";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  User, 
-  Phone, 
-  Lock, 
-  ShieldCheck, 
-  Building2, 
-  Mail, 
+import {
+  User,
+  Phone,
+  Lock,
+  ShieldCheck,
+  Building2,
+  Mail,
   ChevronRight,
   Sparkles,
   ArrowRight
@@ -62,7 +62,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4 relative overflow-hidden font-sans">
-      
+
       {/* Background Tech Accents */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
         <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-100/50 blur-[120px]" />
@@ -70,18 +70,18 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
       </div>
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="relative w-full max-w-[1000px] flex bg-white/70 backdrop-blur-2xl rounded-[40px] shadow-2xl shadow-slate-200/50 border border-white overflow-hidden"
       >
-        
+
         {/* --- LEFT SIDE: THEMED ART --- */}
         <div className="hidden md:flex w-5/12 bg-slate-900 relative p-12 flex-col justify-between overflow-hidden">
           {/* Animated Background for Image Side */}
           <div className="absolute inset-0 opacity-40">
             <img
-              src="https://images.unsplash.com/photo-1586771107445-d3ca888129ff?auto=format&fit=crop&q=80"
+              src="https://www.istockphoto.com/photo/cars-for-sale-stock-lot-row-gm1478431022-506701439?utm_source=unsplash&utm_medium=affiliate&utm_campaign=srp_photos_bottom&utm_content=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2Ftransportation&utm_term=transportation%3A%3Aaffiliate-signature-content%3Acontrol%3A40f98cd6-a9c6-4a91-ac2a-29f95710da6e"
               alt="Logistics Tech"
               className="object-cover w-full h-full mix-blend-overlay"
             />
@@ -121,16 +121,15 @@ export default function LoginPage() {
                 <button
                   key={item}
                   onClick={() => { setRole(item); setError(null); }}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-[16px] text-xs font-bold uppercase tracking-widest transition-all duration-300 relative z-10 ${
-                    isActive ? "text-blue-600" : "text-slate-400 hover:text-slate-600"
-                  }`}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-[16px] text-xs font-bold uppercase tracking-widest transition-all duration-300 relative z-10 ${isActive ? "text-blue-600" : "text-slate-400 hover:text-slate-600"
+                    }`}
                 >
                   <Icon className="w-4 h-4" />
                   {ROLE_CONFIG[item].label}
                   {isActive && (
-                    <motion.div 
-                      layoutId="activeTab" 
-                      className="absolute inset-0 bg-white rounded-[16px] -z-10 shadow-sm border border-slate-200/50" 
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute inset-0 bg-white rounded-[16px] -z-10 shadow-sm border border-slate-200/50"
                     />
                   )}
                 </button>
@@ -139,7 +138,7 @@ export default function LoginPage() {
           </div>
 
           <AnimatePresence mode="wait">
-            <motion.form 
+            <motion.form
               key={role}
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
@@ -163,10 +162,14 @@ export default function LoginPage() {
                 )}
 
                 {role === "mover" && (
-                  <div className="flex gap-3">
-                    <div className="px-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center font-bold text-slate-400 text-sm">+234</div>
-                    <Input icon={Phone} type="tel" placeholder="Phone Number" value={phone} onChange={setPhone} />
-                  </div>
+                  // <div className="flex gap-3">
+                  //   <div className="px-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center font-bold text-slate-400 text-sm">+234</div>
+                  //   <Input icon={Phone} type="tel" placeholder="Phone Number" value={phone} onChange={setPhone} />
+                  // </div>
+                  <>
+                    <Input icon={Mail} type="email" placeholder="Email Address" value={email} onChange={setEmail} />
+                    <Input icon={Lock} type="password" placeholder="Password" value={password} onChange={setPassword} />
+                  </>
                 )}
 
                 {role === "company" && (
@@ -226,6 +229,6 @@ function Input({ icon: Icon, type, placeholder, value, onChange }: InputProps) {
 
 function XCircle(props: any) {
   return (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></svg>
   )
 }
