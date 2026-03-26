@@ -1,22 +1,11 @@
-// app/customer/components/bookings/DetailsStep.tsx
-
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { BookingData } from "@/app/types/booking";
 import {
-  Bike,
-  Truck as TruckIcon,
-  Car,
-  Bus,
-  Package,
-  ChevronLeft,
-  ArrowRight,
-  Settings2,
-  Trash2,
-  AlertTriangle,
-  Plus,
+  Bike, Truck, Car, Bus, Package, ChevronLeft, ArrowRight,
+  Settings, Trash2, Plus, Info, AlertCircle
 } from "lucide-react";
 
 interface Props {
@@ -26,376 +15,244 @@ interface Props {
   onPrev: () => void;
 }
 
-// ============ SHARED COMPONENTS ============
-
-interface VehicleCardProps {
-  label: string;
-  icon: React.ElementType;
-  active: boolean;
-  onClick: () => void;
-  color?: string;
-}
-
-const VehicleCard = ({ label, icon: Icon, active, onClick, color = "#1CA7A6" }: VehicleCardProps) => (
+// --- SHARED: VEHICLE CARD ---
+const VehicleCard = ({ label, icon: Icon, active, onClick }: { label: string, icon: any, active: boolean, onClick: () => void }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`aspect-[4/3] rounded-2xl border flex flex-col items-center justify-center gap-3 transition-all duration-300 ${
+    className={`relative flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border transition-all duration-300 group ${
       active
-        ? `border-[${color}] bg-[${color}]/10 shadow-[0_0_25px_rgba(28,167,166,0.15)]`
-        : "border-white/5 bg-white/5 hover:bg-white/10"
+        ? "bg-violet-500/10 border-violet-500/50 shadow-[0_0_20px_rgba(139,92,246,0.15)]"
+        : "bg-zinc-900/50 border-zinc-800 hover:bg-zinc-900 hover:border-zinc-700"
     }`}
-    style={{
-      borderColor: active ? color : undefined,
-      backgroundColor: active ? `${color}15` : undefined,
-    }}
   >
-    <Icon size={32} style={{ color: active ? color : "rgba(255,255,255,0.2)" }} />
-    <span
-      className={`text-[10px] font-black uppercase tracking-[0.15em] ${
-        active ? "text-white" : "text-white/40"
-      }`}
-    >
+    <Icon size={28} className={`transition-colors ${active ? "text-violet-400" : "text-zinc-500 group-hover:text-zinc-300"}`} />
+    <span className={`text-xs font-semibold ${active ? "text-white" : "text-zinc-500 group-hover:text-zinc-300"}`}>
       {label}
     </span>
+    {active && (
+      <motion.div layoutId="active-vehicle" className="absolute inset-0 border-2 border-violet-500/50 rounded-2xl" />
+    )}
   </button>
 );
 
-const NextButton = ({ onClick, disabled }: { onClick: () => void; disabled: boolean }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    disabled={disabled}
-    className={`w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] transition-all flex items-center justify-center gap-3 mt-8 ${
-      disabled
-        ? "bg-white/5 text-white/20 cursor-not-allowed"
-        : "bg-[#1CA7A6] text-white shadow-xl shadow-[#1CA7A6]/20 active:scale-[0.98]"
-    }`}
-  >
-    Continue <ArrowRight size={16} />
-  </button>
-);
-
-// ============ DISPATCH / HAULAGE FORM ============
+// --- FORM: DISPATCH / HAULAGE ---
 const DispatchForm = ({ bookingData, setBookingData, onNext }: Props) => {
   const items = bookingData.items || [];
   const isHaulage = bookingData.serviceType === "haulage";
 
-  const updateItem = (idx: number, field: string, value: any) => {
+  const updateItem = (idx: number, value: string) => {
     const updated = [...items];
-    updated[idx] = { ...updated[idx], [field]: value };
-    setBookingData((prev) => ({ ...prev, items: updated }));
+    updated[idx] = { ...updated[idx], name: value };
+    setBookingData(prev => ({ ...prev, items: updated }));
   };
 
   const addItem = () => {
-    setBookingData((prev) => ({
-      ...prev,
-      items: [...prev.items, { name: "", qty: 1, weight: "" }],
-    }));
+    setBookingData(prev => ({ ...prev, items: [...items, { name: "", qty: 1, weight: "" }] }));
   };
 
   const removeItem = (idx: number) => {
-    setBookingData((prev) => ({
-      ...prev,
-      items: prev.items.filter((_, i) => i !== idx),
-    }));
+    setBookingData(prev => ({ ...prev, items: items.filter((_, i) => i !== idx) }));
   };
 
-  const isValid =
-    items.length > 0 &&
-    items.every((i) => i.name.trim().length > 0) &&
-    bookingData.vehicleType;
+  const isValid = items.length > 0 && items.every(i => i.name.trim().length > 0) && bookingData.vehicleType;
 
   return (
     <div className="space-y-8">
-      {/* Vehicle Selection */}
-      <div className="space-y-4">
-        <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em]">
-          Select Vehicle
-        </label>
-        <div className={`grid ${isHaulage ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
+      {/* Vehicle Selector */}
+      <div className="space-y-3">
+        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Asset Selection</label>
+        <div className={`grid ${isHaulage ? "grid-cols-1" : "grid-cols-2"} gap-3`}>
           {!isHaulage ? (
             <>
-              <VehicleCard
-                label="Bike"
-                icon={Bike}
-                active={bookingData.vehicleType === "bike"}
-                onClick={() => setBookingData((prev) => ({ ...prev, vehicleType: "bike" }))}
-              />
-              <VehicleCard
-                label="Van"
-                icon={Package}
-                active={bookingData.vehicleType === "van"}
-                onClick={() => setBookingData((prev) => ({ ...prev, vehicleType: "van" }))}
-              />
+              <VehicleCard label="Motorbike" icon={Bike} active={bookingData.vehicleType === 'bike'} onClick={() => setBookingData(p => ({ ...p, vehicleType: 'bike' }))} />
+              <VehicleCard label="Delivery Van" icon={Package} active={bookingData.vehicleType === 'van'} onClick={() => setBookingData(p => ({ ...p, vehicleType: 'van' }))} />
             </>
           ) : (
-            <VehicleCard
-              label="Heavy Truck"
-              icon={TruckIcon}
-              active={bookingData.vehicleType === "truck"}
-              onClick={() => setBookingData((prev) => ({ ...prev, vehicleType: "truck" }))}
-              color="#8B5CF6"
-            />
+            <VehicleCard label="Heavy Truck" icon={Truck} active={bookingData.vehicleType === 'truck'} onClick={() => setBookingData(p => ({ ...p, vehicleType: 'truck' }))} />
           )}
         </div>
       </div>
 
-      {/* Items List */}
-      <div className="space-y-4">
-        <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em]">
-          Items to Transport ({items.length})
-        </label>
-        <div className="space-y-3">
-          {items.map((item, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="flex gap-2"
-            >
-              <input
-                placeholder={`Item ${idx + 1} (e.g. Sofa, Box of Books)`}
-                className="flex-1 bg-white/5 p-4 rounded-xl text-white text-sm outline-none border border-white/5 focus:border-[#1CA7A6] transition-all placeholder:text-white/20"
-                value={item.name}
-                onChange={(e) => updateItem(idx, "name", e.target.value)}
-              />
-              {items.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeItem(idx)}
-                  className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all"
-                >
-                  <Trash2 size={16} />
-                </button>
-              )}
-            </motion.div>
-          ))}
-
-          <button
-            type="button"
-            onClick={addItem}
-            className="w-full border border-dashed border-white/10 p-4 rounded-xl text-white/40 text-xs font-bold hover:bg-white/5 hover:border-white/20 transition-all flex items-center justify-center gap-2"
-          >
-            <Plus size={14} /> Add Another Item
+      {/* Manifest */}
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Manifest</label>
+          <span className="text-[10px] text-zinc-600">{items.length} Items</span>
+        </div>
+        
+        <div className="bg-zinc-900/30 border border-zinc-800 rounded-2xl p-4 space-y-3">
+          <AnimatePresence initial={false}>
+            {items.map((item, idx) => (
+              <motion.div 
+                key={idx} 
+                initial={{ opacity: 0, height: 0 }} 
+                animate={{ opacity: 1, height: 'auto' }} 
+                exit={{ opacity: 0, height: 0 }}
+                className="flex gap-2"
+              >
+                <div className="relative flex-1">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-violet-500/50" />
+                  <input
+                    placeholder="Item description (e.g. Documents, Box)"
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 pl-8 pr-4 text-sm text-white placeholder:text-zinc-600 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 outline-none transition-all"
+                    value={item.name}
+                    onChange={(e) => updateItem(idx, e.target.value)}
+                  />
+                </div>
+                {items.length > 1 && (
+                  <button onClick={() => removeItem(idx)} className="p-3 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors">
+                    <Trash2 size={16} />
+                  </button>
+                )}
+              </motion.div>
+            ))}
+          </AnimatePresence>
+          
+          <button onClick={addItem} className="w-full py-3 border border-dashed border-zinc-700 rounded-xl text-xs font-medium text-zinc-500 hover:text-violet-400 hover:border-violet-500/50 hover:bg-violet-500/5 transition-all flex items-center justify-center gap-2">
+            <Plus size={14} /> Add Line Item
           </button>
         </div>
       </div>
 
-      <NextButton onClick={onNext} disabled={!isValid} />
+      <div className="pt-4">
+        <button disabled={!isValid} onClick={onNext} className={`w-full py-4 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 ${isValid ? "bg-white text-black hover:bg-zinc-200 shadow-lg" : "bg-zinc-900 text-zinc-600 border border-zinc-800 cursor-not-allowed"}`}>
+          {isValid ? <>Confirm Manifest <ArrowRight size={16} /></> : "Complete Details"}
+        </button>
+      </div>
     </div>
   );
 };
 
-// ============ RIDE FORM ============
+// --- FORM: RIDE ---
 const RideForm = ({ bookingData, setBookingData, onNext }: Props) => {
-  const passengers = parseInt(bookingData.passengers || "0");
-  const isValid = bookingData.vehicleType && passengers > 0;
+  const isValid = bookingData.vehicleType && parseInt(bookingData.passengers) > 0;
 
   return (
     <div className="space-y-8">
-      {/* Vehicle Selection */}
+      {/* Vehicle Type */}
+      <div className="space-y-3">
+        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Comfort Level</label>
+        <div className="grid grid-cols-2 gap-3">
+          <VehicleCard label="Private Car" icon={Car} active={bookingData.vehicleType === 'car'} onClick={() => setBookingData(p => ({ ...p, vehicleType: 'car' }))} />
+          <VehicleCard label="Bus / Coaster" icon={Bus} active={bookingData.vehicleType === 'bus'} onClick={() => setBookingData(p => ({ ...p, vehicleType: 'bus' }))} />
+        </div>
+      </div>
+
+      {/* Passengers & Notes */}
       <div className="space-y-4">
-        <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em]">
-          Select Ride Type
-        </label>
-        <div className="grid grid-cols-2 gap-4">
-          <VehicleCard
-            label="Private Car"
-            icon={Car}
-            active={bookingData.vehicleType === "car"}
-            onClick={() => setBookingData((prev) => ({ ...prev, vehicleType: "car" }))}
-          />
-          <VehicleCard
-            label="Bus / Coaster"
-            icon={Bus}
-            active={bookingData.vehicleType === "bus"}
-            onClick={() => setBookingData((prev) => ({ ...prev, vehicleType: "bus" }))}
+        <div className="space-y-2">
+          <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Passengers</label>
+          <div className="relative">
+             <input
+               type="number" min="1"
+               value={bookingData.passengers}
+               onChange={(e) => setBookingData(p => ({ ...p, passengers: e.target.value }))}
+               className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 outline-none transition-all"
+             />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Special Instructions</label>
+          <textarea
+            placeholder="E.g. Extra luggage, Child seat required..."
+            className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 outline-none transition-all resize-none h-24"
+            value={bookingData.vehicleDescription || ""}
+            onChange={(e) => setBookingData(p => ({ ...p, vehicleDescription: e.target.value }))}
           />
         </div>
       </div>
 
-      {/* Passenger Count */}
-      <div className="space-y-3">
-        <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em]">
-          Number of Passengers
-        </label>
-        <input
-          type="number"
-          min="1"
-          max="50"
-          placeholder="Enter number of passengers"
-          className="w-full bg-white/5 border border-white/5 rounded-xl p-4 text-white text-sm outline-none focus:border-[#1CA7A6] transition-all placeholder:text-white/20"
-          value={bookingData.passengers || ""}
-          onChange={(e) => setBookingData((prev) => ({ ...prev, passengers: e.target.value }))}
-        />
+      <div className="pt-4">
+        <button disabled={!isValid} onClick={onNext} className={`w-full py-4 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 ${isValid ? "bg-white text-black hover:bg-zinc-200 shadow-lg" : "bg-zinc-900 text-zinc-600 border border-zinc-800 cursor-not-allowed"}`}>
+          {isValid ? <>Proceed to Schedule <ArrowRight size={16} /></> : "Select Vehicle & Passengers"}
+        </button>
       </div>
-
-      {/* Additional Notes */}
-      <div className="space-y-3">
-        <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em]">
-          Additional Notes <span className="text-white/15">(Optional)</span>
-        </label>
-        <input
-          type="text"
-          placeholder="e.g., Heavy luggage, child seat needed"
-          className="w-full bg-white/5 border border-white/5 rounded-xl p-4 text-white text-sm outline-none focus:border-[#1CA7A6] transition-all placeholder:text-white/20"
-          value={bookingData.vehicleDescription || ""}
-          onChange={(e) => setBookingData((prev) => ({ ...prev, vehicleDescription: e.target.value }))}
-        />
-      </div>
-
-      <NextButton onClick={onNext} disabled={!isValid} />
     </div>
   );
 };
 
-// ============ TOW FORM ============
+// --- FORM: TOW ---
 const TowForm = ({ bookingData, setBookingData, onNext }: Props) => {
-  const isValid = (bookingData.vehicleDescription?.trim().length ?? 0) > 5;
+  const isValid = (bookingData.vehicleDescription?.length ?? 0) > 5;
 
   return (
-    <div className="space-y-8">
-      <div className="space-y-4">
-        <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em]">
-          Vehicle Details to Tow
-        </label>
-        <textarea
-          placeholder="Please provide:&#10;• Vehicle Make/Model (e.g., Toyota Camry 2020)&#10;• Color&#10;• Nature of the fault (e.g., Engine failure, flat tires)"
-          className="w-full h-48 bg-white/5 border border-white/5 rounded-2xl p-5 text-white text-sm outline-none focus:border-[#EF4444] transition-all resize-none placeholder:text-white/20"
-          value={bookingData.vehicleDescription || ""}
-          onChange={(e) =>
-            setBookingData((prev) => ({
-              ...prev,
-              vehicleDescription: e.target.value,
-              vehicleType: "tow-truck",
-            }))
-          }
-        />
-        <p className="text-[10px] text-white/20">
-          Minimum 6 characters required. Currently: {bookingData.vehicleDescription?.length || 0}
+    <div className="space-y-6">
+      <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-4 flex gap-3">
+        <Info className="text-amber-500 shrink-0" size={18} />
+        <p className="text-xs text-amber-200/70 leading-relaxed">
+          Please describe the vehicle and the nature of the breakdown to help us dispatch the correct tow truck.
         </p>
       </div>
 
-      <NextButton onClick={onNext} disabled={!isValid} />
+      <div className="space-y-2">
+        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Incident Report</label>
+        <textarea
+          placeholder="Vehicle Model, Color, Fault (e.g. Toyota Camry, Silver, Engine failure)..."
+          className="w-full h-48 bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 outline-none transition-all resize-none leading-relaxed"
+          value={bookingData.vehicleDescription || ""}
+          onChange={(e) => setBookingData(p => ({ ...p, vehicleDescription: e.target.value, vehicleType: 'tow-truck' }))}
+        />
+      </div>
+
+      <div className="pt-4">
+        <button disabled={!isValid} onClick={onNext} className={`w-full py-4 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 ${isValid ? "bg-white text-black hover:bg-zinc-200 shadow-lg" : "bg-zinc-900 text-zinc-600 border border-zinc-800 cursor-not-allowed"}`}>
+          {isValid ? <>Request Recovery <ArrowRight size={16} /></> : "Describe Incident"}
+        </button>
+      </div>
     </div>
   );
 };
 
-// ============ ERROR STATE ============
-const ServiceTypeError = ({ onPrev }: { onPrev: () => void }) => (
-  <motion.div
-    initial={{ opacity: 0, scale: 0.95 }}
-    animate={{ opacity: 1, scale: 1 }}
-    className="p-8 border border-dashed border-red-500/30 rounded-2xl text-center bg-red-500/5"
-  >
-    <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-6">
-      <AlertTriangle size={32} className="text-red-500" />
-    </div>
-
-    <p className="text-red-400 text-lg font-bold mb-2">Service Type Not Selected</p>
-    <p className="text-white/40 text-sm mb-6 max-w-xs mx-auto">
-      Please go back to Step 1 and select a service type before continuing.
-    </p>
-
-    <button
-      type="button"
-      onClick={onPrev}
-      className="px-6 py-3 rounded-xl bg-white/10 text-white font-bold text-sm hover:bg-white/20 transition-all flex items-center justify-center gap-2 mx-auto"
-    >
-      <ChevronLeft size={16} />
-      Go Back to Step 1
-    </button>
-  </motion.div>
-);
-
-// ============ MAIN EXPORT ============
+// --- MAIN COMPONENT ---
 export default function DetailsStep({ bookingData, setBookingData, onNext, onPrev }: Props) {
   const service = bookingData.serviceType;
 
   const renderForm = () => {
-    if (!service) {
-      return <ServiceTypeError onPrev={onPrev} />;
-    }
-
-    switch (service) {
-      case "dispatch":
-      case "haulage":
-        return (
-          <DispatchForm
-            bookingData={bookingData}
-            setBookingData={setBookingData}
-            onNext={onNext}
-            onPrev={onPrev}
-          />
-        );
-      case "tow":
-        return (
-          <TowForm
-            bookingData={bookingData}
-            setBookingData={setBookingData}
-            onNext={onNext}
-            onPrev={onPrev}
-          />
-        );
-      case "ride":
-        return (
-          <RideForm
-            bookingData={bookingData}
-            setBookingData={setBookingData}
-            onNext={onNext}
-            onPrev={onPrev}
-          />
-        );
-      default:
-        return <ServiceTypeError onPrev={onPrev} />;
-    }
+    if (service === "dispatch" || service === "haulage") return <DispatchForm {...{ bookingData, setBookingData, onNext, onPrev }} />;
+    if (service === "ride") return <RideForm {...{ bookingData, setBookingData, onNext, onPrev }} />;
+    if (service === "tow") return <TowForm {...{ bookingData, setBookingData, onNext, onPrev }} />;
+    
+    // Fallback/Error state
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
+        <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center text-red-500"><AlertCircle /></div>
+        <div>
+          <p className="text-white font-medium">Configuration Error</p>
+          <p className="text-zinc-500 text-xs">Service type data is missing.</p>
+        </div>
+      </div>
+    );
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="max-w-md mx-auto"
-    >
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 pb-10">
+      
       {/* Header */}
-      <div className="flex items-center gap-4 mb-10">
-        <div className="w-12 h-12 rounded-2xl bg-[#1CA7A6]/10 flex items-center justify-center text-[#1CA7A6]">
-          <Settings2 size={24} />
-        </div>
-        <div>
-          <div className="text-[10px] font-black text-[#1CA7A6] uppercase tracking-[0.3em] mb-1">
-            Step_02
-          </div>
-          <h2 className="text-2xl font-black text-white uppercase tracking-tighter">
-            Details
-          </h2>
+      <div className="flex items-center justify-between">
+        <button onClick={onPrev} className="group flex items-center gap-2 text-zinc-500 hover:text-white transition-colors text-xs font-medium">
+          <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+          Back
+        </button>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{service} Config</span>
+          <Settings size={14} className="text-violet-500" />
         </div>
       </div>
 
-      {/* Service Badge */}
-      {service && (
-        <div className="mb-8 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#1CA7A6]/10 border border-[#1CA7A6]/20">
-          <div className="w-2 h-2 rounded-full bg-[#1CA7A6] animate-pulse" />
-          <span className="text-[10px] font-bold text-[#1CA7A6] uppercase tracking-widest">
-            {service} Service
-          </span>
-        </div>
-      )}
+      <header>
+        <h1 className="text-2xl font-semibold text-white tracking-tight mb-1">
+          Service <span className="text-violet-400">Details</span>
+        </h1>
+        <p className="text-zinc-500 text-sm">Specify parameters for the selected operation.</p>
+      </header>
 
-      {/* Form */}
-      {renderForm()}
+      {/* Dynamic Content */}
+      <div className="bg-[#0e0e0e] border border-white/5 rounded-3xl p-6 relative shadow-2xl">
+        {renderForm()}
+      </div>
 
-      {/* Back Button */}
-      {service && (
-        <button
-          type="button"
-          onClick={onPrev}
-          className="mt-8 flex items-center gap-2 text-white/30 text-[10px] font-black uppercase tracking-[0.2em] mx-auto hover:text-white transition-colors"
-        >
-          <ChevronLeft size={14} /> Back
-        </button>
-      )}
     </motion.div>
   );
 }

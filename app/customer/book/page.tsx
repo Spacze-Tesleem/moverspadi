@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import { X } from "lucide-react";
 
 // Components
 import LocationStep from "@/app/customer/components/bookings/LocationStep";
@@ -11,9 +12,10 @@ import ScheduleStep from "@/app/customer/components/bookings/ScheduleStep";
 import ConfirmStep from "@/app/customer/components/bookings/ConfirmStep";
 import { BookingData } from "@/app/types/booking";
 
+// Map loads dynamically to avoid SSR issues
 const MapPreview = dynamic(() => import("@/components/Map/MapPreview"), { 
   ssr: false,
-  loading: () => <div className="h-full w-full bg-zinc-900" /> 
+  loading: () => <div className="h-full w-full bg-[#080808]" /> 
 });
 
 const steps = ["Location", "Details", "Schedule", "Confirm"];
@@ -22,7 +24,7 @@ function BookServiceContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  // Cast the URL param to the specific type allowed by BookingData
+  // Cast URL param to specific type
   const typeFromUrl = (searchParams.get("type") || "") as BookingData["serviceType"];
 
   const [activeStep, setActiveStep] = useState(0);
@@ -41,7 +43,7 @@ function BookServiceContent() {
     scheduleTime: "",
   });
 
-  // Sync if URL changes while on page
+  // Sync state if URL changes
   useEffect(() => {
     if (typeFromUrl && bookingData.serviceType !== typeFromUrl) {
       setBookingData(prev => ({ 
@@ -56,28 +58,41 @@ function BookServiceContent() {
   const handlePrev = () => setActiveStep((s) => (s > 0 ? s - 1 : s));
 
   return (
-    <div className="flex h-screen bg-black text-white overflow-hidden">
-      <div className="w-full lg:w-[520px] bg-[#09090b] border-r border-white/5 flex flex-col h-full shadow-2xl">
+    <div className="flex h-screen bg-[#080808] text-zinc-100 overflow-hidden font-sans selection:bg-violet-500/30">
+      
+      {/* --- FORM PANEL (LEFT) --- */}
+      <div className="w-full lg:w-[540px] bg-[#0a0a0a] border-r border-white/5 flex flex-col h-full relative z-20 shadow-2xl">
         
-        {/* Progress Bar */}
-        <div className="p-8 pb-4">
-          <div className="flex gap-1">
-            {steps.map((step, idx) => (
+        {/* Header / Breadcrumbs */}
+        <div className="h-16 flex items-center justify-between px-8 border-b border-white/5 bg-[#0a0a0a]/50 backdrop-blur-sm">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-zinc-500">New Request</span>
+            <span className="text-zinc-700">/</span>
+            <span className="font-medium text-white">{steps[activeStep]}</span>
+          </div>
+          <button 
+            onClick={() => router.push("/customer")}
+            className="p-2 hover:bg-white/5 rounded-lg text-zinc-500 hover:text-white transition-colors"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Progress Bar (Minimalist) */}
+        <div className="px-8 pt-6 pb-2">
+          <div className="flex gap-1.5 h-1">
+            {steps.map((_, idx) => (
               <div 
                 key={idx} 
-                className={`h-1 flex-1 rounded-full transition-all duration-500 ${
+                className={`flex-1 rounded-full transition-all duration-500 ${
                   idx === activeStep 
-                    ? "bg-teal-500" 
+                    ? "bg-violet-500" 
                     : idx < activeStep 
-                      ? "bg-teal-500/30" 
+                      ? "bg-violet-500/30" 
                       : "bg-white/5"
                 }`} 
               />
             ))}
-          </div>
-          <div className="mt-4 flex justify-between px-1">
-            <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Step 0{activeStep + 1}</span>
-            <span className="text-[10px] font-black text-teal-500 uppercase tracking-[0.3em]">{steps[activeStep]}</span>
           </div>
         </div>
 
@@ -118,13 +133,24 @@ function BookServiceContent() {
             />
           )}
         </div>
+        
+        {/* Footer Info (Optional) */}
+        <div className="p-4 border-t border-white/5 text-center">
+          <p className="text-[10px] text-zinc-600 font-medium">
+            PadiLogistics Encrypted Booking Protocol v2.4
+          </p>
+        </div>
       </div>
 
-      {/* Map Side */}
-      <div className="hidden lg:block flex-1 bg-zinc-950 relative">
+      {/* --- MAP PANEL (RIGHT) --- */}
+      <div className="hidden lg:block flex-1 bg-[#080808] relative">
         <MapPreview pickup={bookingData.pickup} dropoff={bookingData.dropoff} />
-        {/* Subtle overlay to make map feel integrated */}
-        <div className="absolute inset-0 pointer-events-none shadow-[inset_100px_0_100px_-50px_rgba(0,0,0,0.9)]" />
+        
+        {/* Gradient Overlay for seamless blending */}
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-[#0a0a0a] via-transparent to-transparent opacity-50" />
+        
+        {/* Cinematic Vignette */}
+        <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.8)]" />
       </div>
     </div>
   );
@@ -132,7 +158,12 @@ function BookServiceContent() {
 
 export default function BookServicePage() {
   return (
-    <Suspense fallback={<div className="h-screen w-full bg-black flex items-center justify-center text-white/20 uppercase tracking-widest text-[10px] font-black">Initialising System...</div>}>
+    <Suspense fallback={
+      <div className="h-screen w-full bg-[#080808] flex flex-col items-center justify-center gap-4">
+        <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+        <span className="text-zinc-500 text-xs font-medium tracking-wide">INITIALIZING WORKSPACE...</span>
+      </div>
+    }>
       <BookServiceContent />
     </Suspense>
   );
