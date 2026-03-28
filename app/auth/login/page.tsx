@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/components/store/authStore";
 import { motion, AnimatePresence } from "framer-motion";
@@ -53,6 +53,14 @@ const ROLE_DATA: Record<Role, {
 };
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginPageInner />
+    </Suspense>
+  );
+}
+
+function LoginPageInner() {
   const router = useRouter();
   const params = useSearchParams();
   const login = useAuthStore((state) => state.login);
