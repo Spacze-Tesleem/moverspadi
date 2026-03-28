@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useBookingStore } from "@/components/store/bookingStore";
+import { useBookingStore } from "@/src/application/store/bookingStore";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     MapPin,

@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import ProfileHome from "@/app/customer/components/profile/ProfileHome";
-import PersonalInfo from "@/app/customer/components/profile/PersonalInfo";
-import Security from "@/app/customer/components/profile/Security";
-import PrivacyData from "@/app/customer/components/profile/PrivacyData";
+import ProfileHome from "@/src/modules/customer/components/profile/ProfileHome";
+import PersonalInfo from "@/src/modules/customer/components/profile/PersonalInfo";
+import Security from "@/src/modules/customer/components/profile/Security";
+import PrivacyData from "@/src/modules/customer/components/profile/PrivacyData";
 
 export default function ProfilePage() {
     const [activeTab, setActiveTab] = useState("home");

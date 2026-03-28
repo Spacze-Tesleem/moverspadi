@@ -2,7 +2,7 @@
 
 import { FormEvent, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAuthStore } from "@/components/store/authStore";
+import { useAuthStore } from "@/src/application/store/authStore";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   User,

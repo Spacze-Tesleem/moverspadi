@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuthStore } from "@/components/store/authStore"
+import { useAuthStore } from "@/src/application/store/authStore"
 
 export default function CompanyLayout({
     children,
@@ -13,7 +13,7 @@ export default function CompanyLayout({
     const { isAuthenticated, role } = useAuthStore()
 
     useEffect(() => {
-        if (!isAuthenticated || role !== "customer") {
+        if (!isAuthenticated || role !== "company") {
             router.push("/auth/login")
         }
     }, [isAuthenticated, role, router])

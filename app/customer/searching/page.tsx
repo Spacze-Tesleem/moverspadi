@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useBookingStore } from "@/components/store/bookingStore"; 
+import { useBookingStore } from "@/src/application/store/bookingStore";
 import { 
   MapPin, 
   Navigation, 

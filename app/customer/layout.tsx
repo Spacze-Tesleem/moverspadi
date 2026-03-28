@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuthStore } from "@/components/store/authStore"
+import { useAuthStore } from "@/src/application/store/authStore"
 
 export default function CustomerLayout({
   children,

@@ -6,14 +6,14 @@ import dynamic from "next/dynamic";
 import { X } from "lucide-react";
 
 // Components
-import LocationStep from "@/app/customer/components/bookings/LocationStep";
-import DetailsStep from "@/app/customer/components/bookings/DetailsStep";
-import ScheduleStep from "@/app/customer/components/bookings/ScheduleStep";
-import ConfirmStep from "@/app/customer/components/bookings/ConfirmStep";
-import { BookingData } from "@/app/types/booking";
+import LocationStep from "@/src/modules/customer/components/booking/LocationStep";
+import DetailsStep from "@/src/modules/customer/components/booking/DetailsStep";
+import ScheduleStep from "@/src/modules/customer/components/booking/ScheduleStep";
+import ConfirmStep from "@/src/modules/customer/components/booking/ConfirmStep";
+import { BookingFormData } from "@/src/domain/booking/types";
 
 // Map loads dynamically to avoid SSR issues
-const MapPreview = dynamic(() => import("@/components/Map/MapPreview"), { 
+const MapPreview = dynamic(() => import("@/src/components/map/MapPreview"), { 
   ssr: false,
   loading: () => <div className="h-full w-full bg-[#080808]" /> 
 });
@@ -25,11 +25,11 @@ function BookServiceContent() {
   const searchParams = useSearchParams();
   
   // Cast URL param to specific type
-  const typeFromUrl = (searchParams.get("type") || "") as BookingData["serviceType"];
+  const typeFromUrl = (searchParams.get("type") || "") as BookingFormData["serviceType"];
 
   const [activeStep, setActiveStep] = useState(0);
 
-  const [bookingData, setBookingData] = useState<BookingData>({
+  const [bookingData, setBookingData] = useState<BookingFormData>({
     serviceType: typeFromUrl,
     pickup: "",
     pickupCoords: null,
@@ -101,7 +101,7 @@ function BookServiceContent() {
           {steps[activeStep] === "Location" && (
             <LocationStep 
                 bookingData={bookingData} 
-                setBookingData={setBookingData} 
+                setBookingFormData={setBookingData} 
                 onNext={handleNext} 
                 onPrev={handlePrev} 
             />
@@ -110,7 +110,7 @@ function BookServiceContent() {
           {steps[activeStep] === "Details" && (
             <DetailsStep 
                 bookingData={bookingData} 
-                setBookingData={setBookingData} 
+                setBookingFormData={setBookingData} 
                 onNext={handleNext} 
                 onPrev={handlePrev} 
             />
@@ -119,7 +119,7 @@ function BookServiceContent() {
           {steps[activeStep] === "Schedule" && (
             <ScheduleStep 
                 bookingData={bookingData} 
-                setBookingData={setBookingData} 
+                setBookingFormData={setBookingData} 
                 onNext={handleNext} 
                 onPrev={handlePrev} 
             />
@@ -129,7 +129,7 @@ function BookServiceContent() {
             <ConfirmStep 
                 bookingData={bookingData} 
                 onPrev={handlePrev} 
-                onConfirm={() => router.push("/customer/dashboard")} 
+                onConfirm={() => router.push("/customer")} 
             />
           )}
         </div>

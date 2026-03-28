@@ -2,7 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { useBookingStore, getPriceEstimate } from "@/components/store/bookingStore";
+import { useBookingStore } from "@/src/application/store/bookingStore";
+import { bookingApi } from "@/src/infrastructure/api/booking";
+const getPriceEstimate = bookingApi.getPriceEstimate;
 import { ArrowLeft, ShieldCheck, ChevronRight, Wallet, Clock } from "lucide-react";
 
 export default function PricePage() {
