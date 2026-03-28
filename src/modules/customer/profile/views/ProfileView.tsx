@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import ProfileHome from "@/src/modules/customer/components/profile/ProfileHome";
-import PersonalInfo from "@/src/modules/customer/components/profile/PersonalInfo";
-import Security from "@/src/modules/customer/components/profile/Security";
-import PrivacyData from "@/src/modules/customer/components/profile/PrivacyData";
+import ProfileHome from "@/src/modules/customer/profile/components/ProfileHome";
+import PersonalInfo from "@/src/modules/customer/profile/components/PersonalInfo";
+import Security from "@/src/modules/customer/profile/components/Security";
+import PrivacyData from "@/src/modules/customer/profile/components/PrivacyData";
 
 
 export default function ProfileView() {

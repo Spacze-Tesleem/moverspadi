@@ -6,10 +6,10 @@ import dynamic from "next/dynamic";
 import { X } from "lucide-react";
 
 // Components
-import LocationStep from "@/src/modules/customer/components/booking/LocationStep";
-import DetailsStep from "@/src/modules/customer/components/booking/DetailsStep";
-import ScheduleStep from "@/src/modules/customer/components/booking/ScheduleStep";
-import ConfirmStep from "@/src/modules/customer/components/booking/ConfirmStep";
+import LocationStep from "@/src/modules/customer/booking/components/LocationStep";
+import DetailsStep from "@/src/modules/customer/booking/components/DetailsStep";
+import ScheduleStep from "@/src/modules/customer/booking/components/ScheduleStep";
+import ConfirmStep from "@/src/modules/customer/booking/components/ConfirmStep";
 import { BookingFormData } from "@/src/domain/booking/types";
 
 // Map loads dynamically to avoid SSR issues
