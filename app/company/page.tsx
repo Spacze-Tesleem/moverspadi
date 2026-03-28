@@ -1,3 +1,5 @@
-export default function CompanyDashboard() {
-  return <div className="p-10 text-xl">Company Dashboard</div>
+import CompanyDashboardView from "@/src/modules/company/views/CompanyDashboardView";
+
+export default function CompanyPage() {
+  return <CompanyDashboardView />;
 }
