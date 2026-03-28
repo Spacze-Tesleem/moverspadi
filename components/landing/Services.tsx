@@ -11,6 +11,7 @@ import {
   Clock,
   ChevronRight,
 } from "lucide-react";
+import type { Variants } from "framer-motion";
 
 const services = [
   {
@@ -58,12 +59,15 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 30 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+    transition: {
+      duration: 0.5,
+      ease: [0.22, 1, 0.36, 1] as const, // ✅ FIX
+    },
   },
 };
 
