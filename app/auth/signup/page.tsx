@@ -73,7 +73,7 @@ export default function SignupPage() {
           email: formData.email,
           phone: formData.phone,
           password: formData.password,
-          password: formData.confirmPassword,
+          confirmPassword: formData.confirmPassword,
           role,
         }),
       });
