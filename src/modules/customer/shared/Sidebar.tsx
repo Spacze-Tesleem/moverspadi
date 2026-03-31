@@ -16,15 +16,15 @@ import {
 } from "lucide-react";
 
 const sidebarItems = [
-  { id: "home", label: "Home", icon: HomeIcon },
-  { id: "book", label: "Book Ride", icon: Car },
-  { id: "trips", label: "My Trips", icon: History },
-  { id: "wallet", label: "Wallet", icon: Wallet, balance: "21,850", color: "text-emerald-400" },
-  { id: "payments", label: "Payments", icon: Wallet },
-  { id: "address", label: "Saved Places", icon: Book },
-  { id: "notifications", label: "Notifications", icon: Bell },
-  { id: "support", label: "Support", icon: ShieldCheck },
-  { id: "settings", label: "Settings", icon: Settings },
+  { id: "home", label: "Home", icon: HomeIcon, route: "/customer" },
+  { id: "book", label: "Book Ride", icon: Car, route: "/customer/book" },
+  { id: "trips", label: "Request History", icon: History, route: "/customer/history" },
+  { id: "wallet", label: "Wallet", icon: Wallet, balance: "21,850", color: "text-emerald-400", route: "/customer" },
+  { id: "payments", label: "Payments", icon: Wallet, route: "/customer" },
+  { id: "address", label: "Saved Places", icon: Book, route: "/customer" },
+  { id: "notifications", label: "Notifications", icon: Bell, route: "/customer" },
+  { id: "support", label: "Support", icon: ShieldCheck, route: "/customer" },
+  { id: "settings", label: "Settings", icon: Settings, route: "/customer" },
 ];
 
 export default function Sidebar({
@@ -59,7 +59,7 @@ export default function Sidebar({
             key={item.id}
             onClick={() => {
               setActivePage(item.id);
-              router.push(`/customer/${item.id}`);
+              router.push(item.route || `/customer/${item.id}`);
             }}
             className={`w-full flex items-center gap-4 px-6 py-3 transition-all group
             ${

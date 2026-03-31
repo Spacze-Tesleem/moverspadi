@@ -93,9 +93,11 @@ function LoginPageInner() {
     try {
       setIsSubmitting(true);
       await new Promise(r => setTimeout(r, 1200));
-      
+
+      // Store partial session; full login completes after OTP
       login({ name: "Demo User" }, role, "fake-token");
-      router.push(`/${role}`);
+      const dest = email || companyId;
+      router.push(`/auth/otp?role=${role}&mode=login&email=${encodeURIComponent(dest)}`);
     } catch (err) {
       setError("Invalid credentials. Please try again.");
     } finally {
