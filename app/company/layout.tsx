@@ -3,6 +3,7 @@
 import { useRequireAuth } from "@/src/application/hooks/useAuth";
 
 export default function CompanyLayout({ children }: { children: React.ReactNode }) {
-  useRequireAuth("company");
+  const { authorized } = useRequireAuth("company");
+  if (!authorized) return null;
   return <>{children}</>;
 }

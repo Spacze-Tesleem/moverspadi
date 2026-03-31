@@ -4,6 +4,9 @@ import { useRef, useState, useEffect, KeyboardEvent, ClipboardEvent, Suspense } 
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShieldCheck, ArrowRight, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
+import { useAuthStore } from "@/src/application/store/authStore";
+import { authApi } from "@/src/infrastructure/api/auth";
+import type { UserRole } from "@/src/domain/auth/types";
 
 export default function OtpView() {
   return (
@@ -16,10 +19,13 @@ export default function OtpView() {
 function OtpPageInner() {
   const router = useRouter();
   const params = useSearchParams();
+  const login = useAuthStore((s) => s.login);
+  const setProfileComplete = useAuthStore((s) => s.setProfileComplete);
 
-  const role = params.get("role") || "customer";
+  const role = (params.get("role") || "customer") as UserRole;
   const mode = params.get("mode") || "login"; // "login" | "signup"
   const email = params.get("email") || "";
+  const name = params.get("name") || "User";
 
   const OTP_LENGTH = 6;
   const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(""));
@@ -32,23 +38,14 @@ function OtpPageInner() {
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Countdown timer for resend
   useEffect(() => {
-    if (countdown <= 0) {
-      setCanResend(true);
-      return;
-    }
+    if (countdown <= 0) { setCanResend(true); return; }
     const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
     return () => clearTimeout(t);
   }, [countdown]);
 
-  const focusNext = (index: number) => {
-    if (index < OTP_LENGTH - 1) inputRefs.current[index + 1]?.focus();
-  };
-
-  const focusPrev = (index: number) => {
-    if (index > 0) inputRefs.current[index - 1]?.focus();
-  };
+  const focusNext = (i: number) => inputRefs.current[i + 1]?.focus();
+  const focusPrev = (i: number) => { if (i > 0) inputRefs.current[i - 1]?.focus(); };
 
   const handleChange = (index: number, value: string) => {
     const char = value.replace(/\D/g, "").slice(-1);
@@ -62,17 +59,10 @@ function OtpPageInner() {
   const handleKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Backspace") {
       if (digits[index]) {
-        const next = [...digits];
-        next[index] = "";
-        setDigits(next);
-      } else {
-        focusPrev(index);
-      }
-    } else if (e.key === "ArrowLeft") {
-      focusPrev(index);
-    } else if (e.key === "ArrowRight") {
-      focusNext(index);
-    }
+        const next = [...digits]; next[index] = ""; setDigits(next);
+      } else { focusPrev(index); }
+    } else if (e.key === "ArrowLeft") { focusPrev(index); }
+    else if (e.key === "ArrowRight") { focusNext(index); }
   };
 
   const handlePaste = (e: ClipboardEvent<HTMLInputElement>) => {
@@ -92,14 +82,44 @@ function OtpPageInner() {
     if (!isFilled) return setError("Enter all 6 digits.");
     setError(null);
     setIsVerifying(true);
+
     try {
-      // Simulate API call
-      await new Promise((r) => setTimeout(r, 1400));
-      // Demo: any code works except "000000"
+      // ── REAL API ──────────────────────────────────────────────────────────
+      // POST /auth/verify-otp via authApi.verifyOtp (add to auth.ts when ready).
+      // Expected response: { user, role, token } matching AuthSession.
+      // Uncomment and replace the dummy block below once the endpoint exists:
+      //
+      // const session = await authApi.verifyOtp({ email, otp, role });
+      // login(session.user, session.role, session.token);
+      // ─────────────────────────────────────────────────────────────────────
+
+      // ── DEV FALLBACK ──────────────────────────────────────────────────────
+      // Any 6-digit code except "000000" is accepted during development.
+      // Remove this block once the real OTP endpoint is wired up.
+      // ─────────────────────────────────────────────────────────────────────
+      await new Promise((r) => setTimeout(r, 1200));
       if (otp === "000000") throw new Error("Invalid OTP");
+
+      // Call login() here — this is the single place it is called after auth.
+      login({ name, email }, role, "dev-token");
+
+      // Mover/company need to complete their profile before accessing dashboard.
+      // Login flow: profileComplete is already true (set during onboarding).
+      // Signup flow: profileComplete stays false → redirect to onboarding.
+      if (mode === "signup" && (role === "mover" || role === "company")) {
+        setProfileComplete(false);
+      } else {
+        setProfileComplete(true);
+      }
+
       setSuccess(true);
-      await new Promise((r) => setTimeout(r, 900));
-      router.push(`/${role}`);
+      await new Promise((r) => setTimeout(r, 800));
+
+      if (mode === "signup" && (role === "mover" || role === "company")) {
+        router.push(`/${role}/onboarding`);
+      } else {
+        router.push(`/${role}`);
+      }
     } catch {
       setError("Incorrect code. Please try again.");
       setDigits(Array(OTP_LENGTH).fill(""));
@@ -114,16 +134,22 @@ function OtpPageInner() {
     setIsResending(true);
     setError(null);
     setDigits(Array(OTP_LENGTH).fill(""));
-    await new Promise((r) => setTimeout(r, 800));
-    setIsResending(false);
-    setCountdown(60);
-    setCanResend(false);
-    inputRefs.current[0]?.focus();
+
+    try {
+      // ── REAL API ──────────────────────────────────────────────────────────
+      // await authApi.resendOtp({ email, role });
+      // ─────────────────────────────────────────────────────────────────────
+      await new Promise((r) => setTimeout(r, 800));
+    } finally {
+      setIsResending(false);
+      setCountdown(60);
+      setCanResend(false);
+      inputRefs.current[0]?.focus();
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4 relative overflow-hidden font-sans">
-      {/* Background orbs */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-[-10%] right-[-10%] w-[45%] h-[45%] bg-blue-100/40 blur-[120px] rounded-full" />
         <div className="absolute bottom-[-10%] left-[-10%] w-[45%] h-[45%] bg-indigo-100/40 blur-[120px] rounded-full" />
@@ -134,7 +160,6 @@ function OtpPageInner() {
         animate={{ opacity: 1, y: 0 }}
         className="relative w-full max-w-md bg-white/80 backdrop-blur-2xl rounded-[40px] shadow-2xl shadow-slate-200/50 border border-white p-10 md:p-14"
       >
-        {/* Logo */}
         <div className="flex items-center gap-2.5 mb-10">
           <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-green-600/20">
             <ShieldCheck className="w-5 h-5 text-white" />
@@ -156,22 +181,25 @@ function OtpPageInner() {
                 <CheckCircle2 className="w-10 h-10 text-green-600" />
               </div>
               <h3 className="text-2xl font-black text-slate-900 mb-2">Verified!</h3>
-              <p className="text-slate-500 font-medium">Redirecting you to your dashboard…</p>
+              <p className="text-slate-500 font-medium">
+                {mode === "signup" && (role === "mover" || role === "company")
+                  ? "Setting up your profile…"
+                  : "Redirecting to your dashboard…"}
+              </p>
             </motion.div>
           ) : (
             <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <h2 className="text-3xl font-black text-slate-900 mb-2">Verify your {mode === "signup" ? "account" : "identity"}</h2>
+              <h2 className="text-3xl font-black text-slate-900 mb-2">
+                Verify your {mode === "signup" ? "account" : "identity"}
+              </h2>
               <p className="text-slate-500 font-medium mb-8 leading-relaxed">
                 We sent a 6-digit code to{" "}
-                {email ? (
-                  <span className="font-bold text-slate-700">{email}</span>
-                ) : (
-                  "your registered email / phone"
-                )}
-                . Enter it below.
+                {email
+                  ? <span className="font-bold text-slate-700">{email}</span>
+                  : "your registered email / phone"
+                }. Enter it below.
               </p>
 
-              {/* OTP Input Grid */}
               <div className="flex gap-3 justify-between mb-6">
                 {digits.map((d, i) => (
                   <input
@@ -194,7 +222,6 @@ function OtpPageInner() {
                 ))}
               </div>
 
-              {/* Error */}
               <AnimatePresence>
                 {error && (
                   <motion.div
@@ -209,7 +236,6 @@ function OtpPageInner() {
                 )}
               </AnimatePresence>
 
-              {/* Verify Button */}
               <button
                 onClick={handleVerify}
                 disabled={!isFilled || isVerifying}
@@ -225,27 +251,23 @@ function OtpPageInner() {
                 )}
               </button>
 
-              {/* Resend */}
               <div className="text-center">
                 <p className="text-sm text-slate-500 font-medium">
-                  Didn't receive a code?{" "}
+                  Didn&apos;t receive a code?{" "}
                   {canResend ? (
                     <button
                       onClick={handleResend}
                       disabled={isResending}
                       className="text-blue-600 font-extrabold hover:underline underline-offset-4 decoration-2 inline-flex items-center gap-1"
                     >
-                      {isResending ? (
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <RefreshCw className="w-3.5 h-3.5" />
-                      )}
+                      {isResending
+                        ? <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        : <RefreshCw className="w-3.5 h-3.5" />}
                       Resend
                     </button>
                   ) : (
                     <span className="text-slate-400 font-bold">
-                      Resend in{" "}
-                      <span className="tabular-nums text-slate-600">{countdown}s</span>
+                      Resend in <span className="tabular-nums text-slate-600">{countdown}s</span>
                     </span>
                   )}
                 </p>

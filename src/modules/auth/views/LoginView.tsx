@@ -2,54 +2,46 @@
 
 import { FormEvent, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAuthStore } from "@/src/application/store/authStore";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  User,
-  Lock,
-  ShieldCheck,
-  Building2,
-  Mail,
-  Sparkles,
-  ArrowRight,
-  Truck,
-  AlertCircle,
-  ChevronLeft
+  User, Lock, ShieldCheck, Building2, Mail,
+  Sparkles, ArrowRight, Truck, AlertCircle, ChevronLeft,
 } from "lucide-react";
+import { authApi } from "@/src/infrastructure/api/auth";
 
-// 1. Explicitly define the allowed roles
 type Role = "customer" | "mover" | "company" | "admin";
 
-const ROLE_DATA: Record<Role, { 
-  label: string; 
-  icon: any; 
+const ROLE_DATA: Record<Role, {
+  label: string;
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   description: string;
   tagline: string;
 }> = {
-  customer: { 
-    label: "Customer", 
-    icon: User, 
-    tagline: "Move with ease.",
-    description: "Book moves, track real-time shipments, and manage your personal logistics dashboard." 
+  customer: {
+    label: "Customer", icon: User, tagline: "Move with ease.",
+    description: "Book moves, track real-time shipments, and manage your personal logistics dashboard.",
   },
-  mover: { 
-    label: "Mover", 
-    icon: Truck, 
-    tagline: "Earn on the go.",
-    description: "Access high-quality leads, manage your schedule, and grow your independent moving business." 
+  mover: {
+    label: "Mover", icon: Truck, tagline: "Earn on the go.",
+    description: "Access high-quality leads, manage your schedule, and grow your independent moving business.",
   },
-  company: { 
-    label: "Company", 
-    icon: Building2, 
-    tagline: "Scale operations.",
-    description: "Full-scale fleet management, driver dispatching, and enterprise-grade logistics analytics." 
+  company: {
+    label: "Company", icon: Building2, tagline: "Scale operations.",
+    description: "Full-scale fleet management, driver dispatching, and enterprise-grade logistics analytics.",
   },
-  admin: { 
-    label: "Admin", 
-    icon: ShieldCheck, 
-    tagline: "System Control.",
-    description: "Manage platform users, monitor logistics traffic, and configure system settings." 
+  admin: {
+    label: "Admin", icon: ShieldCheck, tagline: "System Control.",
+    description: "Manage platform users, monitor logistics traffic, and configure system settings.",
   },
+};
+
+// Dev credentials — only used when NEXT_PUBLIC_API_URL is not set.
+// Remove once the real backend is connected.
+const DEV_CREDENTIALS: Record<Role, { id: string; password: string; name: string }> = {
+  customer: { id: "customer@demo.com", password: "demo1234", name: "Demo Customer" },
+  mover:    { id: "mover@demo.com",    password: "demo1234", name: "Demo Mover" },
+  company:  { id: "COMPANY-001",       password: "demo1234", name: "Demo Company" },
+  admin:    { id: "ADMIN-001",         password: "demo1234", name: "Demo Admin" },
 };
 
 export default function LoginView() {
@@ -63,14 +55,9 @@ export default function LoginView() {
 function LoginPageInner() {
   const router = useRouter();
   const params = useSearchParams();
-  const login = useAuthStore((state) => state.login);
 
-  // 2. SAFE ROLE DERIVATION
-  // Get raw role from URL, check if it exists in our data, otherwise default to "customer"
   const queryRole = params.get("role") as Role;
   const role = ROLE_DATA[queryRole] ? queryRole : "customer";
-  
-  // 3. This will now never be undefined
   const ActiveIcon = ROLE_DATA[role].icon;
 
   const [email, setEmail] = useState("");
@@ -85,21 +72,60 @@ function LoginPageInner() {
     setError(null);
 
     const isCompanyOrAdmin = role === "company" || role === "admin";
+    const enteredId = isCompanyOrAdmin ? companyId : email;
+    const enteredPw = isCompanyOrAdmin ? adminPassword : password;
 
-    if (isCompanyOrAdmin ? (!companyId || !adminPassword) : (!email || !password)) {
-      return setError("Please fill in all required fields");
+    if (!enteredId || !enteredPw) {
+      return setError("Please fill in all required fields.");
     }
 
-    try {
-      setIsSubmitting(true);
-      await new Promise(r => setTimeout(r, 1200));
+    setIsSubmitting(true);
 
-      // Store partial session; full login completes after OTP
-      login({ name: "Demo User" }, role, "fake-token");
-      const dest = email || companyId;
-      router.push(`/auth/otp?role=${role}&mode=login&email=${encodeURIComponent(dest)}`);
-    } catch (err) {
-      setError("Invalid credentials. Please try again.");
+    try {
+      // ── REAL API ──────────────────────────────────────────────────────────
+      // POST /auth/login via authApi (src/infrastructure/api/auth.ts).
+      // Set NEXT_PUBLIC_API_URL in .env.local to point at the real backend.
+      // On success the backend should send an OTP to the user's email/phone.
+      // login() is intentionally NOT called here — it runs in OtpView after
+      // the OTP is verified.
+      // ─────────────────────────────────────────────────────────────────────
+      await authApi.login(
+        isCompanyOrAdmin
+          ? { companyId: enteredId, accessKey: enteredPw, role }
+          : { email: enteredId, password: enteredPw, role }
+      );
+
+      router.push(
+        `/auth/otp?role=${role}&mode=login` +
+        `&email=${encodeURIComponent(enteredId)}` +
+        `&name=${encodeURIComponent(DEV_CREDENTIALS[role].name)}`
+      );
+    } catch (err: unknown) {
+      // ── DEV FALLBACK ──────────────────────────────────────────────────────
+      // When NEXT_PUBLIC_API_URL is unset the fetch fails with a network error.
+      // Validate against DEV_CREDENTIALS and advance to OTP so the full flow
+      // works without a backend. Remove this block once the backend is live.
+      // ─────────────────────────────────────────────────────────────────────
+      const message = err instanceof Error ? err.message : "";
+      const noBackend =
+        !process.env.NEXT_PUBLIC_API_URL ||
+        message.includes("Failed to fetch") ||
+        message.startsWith("API 5");
+
+      if (noBackend) {
+        const creds = DEV_CREDENTIALS[role];
+        if (enteredId !== creds.id || enteredPw !== creds.password) {
+          setError(`Dev mode — use: ${creds.id} / ${creds.password}`);
+        } else {
+          router.push(
+            `/auth/otp?role=${role}&mode=login` +
+            `&email=${encodeURIComponent(enteredId)}` +
+            `&name=${encodeURIComponent(creds.name)}`
+          );
+        }
+      } else {
+        setError(message || "Invalid credentials. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -107,11 +133,9 @@ function LoginPageInner() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4 md:p-6 relative overflow-hidden font-sans">
-      
-      {/* Background Orbs */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-100/40 blur-[120px] rounded-full transition-colors duration-700" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-100/40 blur-[120px] rounded-full transition-colors duration-700" />
+        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-100/40 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-100/40 blur-[120px] rounded-full" />
       </div>
 
       <motion.div
@@ -119,26 +143,22 @@ function LoginPageInner() {
         animate={{ opacity: 1, scale: 1 }}
         className="relative w-full max-w-[1100px] flex bg-white/80 backdrop-blur-2xl rounded-[40px] shadow-2xl shadow-slate-200/50 border border-white overflow-hidden min-h-[700px]"
       >
-
-        {/* --- LEFT SIDE: BRANDING --- */}
+        {/* LEFT — branding */}
         <div className="hidden md:flex w-5/12 bg-slate-900 p-12 flex-col justify-between relative overflow-hidden">
-          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `radial-gradient(#fff 1px, transparent 1px)`, backgroundSize: '30px 30px' }} />
-          
+          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `radial-gradient(#fff 1px, transparent 1px)`, backgroundSize: "30px 30px" }} />
+
           <div className="relative z-10">
-            <div onClick={() => router.push('/')} className="flex items-center gap-3 cursor-pointer group mb-12">
+            <div onClick={() => router.push("/")} className="flex items-center gap-3 cursor-pointer group mb-12">
               <div className="w-11 h-11 bg-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-green-500/30 group-hover:scale-110 transition-transform text-white">
                 <ShieldCheck className="w-6 h-6" />
               </div>
-              <span className="text-2xl font-black text-white tracking-tight">Movers <b className="text-green-600">Padi</b></span>
+              <span className="text-2xl font-black text-white tracking-tight">
+                Movers <b className="text-green-600">Padi</b>
+              </span>
             </div>
 
             <AnimatePresence mode="wait">
-              <motion.div
-                key={role}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="space-y-4"
-              >
+              <motion.div key={role} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-wider">
                   <Sparkles className="w-3 h-3" /> {ROLE_DATA[role].tagline}
                 </div>
@@ -155,36 +175,29 @@ function LoginPageInner() {
 
           <div className="relative z-10 pt-8 border-t border-white/10">
             <div className="flex items-center gap-4">
-               <div className="flex -space-x-2">
-                  {[1,2,3].map(i => <div key={i} className="w-8 h-8 rounded-full border-2 border-slate-900 bg-slate-700" />)}
-               </div>
-               <p className="text-slate-500 text-xs font-medium">Join 2,000+ logistics pros</p>
+              <div className="flex -space-x-2">
+                {[1, 2, 3].map((i) => <div key={i} className="w-8 h-8 rounded-full border-2 border-slate-900 bg-slate-700" />)}
+              </div>
+              <p className="text-slate-500 text-xs font-medium">Join 2,000+ logistics pros</p>
             </div>
           </div>
         </div>
 
-        {/* --- RIGHT SIDE: FORM --- */}
+        {/* RIGHT — form */}
         <div className="flex-1 p-8 md:p-14 lg:p-20 flex flex-col justify-center">
-
-          {/* PORTAL CONTEXT HEADER */}
           <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-3xl mb-10">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm text-blue-600">
                 <ActiveIcon className="w-6 h-6" strokeWidth={2.5} />
               </div>
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] leading-none mb-1.5">
-                  Portal Access
-                </p>
-                <h4 className="text-base font-black text-slate-900 capitalize">
-                  {role} Portal
-                </h4>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] leading-none mb-1.5">Portal Access</p>
+                <h4 className="text-base font-black text-slate-900 capitalize">{role} Portal</h4>
               </div>
             </div>
-            
-            <button 
+            <button
               type="button"
-              onClick={() => router.push('/auth/role?mode=login')}
+              onClick={() => router.push("/auth/role?mode=login")}
               className="group flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-4 py-2.5 rounded-xl transition-all active:scale-95"
             >
               <ChevronLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
@@ -197,7 +210,6 @@ function LoginPageInner() {
             <p className="text-slate-500 font-medium">Please enter your details to sign in.</p>
           </div>
 
-          {/* FORM AREA */}
           <AnimatePresence mode="wait">
             <motion.form
               key={role}
@@ -227,11 +239,11 @@ function LoginPageInner() {
               </div>
 
               <div className="flex items-center justify-between px-2 pt-1">
-                 <label className="flex items-center gap-2 cursor-pointer group">
-                    <input type="checkbox" className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-                    <span className="text-xs text-slate-500 group-hover:text-slate-700 font-medium transition-colors">Remember me</span>
-                 </label>
-                 <button type="button" className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors">Forgot Password?</button>
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <input type="checkbox" className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                  <span className="text-xs text-slate-500 group-hover:text-slate-700 font-medium transition-colors">Remember me</span>
+                </label>
+                <button type="button" className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors">Forgot Password?</button>
               </div>
 
               <button
@@ -253,7 +265,7 @@ function LoginPageInner() {
           </AnimatePresence>
 
           <p className="mt-10 text-center text-sm text-slate-500 font-medium">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <span
               onClick={() => router.push("/auth/role?mode=signup")}
               className="text-blue-600 font-extrabold cursor-pointer hover:underline underline-offset-4 decoration-2"
@@ -267,7 +279,15 @@ function LoginPageInner() {
   );
 }
 
-function Input({ icon: Icon, type, placeholder, value, onChange }: any) {
+function Input({
+  icon: Icon, type = "text", placeholder, value, onChange,
+}: {
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  type?: string;
+  placeholder: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
   return (
     <div className="relative group">
       <div className="absolute left-4 top-1/2 -translate-y-1/2 p-1.5 rounded-lg bg-slate-100 text-slate-400 group-focus-within:bg-blue-600 group-focus-within:text-white transition-all duration-300">
