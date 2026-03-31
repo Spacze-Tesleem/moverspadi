@@ -1,64 +1,103 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, User, Lock, Shield, Home } from "lucide-react";
 import ProfileHome from "@/src/modules/customer/profile/components/ProfileHome";
 import PersonalInfo from "@/src/modules/customer/profile/components/PersonalInfo";
-import Security from "@/src/modules/customer/profile/components/Security";
-import PrivacyData from "@/src/modules/customer/profile/components/PrivacyData";
+import Security     from "@/src/modules/customer/profile/components/Security";
+import PrivacyData  from "@/src/modules/customer/profile/components/PrivacyData";
 
+type Tab = "home" | "personal" | "security" | "privacy";
+
+const TABS: { id: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  { id: "home",     label: "Overview",     icon: Home },
+  { id: "personal", label: "Personal Info", icon: User },
+  { id: "security", label: "Security",      icon: Lock },
+  { id: "privacy",  label: "Privacy",       icon: Shield },
+];
 
 export default function ProfileView() {
-    const [activeTab, setActiveTab] = useState("home");
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<Tab>("home");
 
-    return (
-        <div className="flex min-h-screen bg-gray-50">
+  const content: Record<Tab, React.ReactNode> = {
+    home:     <ProfileHome />,
+    personal: <PersonalInfo />,
+    security: <Security />,
+    privacy:  <PrivacyData />,
+  };
 
-            {/* Sidebar */}
-            <div className="w-64 bg-white border-r p-6 space-y-4">
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans">
 
-                <button
-                    onClick={() => setActiveTab("home")}
-                    className={`block w-full text-left p-3 rounded-lg ${activeTab === "home" ? "bg-gray-100 font-semibold" : ""
-                        }`}
-                >
-                    Home
-                </button>
+      {/* Header */}
+      <header className="sticky top-0 z-30 h-14 bg-white border-b border-slate-200 flex items-center gap-3 px-4 lg:px-8">
+        <button
+          onClick={() => router.push("/customer")}
+          className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all"
+        >
+          <ArrowLeft size={18} />
+        </button>
+        <h1 className="text-sm font-bold text-slate-900">Profile</h1>
+      </header>
 
-                <button
-                    onClick={() => setActiveTab("personal")}
-                    className={`block w-full text-left p-3 rounded-lg ${activeTab === "personal" ? "bg-gray-100 font-semibold" : ""
-                        }`}
-                >
-                    Personal Info
-                </button>
+      <div className="max-w-4xl mx-auto px-4 lg:px-8 py-5 lg:py-8">
+        <div className="flex flex-col lg:flex-row gap-6">
 
-                <button
-                    onClick={() => setActiveTab("security")}
-                    className={`block w-full text-left p-3 rounded-lg ${activeTab === "security" ? "bg-gray-100 font-semibold" : ""
-                        }`}
-                >
-                    Security
-                </button>
+          {/* ── Desktop sidebar nav ──────────────────────────────────────── */}
+          <aside className="hidden lg:block w-52 shrink-0">
+            <nav className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+              {TABS.map(({ id, label, icon: Icon }) => {
+                const isActive = activeTab === id;
+                return (
+                  <button
+                    key={id}
+                    onClick={() => setActiveTab(id)}
+                    className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-all text-left border-b border-slate-100 last:border-0 ${
+                      isActive
+                        ? "bg-blue-50 text-blue-600 border-l-2 border-l-blue-500"
+                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-blue-500" : "text-slate-400"}`} />
+                    {label}
+                  </button>
+                );
+              })}
+            </nav>
+          </aside>
 
-                <button
-                    onClick={() => setActiveTab("privacy")}
-                    className={`block w-full text-left p-3 rounded-lg ${activeTab === "privacy" ? "bg-gray-100 font-semibold" : ""
-                        }`}
-                >
-                    Privacy & Data
-                </button>
-
+          {/* ── Content ──────────────────────────────────────────────────── */}
+          <div className="flex-1 min-w-0">
+            {/* Mobile tab bar */}
+            <div className="lg:hidden flex gap-2 overflow-x-auto pb-1 mb-5 -mx-4 px-4 scrollbar-none">
+              {TABS.map(({ id, label, icon: Icon }) => {
+                const isActive = activeTab === id;
+                return (
+                  <button
+                    key={id}
+                    onClick={() => setActiveTab(id)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 transition-all ${
+                      isActive
+                        ? "bg-blue-600 text-white shadow-sm shadow-blue-200"
+                        : "bg-white text-slate-500 border border-slate-200 hover:border-slate-300"
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    {label}
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Content */}
-            <div className="flex-1 p-10">
-
-                {activeTab === "home" && <ProfileHome />}
-                {activeTab === "personal" && <PersonalInfo />}
-                {activeTab === "security" && <Security />}
-                {activeTab === "privacy" && <PrivacyData />}
-
+            {/* Panel */}
+            <div className="pb-8">
+              {content[activeTab]}
             </div>
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 }

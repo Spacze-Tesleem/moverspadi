@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { X } from "lucide-react";
@@ -29,7 +29,7 @@ function BookServiceContent() {
 
   const [activeStep, setActiveStep] = useState(0);
 
-  const [bookingData, setBookingData] = useState<BookingFormData>({
+  const [bookingData, setBookingData] = useState<BookingFormData>(() => ({
     serviceType: typeFromUrl,
     pickup: "",
     pickupCoords: null,
@@ -41,18 +41,7 @@ function BookServiceContent() {
     vehicleType: "",
     scheduleDate: "",
     scheduleTime: "",
-  });
-
-  // Sync state if URL changes
-  useEffect(() => {
-    if (typeFromUrl && bookingData.serviceType !== typeFromUrl) {
-      setBookingData(prev => ({ 
-        ...prev, 
-        serviceType: typeFromUrl,
-        items: (typeFromUrl === "haulage" || typeFromUrl === "dispatch") ? [{ name: "", qty: 1, weight: "" }] : []
-      }));
-    }
-  }, [typeFromUrl]);
+  }));
 
   const handleNext = () => setActiveStep((s) => s + 1);
   const handlePrev = () => setActiveStep((s) => (s > 0 ? s - 1 : s));
