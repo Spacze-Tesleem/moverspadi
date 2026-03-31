@@ -88,15 +88,11 @@ function SignupPageInner() {
 
       const data = await res.json();
 
-      // ✅ Save token
+      // Save token
       localStorage.setItem("token", data.token);
 
-      // ✅ Redirect
-      if (role === "customer") {
-        router.push(`/${role}`);
-      } else {
-        router.push(`/onboarding/${role}`);
-      }
+      // Redirect to OTP verification before entering dashboard
+      router.push(`/auth/otp?role=${role}&mode=signup&email=${encodeURIComponent(formData.email)}`);
 
     } catch (err) {
       console.error(err);
