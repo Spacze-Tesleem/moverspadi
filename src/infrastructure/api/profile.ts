@@ -6,7 +6,7 @@
 //      the real apiClient calls when the backend endpoints are ready.
 
 import { apiClient } from "./client";
-import type { UserProfile, NextOfKin } from "@/src/domain/user/types";
+import type { UserProfile } from "@/src/domain/user/types";
 
 export interface CompleteProfilePayload {
   gender?: string;

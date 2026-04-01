@@ -207,7 +207,7 @@ function DashboardInner() {
                 <h1 className={`text-xl lg:text-2xl font-black ${D ? "text-white" : "text-slate-900"}`}>
                   Good {getGreeting()}, {firstName} 👋
                 </h1>
-                <p className={`text-sm mt-0.5 ${D ? "text-zinc-500" : "text-slate-500"}`}>Here's what's happening with your logistics today.</p>
+                <p className={`text-sm mt-0.5 ${D ? "text-zinc-500" : "text-slate-500"}`}>Here&apos;s what&apos;s happening with your logistics today.</p>
               </div>
 
               {/* Stats */}

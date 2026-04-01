@@ -1,6 +1,6 @@
-# AGENTS-IMPROVEMENT-SPEC.md
+# MOVERS-IMPROVEMENT-SPEC.md
 
-Concrete improvements to make AGENTS.md and the codebase more agent-friendly.
+Concrete improvements to MOVERS.md and the codebase.
 Each item states the problem, the fix, and the acceptance criterion.
 
 ---
@@ -9,36 +9,54 @@ Each item states the problem, the fix, and the acceptance criterion.
 
 ### What's Good
 
-- **Clear domain-driven structure.** `domain/` → `application/` → `infrastructure/` → `modules/` → `app/` layers are well-separated and consistently applied.
-- **Thin routing shells.** `app/` pages are one-liners that delegate to `*View` components. Easy for agents to follow the pattern.
-- **Domain types are framework-free.** `src/domain/` has no React or Next.js imports — safe to import anywhere.
-- **Shared API client.** `apiClient` in `src/infrastructure/api/client.ts` centralises fetch, auth headers, and error handling.
-- **Geocoding is isolated.** Nominatim calls are in `src/infrastructure/geocoding/nominatim.ts`, not scattered in components.
-- **Utility functions are named and typed.** `cn()`, `formatNaira()`, `formatDate()`, `truncate()` are all in `src/lib/`.
+- **Layered architecture is real and enforced.** `domain/` → `application/` → `infrastructure/` → `modules/` → `app/` is consistently applied. `src/domain/` has zero framework imports.
+- **Thin routing shells.** Every `app/*/page.tsx` is a one-liner that renders a `*View`. The pattern is uniform across all four roles.
+- **Auth guard is correct.** `useRequireAuth` waits for Zustand rehydration (`_hydrated`) before redirecting, preventing false redirects on first load. Layouts return `null` until authorized — no flash of protected content.
+- **`BookView` lazy initialiser is correct.** `bookingData` is initialised from `typeFromUrl` via a `useState` lazy initialiser, not a sync `useEffect`. No stale-closure bug exists here.
+- **`LoginView` icon typing is correct.** `ROLE_DATA` uses `React.ComponentType<{ className?: string; strokeWidth?: number }>`, not `any`.
+- **Shared API client.** `apiClient` in `src/infrastructure/api/client.ts` centralises fetch, auth headers, and error handling. No direct `fetch` calls in components.
+- **Geocoding is isolated.** Nominatim calls are in `src/infrastructure/geocoding/nominatim.ts`.
+- **Utility functions are named and typed.** `cn()`, `formatNaira()`, `formatDate()`, `truncate()` are all in `src/lib/` and re-exported from `src/lib/index.ts`.
 - **Zustand stores are typed.** Both stores have explicit state interfaces and use `persist` consistently.
 - **Map SSR guard is in place.** `MapPreview` is loaded with `dynamic(..., { ssr: false })`.
+- **Dev fallback in `LoginView`.** The dev credential bypass is clearly commented and scoped to when `NEXT_PUBLIC_API_URL` is unset.
+
+---
 
 ### What's Missing
 
-1. No test suite — no unit, integration, or e2e tests.
-2. No `.env.example` — `NEXT_PUBLIC_API_URL` is undocumented.
-3. No error boundaries — unhandled errors crash the full page.
-4. No loading skeletons — layout shifts on data fetch.
-5. No CI pipeline — no automated lint/build/test on push.
-6. No `AGENTS.md` existed before this session.
-7. `src/modules/` has no `index.ts` barrel exports — agents must guess import paths.
-8. `BookingFormData` is not persisted in the booking store — the wizard loses state on refresh.
+1. No test suite — no unit, integration, or e2e tests configured.
+2. No `.env.example` — `NEXT_PUBLIC_API_URL` is undocumented for new developers.
+3. No error boundaries — unhandled render errors crash the full page.
+4. No loading skeleton components — layout shifts on data fetch.
+5. No CI pipeline — no automated lint/build/test on push or PR.
+6. `src/modules/` has no barrel `index.ts` exports — import paths must be guessed.
+7. `BookingFormData` wizard state is not persisted — the booking wizard loses all data on page refresh.
+8. `ThemeContext` is only mounted inside `CustomerDashboardView`, not at the root layout — other roles cannot use it, and the theme resets on navigation away from the dashboard.
+
+---
 
 ### What's Wrong
 
-1. **Unused dependencies** — `axios`, `pigeon-maps`, and `@react-google-maps/api` are in `package.json` but not used. They add ~500 KB to the bundle and mislead agents about which libraries to use.
-2. **`cn()` reimplements `clsx`** — `clsx` is already a dependency; `cn()` in `src/lib/cn.ts` duplicates it without the full feature set (no object/array support). Agents may use either inconsistently.
-3. **`useEffect` auth guard has a race condition** — `useRequireAuth` redirects inside `useEffect`, which runs after the first render. Protected content flashes briefly before redirect.
-4. **`bookingData.serviceType` sync `useEffect` has a stale-closure bug** — the dependency array omits `bookingData.serviceType` indirectly via the condition `bookingData.serviceType !== typeFromUrl`, which will cause the linter to warn and may cause missed updates.
-5. **`icon: any` in `LoginView.tsx`** — `ROLE_DATA` uses `icon: any` for Lucide icon components. Should be typed as `React.ComponentType<{ size?: number; className?: string }>` or `LucideIcon`.
-6. **`getPriceEstimate` is not async-ready** — it returns a hardcoded `number` synchronously. When a real pricing API is added, all call sites will need to change. It should return `Promise<number>` now.
-7. **`tsconfig.json` has inconsistent formatting** — `baseUrl` and `paths` are not indented consistently with the rest of the file.
-8. **`next.config.ts` is empty** — no `images.remotePatterns`, no `env` validation, no `headers`. Agents have no guidance on what belongs here.
+1. **`cn()` does not use `tailwind-merge`.** `src/lib/cn.ts` is a plain string join (`filter(Boolean).join(" ")`). Both `clsx` and `tailwind-merge` are installed as dependencies but unused. Conflicting Tailwind classes (e.g. `bg-red-500 bg-blue-500`) are not deduplicated, causing silent styling bugs.
+
+2. **`icon: any` in four files.** `DetailsStep.tsx` (`VehicleCard`), `ConfirmStep.tsx` (`SERVICE_ICONS`), `SearchingView.tsx`, `AdminDashboardView.tsx`, and `CompanyDashboardView.tsx` all use `icon: any` for Lucide icon components. This defeats strict mode for those props.
+
+3. **`getPriceEstimate` is synchronous.** `bookingApi.getPriceEstimate()` returns a plain `number`. When a real pricing endpoint is added, every call site must change signature. It should return `Promise<number>` now.
+
+4. **Unused dependencies inflate the bundle.** `axios`, `pigeon-maps`, and `@react-google-maps/api` are in `package.json` with zero imports anywhere in the codebase. They add dead weight and mislead agents about which libraries to use.
+
+5. **`tsconfig.json` has broken indentation.** `baseUrl` and `paths` are at column 0 inside `compilerOptions`. This causes noisy diffs and confuses JSON-aware tools.
+
+6. **`next.config.ts` is empty.** No `images.remotePatterns`, no `env` validation, no `headers`. Agents have no guidance on what belongs here, and avatar/image URLs will fail if a backend is connected.
+
+7. **`MOVERS.md` claims "Next.js 16" but `package.json` says `16.1.6`.** The version string should match `package.json` exactly.
+
+8. **`MOVERS.md` does not document `src/context/`.** `ThemeContext.tsx` exists and is used by three files, but the architecture section omits it entirely.
+
+9. **`MOVERS.md` does not document `types/`.** The `types/` directory at the repo root contains `cache-life.d.ts` and `routes.d.ts` but is not mentioned anywhere.
+
+10. **`README.md` is the default `create-next-app` template.** It contains no project-specific information and references `npm`/`yarn`/`bun` despite the project using `pnpm` exclusively.
 
 ---
 
@@ -46,22 +64,9 @@ Each item states the problem, the fix, and the acceptance criterion.
 
 ---
 
-### SPEC-01 — Remove unused dependencies
+### SPEC-01 — Fix `cn()` to use `clsx` + `tailwind-merge`
 
-**Problem:** `axios`, `pigeon-maps`, and `@react-google-maps/api` are in `dependencies` but have zero imports in the codebase. They inflate bundle size and mislead agents into thinking they are the preferred HTTP/map libraries.
-
-**Fix:**
-```bash
-pnpm remove axios pigeon-maps @react-google-maps/api
-```
-
-**Acceptance:** `package.json` no longer lists these three packages. `pnpm build` passes. No import errors.
-
----
-
-### SPEC-02 — Replace `cn()` with `clsx` + `tailwind-merge`
-
-**Problem:** `src/lib/cn.ts` reimplements a subset of `clsx` (string-only, no object/array support). `clsx` and `tailwind-merge` are already installed. Agents may use either `cn()` or `clsx` directly, producing inconsistent class merging.
+**Problem:** `src/lib/cn.ts` joins class strings with a space. Conflicting Tailwind utilities (e.g. passing both `bg-red-500` and `bg-blue-500`) are not resolved — both end up in the output and the last one wins by CSS specificity, not by call order. `clsx` and `tailwind-merge` are already installed.
 
 **Fix:**
 
@@ -75,123 +80,83 @@ export function cn(...inputs: ClassValue[]): string {
 }
 ```
 
-Update `src/lib/index.ts` to re-export `cn`. No call-site changes needed.
+No call-site changes needed — the function signature is identical.
 
-**Acceptance:** `cn({ "bg-red-500": true }, "bg-blue-500")` returns `"bg-blue-500"` (tailwind-merge deduplication works). All existing `cn()` call sites continue to compile.
-
----
-
-### SPEC-03 — Fix `useRequireAuth` flash-of-protected-content
-
-**Problem:** `useRequireAuth` redirects inside `useEffect`, which fires after the first render. Protected route content renders for one frame before the redirect, causing a visible flash and potential data fetches on unauthenticated state.
-
-**Fix:**
-
-Replace the `useEffect`-based redirect with a synchronous check using `useRouter` and render `null` until auth is confirmed:
-
-```typescript
-// src/application/hooks/useAuth.ts
-"use client";
-
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/src/application/store/authStore";
-import type { UserRole } from "@/src/domain/auth/types";
-
-export function useRequireAuth(requiredRole: UserRole) {
-  const router = useRouter();
-  const { isAuthenticated, role } = useAuthStore();
-  const authorized = isAuthenticated && role === requiredRole;
-
-  useEffect(() => {
-    if (!authorized) {
-      router.replace("/auth/login");
-    }
-  }, [authorized, router]);
-
-  return { authorized };
-}
-```
-
-Update layout components to render `null` when not authorized:
-
-```typescript
-// app/customer/layout.tsx
-"use client";
-import { useRequireAuth } from "@/src/application/hooks/useAuth";
-
-export default function CustomerLayout({ children }: { children: React.ReactNode }) {
-  const { authorized } = useRequireAuth("customer");
-  if (!authorized) return null;
-  return <>{children}</>;
-}
-```
-
-Apply the same pattern to `app/mover/layout.tsx`, `app/company/layout.tsx`, `app/admin/layout.tsx`.
-
-**Acceptance:** Navigating directly to `/customer` while unauthenticated shows a blank screen (not a flash of content) before redirecting to `/auth/login`.
+**Acceptance:** `cn("bg-red-500", "bg-blue-500")` returns `"bg-blue-500"`. `pnpm build` passes. All existing `cn()` call sites compile without changes.
 
 ---
 
-### SPEC-04 — Fix `BookView` `useEffect` dependency array
+### SPEC-02 — Type Lucide icons with `LucideIcon` instead of `any`
 
-**Problem:** The `useEffect` in `BookView.tsx` that syncs `typeFromUrl` into `bookingData` has `bookingData.serviceType` used inside the effect body but not listed in the dependency array. ESLint's `exhaustive-deps` rule will warn; the effect may also miss updates.
-
-**Fix:**
-
-Restructure to derive initial state from the URL param without a sync effect:
-
-```typescript
-// Remove the useEffect that syncs typeFromUrl.
-// Instead, initialise bookingData once using a lazy useState initialiser:
-
-const [bookingData, setBookingData] = useState<BookingFormData>(() => ({
-  serviceType: typeFromUrl,
-  pickup: "",
-  pickupCoords: null,
-  dropoff: "",
-  dropoffCoords: null,
-  items: (typeFromUrl === "haulage" || typeFromUrl === "dispatch")
-    ? [{ name: "", qty: 1, weight: "" }]
-    : [],
-  vehicleDescription: "",
-  passengers: "1",
-  vehicleType: "",
-  scheduleDate: "",
-  scheduleTime: "",
-}));
-```
-
-If the URL param can change while the component is mounted (e.g. user navigates between service types), handle it with a `key` prop on the parent instead of a sync effect.
-
-**Acceptance:** `pnpm lint` reports no `react-hooks/exhaustive-deps` warnings in `BookView.tsx`.
-
----
-
-### SPEC-05 — Type Lucide icons properly in `LoginView.tsx`
-
-**Problem:** `ROLE_DATA` uses `icon: any` for Lucide icon components. This defeats TypeScript's strict mode for that property and misleads agents into thinking `any` is acceptable for component props.
+**Problem:** Five files use `icon: any` for Lucide icon components:
+- `src/modules/customer/booking/components/DetailsStep.tsx` — `VehicleCard` prop
+- `src/modules/customer/booking/components/ConfirmStep.tsx` — `SERVICE_ICONS` record
+- `src/modules/customer/tracking/views/SearchingView.tsx` — `serviceIcons` record
+- `src/modules/admin/views/AdminDashboardView.tsx` — `navItems` and `ALERT_STYLES`
+- `src/modules/company/views/CompanyDashboardView.tsx` — `navItems`
 
 **Fix:**
+
+Import `LucideIcon` from `lucide-react` and replace `any`:
 
 ```typescript
 import type { LucideIcon } from "lucide-react";
 
-const ROLE_DATA: Record<Role, {
-  label: string;
-  icon: LucideIcon;
-  description: string;
-  tagline: string;
-}> = { ... };
+// VehicleCard prop
+{ label: string; icon: LucideIcon; active: boolean; onClick: () => void }
+
+// Icon record
+const SERVICE_ICONS: Record<string, LucideIcon> = { ... };
+
+// Nav items
+{ id: ActiveView; label: string; icon: LucideIcon; badge?: number }
 ```
 
-**Acceptance:** `pnpm build` passes with no type errors. No `any` in `LoginView.tsx`.
+**Acceptance:** `pnpm build` passes with no type errors. `grep -r "icon: any"` returns no results in `src/`.
 
 ---
 
-### SPEC-06 — Add `.env.example`
+### SPEC-03 — Remove unused dependencies
 
-**Problem:** `NEXT_PUBLIC_API_URL` is the only environment variable but is undocumented. Agents and new developers have no reference for what to set.
+**Problem:** `axios`, `pigeon-maps`, and `@react-google-maps/api` are in `dependencies` with zero imports in the codebase. They inflate the production bundle and mislead agents into thinking they are the preferred HTTP/map libraries.
+
+**Fix:**
+```bash
+pnpm remove axios pigeon-maps @react-google-maps/api
+```
+
+**Acceptance:** `package.json` no longer lists these three packages. `pnpm build` passes. No import errors.
+
+---
+
+### SPEC-04 — Make `getPriceEstimate` return `Promise<number>`
+
+**Problem:** `bookingApi.getPriceEstimate()` returns a synchronous `number`. When a real pricing endpoint is added, every call site must change. Making it async now costs nothing and prevents a breaking refactor later.
+
+**Fix:**
+
+```typescript
+// src/infrastructure/api/booking.ts
+getPriceEstimate: async (serviceType: string): Promise<number> => {
+  const priceMap: Record<string, number> = {
+    ride: 3500,
+    dispatch: 5000,
+    haulage: 45000,
+    tow: 15000,
+  };
+  return priceMap[serviceType] ?? 5000;
+},
+```
+
+Update all call sites to `await bookingApi.getPriceEstimate(...)`.
+
+**Acceptance:** `pnpm build` passes. No synchronous call sites remain. The function signature is `Promise<number>`.
+
+---
+
+### SPEC-05 — Add `.env.example`
+
+**Problem:** `NEXT_PUBLIC_API_URL` is the only environment variable but is undocumented. New developers and agents have no reference for what to set, and the dev fallback in `LoginView` is only discovered by reading the source.
 
 **Fix:**
 
@@ -199,16 +164,123 @@ Create `.env.example` at the repo root:
 ```
 # Base URL for the MoversPadi backend API.
 # Leave empty to use relative paths (e.g. when API is co-hosted).
+# When unset, LoginView falls back to DEV_CREDENTIALS for local development.
 NEXT_PUBLIC_API_URL=https://api.moverspadi.com
 ```
 
-Reference it in AGENTS.md under "Environment variables".
+Update `MOVERS.md` under "Environment variables" to reference `.env.example`.
 
-**Acceptance:** `.env.example` exists. `.gitignore` already excludes `.env*` (confirmed).
+**Acceptance:** `.env.example` exists at the repo root. `.gitignore` already excludes `.env*` (confirmed).
 
 ---
 
-### SPEC-07 — Add a test suite
+### SPEC-06 — Fix `tsconfig.json` indentation
+
+**Problem:** `baseUrl` and `paths` are at column 0 inside `compilerOptions`, breaking the surrounding indent. This causes noisy diffs and confuses JSON-aware tools.
+
+**Fix:**
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    ...
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  }
+}
+```
+
+**Acceptance:** `tsconfig.json` has consistent indentation throughout. `pnpm build` passes.
+
+---
+
+### SPEC-07 — Update `MOVERS.md` to reflect actual codebase
+
+**Problem:** Several inaccuracies and omissions in `MOVERS.md` will cause agents to make wrong assumptions:
+
+1. Version says "Next.js 16" — should be "Next.js 16.1.6" (match `package.json`).
+2. Architecture section omits `src/context/` — `ThemeContext.tsx` is used by three files.
+3. Architecture section omits `types/` at the repo root — contains `cache-life.d.ts` and `routes.d.ts`.
+4. "What Does Not Exist Yet" lists the `useRequireAuth` flash issue as unfixed — it was already fixed with the `_hydrated` guard.
+5. "What Does Not Exist Yet" should note that `axios`, `pigeon-maps`, and `@react-google-maps/api` are being removed (SPEC-03).
+
+**Fix:**
+
+Update `MOVERS.md`:
+- Change "Next.js 16" to "Next.js 16.1.6" in the stack line.
+- Add `src/context/` to the architecture tree: `ThemeContext.tsx — light/dark theme state (customer dashboard only; see SPEC-09 to promote to root)`.
+- Add `types/` to the architecture tree: `cache-life.d.ts, routes.d.ts — Next.js generated type declarations`.
+- Remove the stale `useRequireAuth` flash note from "What Does Not Exist Yet".
+- Update the unused dependencies note to reflect SPEC-03.
+
+**Acceptance:** `MOVERS.md` architecture tree matches the actual directory structure. No stale items in "What Does Not Exist Yet".
+
+---
+
+### SPEC-08 — Persist booking wizard state across refreshes
+
+**Problem:** `BookingFormData` (the 4-step wizard state) lives in local `useState` inside `BookView`. A page refresh loses all entered data. The `bookingStore` persists `ActiveBooking` (post-confirmation state) but not the in-progress wizard data.
+
+**Fix:**
+
+Add `wizardData` to `bookingStore`:
+
+```typescript
+// src/application/store/bookingStore.ts
+interface BookingState extends ActiveBooking {
+  wizardData: BookingFormData | null;
+  setWizardData: (data: BookingFormData) => void;
+  // ... existing actions
+}
+
+// In initialState:
+wizardData: null,
+
+// In resetBooking:
+resetBooking: () => set({ ...initialState, wizardData: null }),
+```
+
+Update `BookView` to initialise `bookingData` from `useBookingStore().wizardData` if present, and call `setWizardData` on every `setBookingData` call.
+
+**Acceptance:** Entering data in step 1 of the booking wizard, refreshing the page, and returning to `/customer/book?type=dispatch` restores the entered data.
+
+---
+
+### SPEC-09 — Move `ThemeProvider` to root layout
+
+**Problem:** `ThemeProvider` is mounted inside `CustomerDashboardView`. This means:
+- The theme resets to `"light"` on every navigation away from the dashboard.
+- Other roles (mover, company, admin) cannot use `useTheme()` without mounting their own provider.
+
+**Fix:**
+
+Move `<ThemeProvider>` to `app/layout.tsx`:
+
+```typescript
+// app/layout.tsx
+import { ThemeProvider } from "@/src/context/ThemeContext";
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+Remove the `ThemeProvider` wrapper from `CustomerDashboardView`.
+
+**Acceptance:** Theme persists across navigation. `useTheme()` works in any component without a local provider. `pnpm build` passes.
+
+---
+
+### SPEC-10 — Add a test suite
 
 **Problem:** There are zero tests. Agents cannot verify correctness of changes, and regressions go undetected.
 
@@ -240,19 +312,19 @@ export default defineConfig({
 
 Add `"test": "vitest"` to `package.json` scripts.
 
-**Minimum test targets (in priority order):**
+**Minimum test targets (priority order):**
 1. `src/lib/format.ts` — `formatNaira`, `formatDate`, `truncate`
-2. `src/lib/cn.ts` — after SPEC-02 is applied
+2. `src/lib/cn.ts` — after SPEC-01; verify `twMerge` deduplication
 3. `src/infrastructure/api/client.ts` — mock `fetch`, assert headers and error throwing
-4. `src/infrastructure/geocoding/nominatim.ts` — mock `fetch`, assert URL construction
-5. `src/application/store/authStore.ts` — login/logout state transitions
-6. `src/application/store/bookingStore.ts` — confirmBooking, resetBooking
+4. `src/infrastructure/geocoding/nominatim.ts` — mock `fetch`, assert URL construction and Nigeria country code
+5. `src/application/store/authStore.ts` — login/logout state transitions, `_hydrated` flag
+6. `src/application/store/bookingStore.ts` — `confirmBooking`, `resetBooking`, wizard data persistence (after SPEC-08)
 
 **Acceptance:** `pnpm test` runs and all unit tests pass. Coverage for `src/lib/` is 100%.
 
 ---
 
-### SPEC-08 — Add CI pipeline
+### SPEC-11 — Add CI pipeline
 
 **Problem:** No automated checks run on push or pull request. Lint and build failures are only caught locally.
 
@@ -282,45 +354,28 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm build
-      - run: pnpm test        # once SPEC-07 is done
+      - run: pnpm test   # add after SPEC-10 is done
 ```
 
 **Acceptance:** The workflow runs on every PR. A lint or build failure blocks merge.
 
 ---
 
-### SPEC-09 — Make `getPriceEstimate` async
+### SPEC-12 — Replace `README.md` with project-specific content
 
-**Problem:** `bookingApi.getPriceEstimate()` returns a synchronous `number`. When a real pricing endpoint is added, every call site must change signature. Making it `Promise<number>` now costs nothing and prevents a breaking refactor later.
+**Problem:** `README.md` is the unmodified `create-next-app` template. It references `npm`, `yarn`, and `bun` despite the project using `pnpm` exclusively, and contains no project-specific information.
 
 **Fix:**
 
-```typescript
-// src/infrastructure/api/booking.ts
-getPriceEstimate: async (serviceType: string): Promise<number> => {
-  const priceMap: Record<string, number> = {
-    ride: 3500,
-    dispatch: 5000,
-    haulage: 45000,
-    tow: 15000,
-  };
-  return priceMap[serviceType] ?? 5000;
-},
-```
+Replace `README.md` with a minimal project README:
+- Project name and one-line description
+- Prerequisites (Node 20+, pnpm 9+)
+- Setup: `pnpm install`, copy `.env.example` to `.env.local`
+- Dev: `pnpm dev`
+- Lint/build: `pnpm lint`, `pnpm build`
+- Link to `MOVERS.md` for architecture and agent guidance
 
-Update all call sites to `await bookingApi.getPriceEstimate(...)`.
-
-**Acceptance:** `pnpm build` passes. No synchronous call sites remain.
-
----
-
-### SPEC-10 — Fix `tsconfig.json` formatting
-
-**Problem:** `baseUrl` and `paths` are not indented consistently with the rest of `compilerOptions`. This is cosmetic but causes noisy diffs and confuses agents that read the file.
-
-**Fix:** Re-indent `baseUrl` and `paths` to match the 4-space indent of the surrounding `compilerOptions` block.
-
-**Acceptance:** `tsconfig.json` has consistent indentation throughout.
+**Acceptance:** `README.md` contains no references to `npm`, `yarn`, or `bun`. A new developer can set up the project by following it.
 
 ---
 
@@ -328,13 +383,15 @@ Update all call sites to `await bookingApi.getPriceEstimate(...)`.
 
 | Priority | Spec | Effort | Impact |
 |----------|------|--------|--------|
-| 1 | SPEC-01 Remove unused deps | Low | High — bundle size + agent clarity |
-| 2 | SPEC-06 Add `.env.example` | Low | High — onboarding |
-| 3 | SPEC-02 Fix `cn()` | Low | Medium — correctness |
-| 4 | SPEC-05 Type Lucide icons | Low | Medium — type safety |
-| 5 | SPEC-10 Fix tsconfig formatting | Low | Low — cosmetic |
-| 6 | SPEC-04 Fix BookView useEffect | Medium | Medium — correctness |
-| 7 | SPEC-03 Fix auth flash | Medium | Medium — UX + security |
-| 8 | SPEC-09 Make getPriceEstimate async | Low | Medium — future-proofing |
-| 9 | SPEC-07 Add test suite | High | High — long-term quality |
-| 10 | SPEC-08 Add CI pipeline | Medium | High — long-term quality |
+| 1 | SPEC-01 Fix `cn()` | Low | High — silent styling bugs |
+| 2 | SPEC-03 Remove unused deps | Low | High — bundle size + agent clarity |
+| 3 | SPEC-05 Add `.env.example` | Low | High — onboarding |
+| 4 | SPEC-06 Fix `tsconfig.json` indentation | Low | Low — cosmetic |
+| 5 | SPEC-02 Type Lucide icons | Low | Medium — type safety |
+| 6 | SPEC-07 Update `MOVERS.md` | Low | Medium — agent accuracy |
+| 7 | SPEC-04 Make `getPriceEstimate` async | Low | Medium — future-proofing |
+| 8 | SPEC-09 Move `ThemeProvider` to root | Low | Medium — correctness |
+| 9 | SPEC-12 Replace `README.md` | Low | Medium — onboarding |
+| 10 | SPEC-08 Persist wizard state | Medium | Medium — UX |
+| 11 | SPEC-10 Add test suite | High | High — long-term quality |
+| 12 | SPEC-11 Add CI pipeline | Medium | High — long-term quality |

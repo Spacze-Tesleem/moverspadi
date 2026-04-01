@@ -1,6 +1,10 @@
 // Base HTTP client — wraps fetch with auth headers and error handling
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
+// NEXT_PUBLIC_API_URL should be the bare origin, e.g. https://moverspadi.onrender.com
+// All routes are served under /api on the backend, so we append that prefix here
+// rather than repeating it in every API module.
+const ORIGIN = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
+const BASE_URL = ORIGIN ? `${ORIGIN}/api` : "";
 
 interface RequestOptions extends RequestInit {
   token?: string;

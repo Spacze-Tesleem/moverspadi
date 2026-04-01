@@ -112,7 +112,7 @@ export default function Services() {
             whileInView={{ opacity: 1 }}
             className="max-w-sm text-slate-500 text-lg leading-relaxed border-l-2 border-slate-200 pl-6"
           >
-            We've simplified supply chains so you can focus on scaling your business faster.
+            We&apos;ve simplified supply chains so you can focus on scaling your business faster.
           </motion.p>
         </div>
 

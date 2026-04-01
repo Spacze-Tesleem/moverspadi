@@ -84,32 +84,30 @@ function OtpPageInner() {
     setIsVerifying(true);
 
     try {
-      // ── REAL API ──────────────────────────────────────────────────────────
-      // POST /auth/verify-otp via authApi.verifyOtp (add to auth.ts when ready).
-      // Expected response: { user, role, token } matching AuthSession.
-      // Uncomment and replace the dummy block below once the endpoint exists:
-      //
-      // const session = await authApi.verifyOtp({ email, otp, role });
-      // login(session.user, session.role, session.token);
-      // ─────────────────────────────────────────────────────────────────────
+      if (process.env.NEXT_PUBLIC_API_URL) {
+        // ── REAL API ────────────────────────────────────────────────────────
+        // POST /api/auth/verify-otp → { user, role, token }
+        const session = await authApi.verifyOtp({ email, otp, role });
+        login(session.user, session.role as typeof role, session.token);
 
-      // ── DEV FALLBACK ──────────────────────────────────────────────────────
-      // Any 6-digit code except "000000" is accepted during development.
-      // Remove this block once the real OTP endpoint is wired up.
-      // ─────────────────────────────────────────────────────────────────────
-      await new Promise((r) => setTimeout(r, 1200));
-      if (otp === "000000") throw new Error("Invalid OTP");
-
-      // Call login() here — this is the single place it is called after auth.
-      login({ name, email }, role, "dev-token");
-
-      // Mover/company need to complete their profile before accessing dashboard.
-      // Login flow: profileComplete is already true (set during onboarding).
-      // Signup flow: profileComplete stays false → redirect to onboarding.
-      if (mode === "signup" && (role === "mover" || role === "company")) {
-        setProfileComplete(false);
+        if (mode === "signup" && (role === "mover" || role === "company")) {
+          setProfileComplete(false);
+        } else {
+          setProfileComplete(true);
+        }
       } else {
-        setProfileComplete(true);
+        // ── DEV FALLBACK ────────────────────────────────────────────────────
+        // Any 6-digit code except "000000" is accepted when no backend is set.
+        await new Promise((r) => setTimeout(r, 1200));
+        if (otp === "000000") throw new Error("Invalid OTP");
+
+        login({ name, email }, role, "dev-token");
+
+        if (mode === "signup" && (role === "mover" || role === "company")) {
+          setProfileComplete(false);
+        } else {
+          setProfileComplete(true);
+        }
       }
 
       setSuccess(true);
@@ -136,10 +134,11 @@ function OtpPageInner() {
     setDigits(Array(OTP_LENGTH).fill(""));
 
     try {
-      // ── REAL API ──────────────────────────────────────────────────────────
-      // await authApi.resendOtp({ email, role });
-      // ─────────────────────────────────────────────────────────────────────
-      await new Promise((r) => setTimeout(r, 800));
+      if (process.env.NEXT_PUBLIC_API_URL) {
+        await authApi.resendOtp({ email, role });
+      } else {
+        await new Promise((r) => setTimeout(r, 800));
+      }
     } finally {
       setIsResending(false);
       setCountdown(60);

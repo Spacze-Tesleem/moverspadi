@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Next.js generated type declarations — do not lint
+    "types/routes.d.ts",
+    "types/cache-life.d.ts",
   ]),
 ]);
 

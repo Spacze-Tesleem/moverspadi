@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 // Mapping service IDs to icons
-const serviceIcons: Record<string, any> = {
+const serviceIcons: Record<string, React.ComponentType<{ className?: string; strokeWidth?: number }>> = {
   dispatch: Bike,
   haulage: Truck,
   tow: Car,

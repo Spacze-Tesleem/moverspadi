@@ -32,7 +32,6 @@ const SAVED_PLACES = [
 export default function LocationStep({ bookingData, setBookingFormData, onNext }: Props) {
   const router = useRouter();
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
   const [activeField, setActiveField] = useState<"pickup" | "dropoff" | null>(null);
   const [geoLoading, setGeoLoading] = useState(false);
 
@@ -47,12 +46,11 @@ export default function LocationStep({ bookingData, setBookingFormData, onNext }
     if (!query || query.length < 4 || !activeField) { setSuggestions([]); return; }
 
     const timer = setTimeout(async () => {
-      setIsSearching(true);
       try {
         const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=ng`);
-        const data = await res.json();
-        setSuggestions(data.map((item: any) => item.display_name));
-      } catch (err) { console.error(err); } finally { setIsSearching(false); }
+        const data: Array<{ display_name: string }> = await res.json();
+        setSuggestions(data.map((item) => item.display_name));
+      } catch (err) { console.error(err); }
     }, 600);
     return () => clearTimeout(timer);
   }, [bookingData.pickup, bookingData.dropoff, activeField]);

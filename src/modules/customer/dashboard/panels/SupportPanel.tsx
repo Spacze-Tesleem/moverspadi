@@ -55,7 +55,7 @@ export default function SupportPanel({ isDark: D }: Props) {
         <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>Send a Message</p>
         {sent ? (
           <div className="py-4 text-center">
-            <p className="text-emerald-500 font-bold text-sm">Message sent! We'll reply within 2 hours.</p>
+            <p className="text-emerald-500 font-bold text-sm">Message sent! We&apos;ll reply within 2 hours.</p>
           </div>
         ) : (
           <>

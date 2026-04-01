@@ -59,7 +59,7 @@ const ROLE_STYLES: Record<string, string> = {
   admin: "bg-slate-100 text-slate-600 border-slate-200",
 };
 
-const ALERT_STYLES: Record<string, { bg: string; icon: any; color: string }> = {
+const ALERT_STYLES: Record<string, { bg: string; icon: React.ComponentType<{ className?: string; size?: number }>; color: string }> = {
   warning: { bg: "bg-amber-50 border-amber-200", icon: AlertCircle, color: "text-amber-500" },
   error: { bg: "bg-rose-50 border-rose-200", icon: AlertCircle, color: "text-rose-500" },
   info: { bg: "bg-blue-50 border-blue-200", icon: Bell, color: "text-blue-500" },
@@ -75,7 +75,7 @@ export default function AdminDashboardView() {
 
   const handleLogout = () => { logout(); router.push("/auth/login"); };
 
-  const navItems: { id: ActiveView; label: string; icon: any; badge?: number }[] = [
+  const navItems: { id: ActiveView; label: string; icon: React.ComponentType<{ className?: string; size?: number }>; badge?: number }[] = [
     { id: "overview", label: "Overview", icon: LayoutGrid },
     { id: "users", label: "Users", icon: Users },
     { id: "orders", label: "Orders", icon: Package },

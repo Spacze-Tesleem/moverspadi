@@ -16,7 +16,7 @@ interface Props {
 }
 
 // --- SHARED: VEHICLE CARD ---
-const VehicleCard = ({ label, icon: Icon, active, onClick }: { label: string, icon: any, active: boolean, onClick: () => void }) => (
+const VehicleCard = ({ label, icon: Icon, active, onClick }: { label: string, icon: React.ComponentType<{ size?: number; className?: string }>, active: boolean, onClick: () => void }) => (
   <button
     type="button"
     onClick={onClick}

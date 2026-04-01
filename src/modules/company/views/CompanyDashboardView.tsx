@@ -51,7 +51,7 @@ export default function CompanyDashboardView() {
 
   const handleLogout = () => { logout(); router.push("/auth/login"); };
 
-  const navItems: { id: ActiveView; label: string; icon: any }[] = [
+  const navItems: { id: ActiveView; label: string; icon: React.ComponentType<{ className?: string; size?: number }> }[] = [
     { id: "overview", label: "Overview", icon: LayoutGrid },
     { id: "fleet", label: "Fleet", icon: Truck },
     { id: "orders", label: "Orders", icon: Package },

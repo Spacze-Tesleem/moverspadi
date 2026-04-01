@@ -5,8 +5,8 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { BookingFormData } from "@/src/domain/booking/types";
 import {
-  CheckCircle2, MapPin, Car, Calendar, ChevronLeft, 
-  Loader2, Package, Truck, Wrench, ShieldCheck, Info
+  CheckCircle2, Car, Calendar, ChevronLeft,
+  Loader2, Package, Truck, Wrench, ShieldCheck
 } from "lucide-react";
 
 interface Props {
@@ -15,7 +15,7 @@ interface Props {
   onConfirm?: () => void; // Made optional since we handle routing internally now
 }
 
-const SERVICE_ICONS: Record<string, any> = {
+const SERVICE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   ride: Car,
   dispatch: Package,
   haulage: Truck,

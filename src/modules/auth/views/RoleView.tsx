@@ -79,7 +79,7 @@ function RolePageInner() {
           Select Your Role
         </h1>
         <p className="text-lg text-slate-500">
-          Choose the account type that best describes your needs. We'll tailor your experience accordingly.
+          Choose the account type that best describes your needs. We&apos;ll tailor your experience accordingly.
         </p>
       </div>
 

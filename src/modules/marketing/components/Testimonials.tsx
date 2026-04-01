@@ -75,7 +75,7 @@ export default function Testimonials() {
                 </div>
 
                 <p className="text-slate-800 text-xl leading-relaxed font-semibold italic tracking-tight">
-                  "{item.text}"
+                  &ldquo;{item.text}&rdquo;
                 </p>
               </div>
 
