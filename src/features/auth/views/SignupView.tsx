@@ -45,7 +45,8 @@ function SignupPageInner() {
     return null;
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     const validationError = validate();
     if (validationError) return setError(validationError);
 
@@ -131,7 +132,7 @@ function SignupPageInner() {
           </p>
         </div>
 
-        <div className="bg-white/80 backdrop-blur-3xl rounded-[40px] shadow-2xl shadow-slate-200/60 border border-white p-8 md:p-12">
+        <form onSubmit={handleSubmit} noValidate className="bg-white/80 backdrop-blur-3xl rounded-[40px] shadow-2xl shadow-slate-200/60 border border-white p-8 md:p-12">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -160,7 +161,7 @@ function SignupPageInner() {
 
           <div className="mt-8">
             <button
-              onClick={handleSubmit}
+              type="submit"
               disabled={isSubmitting}
               className="w-full group py-4 rounded-2xl font-bold text-lg bg-green-600 text-white hover:bg-green-700 shadow-xl shadow-green-600/20 transition-all flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed"
             >
@@ -184,7 +185,7 @@ function SignupPageInner() {
               Sign in
             </button>
           </p>
-        </div>
+        </form>
       </div>
     </div>
   );
