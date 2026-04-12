@@ -47,7 +47,7 @@ export default function MoverDashboardView() {
   // ── Fetch dashboard data ────────────────────────────────────────────────────
   // To swap in the real API: set NEXT_PUBLIC_API_URL in .env.local.
   // moverApi and profileApi will automatically use real endpoints instead of
-  // the dummy data defined in src/infrastructure/api/mover.ts and profile.ts.
+  // the dummy data defined in src/services/api/mover.ts and profile.ts.
   const fetchData = useCallback(async () => {
     if (!token) return;
     setLoading(true);

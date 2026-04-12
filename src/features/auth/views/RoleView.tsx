@@ -160,7 +160,12 @@ function RolePageInner() {
       {/* Sign in Footer */}
       <p className="mt-8 text-slate-500 font-medium">
         Already have an account?{" "}
-        <button className="text-blue-600 hover:underline font-bold">Sign in</button>
+        <button
+          onClick={() => router.push("/auth/role?mode=login")}
+          className="text-blue-600 hover:underline font-bold"
+        >
+          Sign in
+        </button>
       </p>
     </div>
   );

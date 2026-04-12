@@ -1,6 +1,6 @@
 // Core auth domain types — no framework dependencies
 
-export type UserRole = "customer" | "mover" | "company" | "admin";
+export type UserRole = "customer" | "mover" | "provider" | "company" | "admin";
 
 export interface User {
   id?: string;

@@ -90,7 +90,8 @@ function OtpPageInner() {
         const session = await authApi.verifyOtp({ email, otp, role });
         login(session.user, session.role as typeof role, session.token);
 
-        if (mode === "signup" && (role === "mover" || role === "company")) {
+        const needsOnboarding = mode === "signup" && (role === "mover" || role === "provider" || role === "company");
+        if (needsOnboarding) {
           setProfileComplete(false);
         } else {
           setProfileComplete(true);
@@ -103,7 +104,8 @@ function OtpPageInner() {
 
         login({ name, email }, role, "dev-token");
 
-        if (mode === "signup" && (role === "mover" || role === "company")) {
+        const needsOnboarding = mode === "signup" && (role === "mover" || role === "provider" || role === "company");
+        if (needsOnboarding) {
           setProfileComplete(false);
         } else {
           setProfileComplete(true);
@@ -113,10 +115,13 @@ function OtpPageInner() {
       setSuccess(true);
       await new Promise((r) => setTimeout(r, 800));
 
-      if (mode === "signup" && (role === "mover" || role === "company")) {
-        router.push(`/${role}/onboarding`);
+      // provider shares the mover portal — route them there
+      const portalRole = role === "provider" ? "mover" : role;
+      const needsOnboarding = mode === "signup" && (role === "mover" || role === "provider" || role === "company");
+      if (needsOnboarding) {
+        router.push(`/${portalRole}/onboarding`);
       } else {
-        router.push(`/${role}`);
+        router.push(`/${portalRole}`);
       }
     } catch {
       setError("Incorrect code. Please try again.");
