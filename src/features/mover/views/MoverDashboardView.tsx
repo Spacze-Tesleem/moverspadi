@@ -13,10 +13,11 @@ import {
   Phone, ChevronRight, TrendingUp, Clock, Star, Package,
   History, Settings, LogOut, Menu, X, Truck, AlertCircle,
   ToggleLeft, ToggleRight, DollarSign, Zap,
+  Upload, BadgeCheck, FileText, Car, CreditCard,
 } from "lucide-react";
 
 type OnlineStatus = "online" | "offline";
-type ActiveView = "dashboard" | "trips" | "earnings" | "settings";
+type ActiveView = "dashboard" | "trips" | "earnings" | "verification" | "settings";
 
 // ─── Skeleton loader ──────────────────────────────────────────────────────────
 
@@ -111,11 +112,12 @@ export default function MoverDashboardView() {
   const firstName = displayName.split(" ")[0];
 
   // ── Nav items ───────────────────────────────────────────────────────────────
-  const navItems: { id: ActiveView; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-    { id: "dashboard", label: "Dashboard", icon: Package },
-    { id: "trips",     label: "Trip History", icon: History },
-    { id: "earnings",  label: "Earnings",    icon: DollarSign },
-    { id: "settings",  label: "Settings",    icon: Settings },
+  const navItems: { id: ActiveView; label: string; icon: React.ComponentType<{ className?: string }>; badge?: string }[] = [
+    { id: "dashboard",    label: "Dashboard",    icon: Package },
+    { id: "trips",        label: "Trip History", icon: History },
+    { id: "earnings",     label: "Earnings",     icon: DollarSign },
+    { id: "verification", label: "Verification", icon: ShieldCheck, badge: "!" },
+    { id: "settings",     label: "Settings",     icon: Settings },
   ];
 
   return (
@@ -175,7 +177,12 @@ export default function MoverDashboardView() {
                 }`}
               >
                 <item.icon className="w-4 h-4 shrink-0" />
-                {item.label}
+                <span className="flex-1 text-left">{item.label}</span>
+                {item.badge && (
+                  <span className="w-4 h-4 rounded-full bg-amber-500 text-black text-[9px] font-black flex items-center justify-center shrink-0">
+                    {item.badge}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -313,7 +320,13 @@ export default function MoverDashboardView() {
             )}
           </AnimatePresence>
 
-          {/* ── Stats cards ────────────────────────────────────────────────── */}
+          {/* ── Verification panel ─────────────────────────────────────────── */}
+          {activeView === "verification" && (
+            <VerificationPanel displayName={displayName} />
+          )}
+
+          {/* ── Stats cards (only on dashboard) ───────────────────────────── */}
+          {activeView === "dashboard" && (<>
           <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6">
             {[
               { label: "Today", value: stats ? formatNaira(stats.earningsToday) : null, icon: DollarSign, color: "text-emerald-400" },
@@ -388,9 +401,138 @@ export default function MoverDashboardView() {
               </div>
             )}
           </section>
+          </>)}
 
         </div>
       </main>
+    </div>
+  );
+}
+
+// ─── Verification Panel ────────────────────────────────────────────────────────
+
+type VerifStatus = "verified" | "pending" | "rejected" | "not_uploaded";
+
+interface VerifItem {
+  id: string;
+  label: string;
+  hint: string;
+  icon: React.ComponentType<{ className?: string }>;
+  status: VerifStatus;
+}
+
+const PERSONAL_DOCS: VerifItem[] = [
+  { id: "nin",     label: "National ID / NIN",   hint: "Government-issued ID or NIN slip",    icon: CreditCard, status: "not_uploaded" },
+  { id: "photo",   label: "Profile Photo",        hint: "Clear, recent passport photograph",  icon: User,       status: "not_uploaded" },
+  { id: "address", label: "Proof of Address",     hint: "Utility bill or bank statement",     icon: MapPin,     status: "not_uploaded" },
+  { id: "phone",   label: "Phone Verification",   hint: "Linked to your registered number",   icon: Phone,      status: "pending" },
+];
+
+const VEHICLE_DOCS: VerifItem[] = [
+  { id: "reg",    label: "Vehicle Registration",        hint: "Certificate of Ownership",           icon: Car,       status: "not_uploaded" },
+  { id: "plate",  label: "Plate Number Photo",          hint: "Clear image of front & rear plates", icon: Truck,     status: "not_uploaded" },
+  { id: "license",label: "Driver's Licence",            hint: "Valid and not expired",              icon: FileText,  status: "not_uploaded" },
+  { id: "insure", label: "Vehicle Insurance",           hint: "Third-party or comprehensive",       icon: ShieldCheck,status: "not_uploaded" },
+  { id: "worth",  label: "Roadworthiness Certificate",  hint: "Issued by FRSC or MVAA",             icon: BadgeCheck, status: "not_uploaded" },
+];
+
+const STATUS_CONFIG: Record<VerifStatus, { label: string; className: string; dot: string }> = {
+  verified:    { label: "Verified",     className: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400", dot: "bg-emerald-400" },
+  pending:     { label: "Under Review", className: "bg-amber-500/10 border-amber-500/20 text-amber-400",   dot: "bg-amber-400 animate-pulse" },
+  rejected:    { label: "Rejected",     className: "bg-rose-500/10 border-rose-500/20 text-rose-400",     dot: "bg-rose-400" },
+  not_uploaded:{ label: "Not Uploaded", className: "bg-zinc-800 border-white/5 text-zinc-500",             dot: "bg-zinc-600" },
+};
+
+function VerifRow({ item }: { item: VerifItem }) {
+  const cfg = STATUS_CONFIG[item.status];
+  return (
+    <div className="flex items-center gap-4 p-4 bg-[#111] border border-white/5 rounded-2xl hover:border-white/10 transition-colors">
+      <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center shrink-0">
+        <item.icon className="w-4 h-4 text-zinc-400" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold text-zinc-200">{item.label}</p>
+        <p className="text-[11px] text-zinc-600 truncate">{item.hint}</p>
+      </div>
+      <div className="flex items-center gap-3 shrink-0">
+        <span className={`hidden sm:flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border ${cfg.className}`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+          {cfg.label}
+        </span>
+        {item.status !== "verified" && (
+          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all active:scale-95">
+            <Upload className="w-3 h-3" /> Upload
+          </button>
+        )}
+        {item.status === "verified" && (
+          <CheckCircle2 size={18} className="text-emerald-400" />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function VerificationPanel({ displayName }: { displayName: string }) {
+  const personalDone = PERSONAL_DOCS.filter((d) => d.status === "verified").length;
+  const vehicleDone  = VEHICLE_DOCS.filter((d) => d.status === "verified").length;
+  const totalDone    = personalDone + vehicleDone;
+  const total        = PERSONAL_DOCS.length + VEHICLE_DOCS.length;
+  const pct          = Math.round((totalDone / total) * 100);
+
+  return (
+    <div className="space-y-6 pb-6">
+      {/* Header card */}
+      <div className="bg-[#0e0e0e] border border-white/5 rounded-2xl p-5">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="w-12 h-12 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center">
+            <ShieldCheck size={22} className="text-blue-400" />
+          </div>
+          <div>
+            <h2 className="text-base font-black text-white">Account Verification</h2>
+            <p className="text-[11px] text-zinc-500">Complete verification to unlock full platform access</p>
+          </div>
+          <div className="ml-auto text-right">
+            <p className="text-2xl font-black text-white">{pct}%</p>
+            <p className="text-[10px] text-zinc-600">{totalDone}/{total} docs</p>
+          </div>
+        </div>
+        {/* Progress bar */}
+        <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-blue-500 rounded-full transition-all duration-700"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        {pct < 100 && (
+          <p className="text-xs text-zinc-600 mt-2">
+            Hi <span className="text-zinc-400 font-semibold">{displayName.split(" ")[0]}</span>, upload the required documents below to get verified.
+          </p>
+        )}
+      </div>
+
+      {/* Personal Details */}
+      <section>
+        <div className="flex items-center gap-2 mb-3">
+          <User size={14} className="text-zinc-500" />
+          <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Personal Details</h3>
+          <span className="text-[10px] text-zinc-600 ml-auto">{personalDone}/{PERSONAL_DOCS.length} verified</span>
+        </div>
+        <div className="space-y-2">
+          {PERSONAL_DOCS.map((item) => <VerifRow key={item.id} item={item} />)}
+        </div>
+      </section>
+
+      {/* Vehicle Details */}
+      <section>
+        <div className="flex items-center gap-2 mb-3">
+          <Car size={14} className="text-zinc-500" />
+          <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Vehicle Details</h3>
+          <span className="text-[10px] text-zinc-600 ml-auto">{vehicleDone}/{VEHICLE_DOCS.length} verified</span>
+        </div>
+        <div className="space-y-2">
+          {VEHICLE_DOCS.map((item) => <VerifRow key={item.id} item={item} />)}
+        </div>
+      </section>
     </div>
   );
 }

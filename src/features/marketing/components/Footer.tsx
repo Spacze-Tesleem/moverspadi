@@ -82,7 +82,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-slate-400 text-sm font-medium">
-            © {currentYear} MoversPadi Technologies Ltd. All rights reserved.
+            © {currentYear} VGBM Tech Innovations Limited. All rights reserved.
           </p>
           <div className="flex gap-8">
             <a href="#" className="text-slate-400 hover:text-slate-900 text-sm transition-colors">Terms</a>
