@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   User, Mail, Phone, Lock, ChevronRight,
   ShieldCheck, Loader2, AlertCircle,
 } from "lucide-react";
-import { authApi } from "@/src/services/api/auth";
+import { authApi, isNetworkError, warmupBackend } from "@/src/services/api/auth";
 
 type Role = "customer" | "mover" | "company";
 
@@ -23,6 +23,8 @@ function SignupPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const role = (searchParams.get("role") as Role) || "customer";
+
+  useEffect(() => { warmupBackend(); }, []);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -84,7 +86,7 @@ function SignupPageInner() {
       const message = err instanceof Error ? err.message : "";
       const noBackend =
         !process.env.NEXT_PUBLIC_API_URL ||
-        message.includes("Failed to fetch") ||
+        isNetworkError(err) ||
         message.startsWith("API 5");
 
       if (noBackend) {
@@ -212,6 +214,7 @@ function Input({
       <input
         required
         type={type}
+        autoComplete={type === "password" ? "new-password" : type === "email" ? "email" : "off"}
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}

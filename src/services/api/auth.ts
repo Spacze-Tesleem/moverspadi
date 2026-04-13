@@ -3,6 +3,28 @@
 import { apiClient } from "./client";
 import type { AuthSession } from "@/src/types/auth/types";
 
+/**
+ * Returns true when `err` represents a network/connection failure
+ * (backend unreachable, Render cold-start timeout, CORS, etc.)
+ * as opposed to an explicit API error response (4xx / 5xx body).
+ */
+export function isNetworkError(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  // Our client always prefixes HTTP error messages with "API "
+  if (err.message.startsWith("API ")) return false;
+  // fetch throws TypeError for all network-level failures
+  return true;
+}
+
+/**
+ * Fire-and-forget ping that wakes the Render free-tier instance so
+ * it is ready by the time the user actually submits a form.
+ */
+export function warmupBackend(): void {
+  if (!process.env.NEXT_PUBLIC_API_URL) return;
+  fetch("/backend/health").catch(() => { /* intentionally silent */ });
+}
+
 interface LoginPayload {
   email?: string;
   password?: string;

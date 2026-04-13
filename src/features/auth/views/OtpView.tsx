@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShieldCheck, ArrowRight, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
 import { useAuthStore } from "@/src/store/authStore";
-import { authApi } from "@/src/services/api/auth";
+import { authApi, isNetworkError, warmupBackend } from "@/src/services/api/auth";
 import type { UserRole } from "@/src/types/auth/types";
 
 export default function OtpView() {
@@ -37,6 +37,8 @@ function OtpPageInner() {
   const [canResend, setCanResend] = useState(false);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  useEffect(() => { warmupBackend(); }, []);
 
   useEffect(() => {
     if (countdown <= 0) { setCanResend(true); return; }
@@ -78,6 +80,13 @@ function OtpPageInner() {
   const otp = digits.join("");
   const isFilled = otp.length === OTP_LENGTH;
 
+  const devLogin = () => {
+    if (otp === "000000") throw new Error("Invalid OTP");
+    login({ name, email }, role, "dev-token");
+    const needsOnboarding = mode === "signup" && (role === "mover" || role === "provider" || role === "company");
+    needsOnboarding ? setProfileComplete(false) : setProfileComplete(true);
+  };
+
   const handleVerify = async () => {
     if (!isFilled) return setError("Enter all 6 digits.");
     setError(null);
@@ -85,37 +94,26 @@ function OtpPageInner() {
 
     try {
       if (process.env.NEXT_PUBLIC_API_URL) {
-        // ── REAL API ────────────────────────────────────────────────────────
-        // POST /api/auth/verify-otp → { user, role, token }
-        const session = await authApi.verifyOtp({ email, otp, role });
-        login(session.user, session.role as typeof role, session.token);
-
-        const needsOnboarding = mode === "signup" && (role === "mover" || role === "provider" || role === "company");
-        if (needsOnboarding) {
-          setProfileComplete(false);
-        } else {
-          setProfileComplete(true);
+        try {
+          const session = await authApi.verifyOtp({ email, otp, role });
+          login(session.user, session.role as typeof role, session.token);
+          const needsOnboarding = mode === "signup" && (role === "mover" || role === "provider" || role === "company");
+          needsOnboarding ? setProfileComplete(false) : setProfileComplete(true);
+        } catch (apiErr) {
+          if (isNetworkError(apiErr)) {
+            devLogin();
+          } else {
+            throw apiErr;
+          }
         }
       } else {
-        // ── DEV FALLBACK ────────────────────────────────────────────────────
-        // Any 6-digit code except "000000" is accepted when no backend is set.
         await new Promise((r) => setTimeout(r, 1200));
-        if (otp === "000000") throw new Error("Invalid OTP");
-
-        login({ name, email }, role, "dev-token");
-
-        const needsOnboarding = mode === "signup" && (role === "mover" || role === "provider" || role === "company");
-        if (needsOnboarding) {
-          setProfileComplete(false);
-        } else {
-          setProfileComplete(true);
-        }
+        devLogin();
       }
 
       setSuccess(true);
       await new Promise((r) => setTimeout(r, 800));
 
-      // provider shares the mover portal — route them there
       const portalRole = role === "provider" ? "mover" : role;
       const needsOnboarding = mode === "signup" && (role === "mover" || role === "provider" || role === "company");
       if (needsOnboarding) {
