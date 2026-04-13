@@ -6,8 +6,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   User, Lock, ShieldCheck, Building2, Mail,
   Sparkles, ArrowRight, Truck, AlertCircle, ChevronLeft,
+  Zap, ChevronDown,
 } from "lucide-react";
-import { authApi } from "@/src/services/api/auth";
+import { authApi, isNetworkError, warmupBackend } from "@/src/services/api/auth";
+import { useAuthStore } from "@/src/store/authStore";
+import { useEffect } from "react";
 
 type Role = "customer" | "mover" | "company" | "admin";
 
@@ -35,14 +38,20 @@ const ROLE_DATA: Record<Role, {
   },
 };
 
-// Dev credentials — only used when NEXT_PUBLIC_API_URL is not set.
-// Remove once the real backend is connected.
 const DEV_CREDENTIALS: Record<Role, { id: string; password: string; name: string }> = {
   customer: { id: "customer@demo.com", password: "demo1234", name: "Demo Customer" },
   mover:    { id: "mover@demo.com",    password: "demo1234", name: "Demo Mover" },
   company:  { id: "COMPANY-001",       password: "demo1234", name: "Demo Company" },
   admin:    { id: "ADMIN-001",         password: "demo1234", name: "Demo Admin" },
 };
+
+const QUICK_ACCESS_ROLES: { role: Role | "provider"; label: string; color: string; portal: string }[] = [
+  { role: "customer", label: "Customer",  color: "bg-blue-500",   portal: "/customer" },
+  { role: "mover",    label: "Mover",     color: "bg-indigo-500", portal: "/mover" },
+  { role: "provider", label: "Provider",  color: "bg-cyan-500",   portal: "/mover" },
+  { role: "company",  label: "Company",   color: "bg-violet-500", portal: "/company" },
+  { role: "admin",    label: "Admin",     color: "bg-slate-700",  portal: "/admin" },
+];
 
 export default function LoginView() {
   return (
@@ -55,6 +64,8 @@ export default function LoginView() {
 function LoginPageInner() {
   const router = useRouter();
   const params = useSearchParams();
+  const login = useAuthStore((s) => s.login);
+  const setProfileComplete = useAuthStore((s) => s.setProfileComplete);
 
   const queryRole = params.get("role") as Role;
   const role = ROLE_DATA[queryRole] ? queryRole : "customer";
@@ -66,6 +77,10 @@ function LoginPageInner() {
   const [adminPassword, setAdminPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [quickOpen, setQuickOpen] = useState(false);
+  const [quickLoading, setQuickLoading] = useState<string | null>(null);
+
+  useEffect(() => { warmupBackend(); }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -83,11 +98,7 @@ function LoginPageInner() {
 
     try {
       // ── REAL API ──────────────────────────────────────────────────────────
-      // POST /auth/login via authApi (src/infrastructure/api/auth.ts).
-      // Set NEXT_PUBLIC_API_URL in .env.local to point at the real backend.
-      // On success the backend should send an OTP to the user's email/phone.
-      // login() is intentionally NOT called here — it runs in OtpView after
-      // the OTP is verified.
+      // POST /auth/login — backend sends OTP; verified in OtpView.
       // ─────────────────────────────────────────────────────────────────────
       await authApi.login(
         isCompanyOrAdmin
@@ -98,18 +109,17 @@ function LoginPageInner() {
       router.push(
         `/auth/otp?role=${role}&mode=login` +
         `&email=${encodeURIComponent(enteredId)}` +
-        `&name=${encodeURIComponent(DEV_CREDENTIALS[role].name)}`
+        `&name=${encodeURIComponent(DEV_CREDENTIALS[role]?.name ?? "User")}`
       );
     } catch (err: unknown) {
       // ── DEV FALLBACK ──────────────────────────────────────────────────────
-      // When NEXT_PUBLIC_API_URL is unset the fetch fails with a network error.
-      // Validate against DEV_CREDENTIALS and advance to OTP so the full flow
-      // works without a backend. Remove this block once the backend is live.
+      // When the backend is unreachable, validate against DEV_CREDENTIALS and
+      // advance to OTP so the UI flow can be exercised without a live server.
       // ─────────────────────────────────────────────────────────────────────
       const message = err instanceof Error ? err.message : "";
       const noBackend =
         !process.env.NEXT_PUBLIC_API_URL ||
-        message.includes("Failed to fetch") ||
+        isNetworkError(err) ||
         message.startsWith("API 5");
 
       if (noBackend) {
@@ -129,6 +139,19 @@ function LoginPageInner() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleQuickAccess = (entry: typeof QUICK_ACCESS_ROLES[number]) => {
+    setQuickLoading(entry.role);
+    const storeRole = entry.role === "provider" ? "mover" : entry.role;
+    const creds = DEV_CREDENTIALS[storeRole as Role] ?? DEV_CREDENTIALS.customer;
+    login(
+      { name: `Demo ${entry.label}`, email: creds.id },
+      storeRole as Role,
+      "dev-token"
+    );
+    setProfileComplete(true);
+    router.push(entry.portal);
   };
 
   return (
@@ -264,7 +287,55 @@ function LoginPageInner() {
             </motion.form>
           </AnimatePresence>
 
-          <p className="mt-10 text-center text-sm text-slate-500 font-medium">
+          {/* ── Quick Access Panel ─────────────────────────────────────────── */}
+          <div className="mt-8">
+            <button
+              type="button"
+              onClick={() => setQuickOpen((o) => !o)}
+              className="w-full flex items-center justify-between px-4 py-3 rounded-2xl border border-dashed border-slate-200 hover:border-slate-300 hover:bg-slate-50/60 transition-all text-slate-500 text-xs font-bold uppercase tracking-widest"
+            >
+              <span className="flex items-center gap-2">
+                <Zap className="w-3.5 h-3.5 text-amber-500" />
+                Quick Access (Dev)
+              </span>
+              <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${quickOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            <AnimatePresence>
+              {quickOpen && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <p className="text-center text-[11px] text-slate-400 font-medium mt-3 mb-3">
+                    Sign in instantly as any account type — no password needed
+                  </p>
+                  <div className="grid grid-cols-5 gap-2">
+                    {QUICK_ACCESS_ROLES.map((entry) => (
+                      <button
+                        key={entry.role}
+                        type="button"
+                        onClick={() => handleQuickAccess(entry)}
+                        disabled={quickLoading === entry.role}
+                        className="flex flex-col items-center gap-1.5 py-3 px-1 rounded-2xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50 active:scale-95 transition-all disabled:opacity-60"
+                      >
+                        <div className={`w-7 h-7 ${entry.color} rounded-full flex items-center justify-center`}>
+                          {quickLoading === entry.role
+                            ? <div className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                            : <Zap className="w-3.5 h-3.5 text-white" />}
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-600 leading-tight text-center">{entry.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <p className="mt-6 text-center text-sm text-slate-500 font-medium">
             Don&apos;t have an account?{" "}
             <span
               onClick={() => router.push("/auth/role?mode=signup")}
@@ -296,6 +367,7 @@ function Input({
       <input
         required
         type={type}
+        autoComplete={type === "password" ? "current-password" : type === "email" ? "email" : "off"}
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
