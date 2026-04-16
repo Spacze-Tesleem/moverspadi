@@ -69,20 +69,9 @@ const STATUS_CONFIG: Record<StatusKey, {
   },
 };
 
-// Simulated mover that gets assigned
-const SIMULATED_MOVER = {
-  id: "M-0042",
-  name: "Emeka Okafor",
-  phone: "+234 801 234 5678",
-  rating: 4.9,
-  vehicle: "Toyota Hilux",
-  plate: "LND 482 KJ",
-  eta: "8 mins",
-};
-
 export default function TrackView() {
   const router = useRouter();
-  const { pickup, dropoff, price, status, moverInfo, setStatus, setMoverInfo, resetBooking } =
+  const { pickup, dropoff, price, status, moverInfo, setStatus, resetBooking } =
     useBookingStore();
 
   // Cross-tab sync — reflects mover acceptance from another tab
@@ -96,32 +85,8 @@ export default function TrackView() {
     return () => window.removeEventListener("storage", syncState);
   }, []);
 
-  // Simulate the full status progression when searching starts
-  useEffect(() => {
-    if (status !== "searching") return;
-
-    // After 3.5s → matched (mover assigned)
-    const matchTimer = setTimeout(() => {
-      setMoverInfo(SIMULATED_MOVER);
-      setStatus("matched");
-    }, 3500);
-
-    // After 8s → in-progress (mover picked up)
-    const progressTimer = setTimeout(() => {
-      setStatus("in-progress");
-    }, 8000);
-
-    // After 18s → completed
-    const completeTimer = setTimeout(() => {
-      setStatus("completed");
-    }, 18000);
-
-    return () => {
-      clearTimeout(matchTimer);
-      clearTimeout(progressTimer);
-      clearTimeout(completeTimer);
-    };
-  }, [status, setStatus, setMoverInfo]);
+  // Status is driven entirely by the mover's actions on their dashboard.
+  // No timers — the bookingStore is shared via localStorage and synced cross-tab.
 
   const handleCancel = () => {
     setStatus("cancelled");

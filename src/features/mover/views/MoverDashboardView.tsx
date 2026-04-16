@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/src/store/authStore";
-import { moverApi, type MoverStats, type MoverTrip, type IncomingRequest } from "@/src/services/api/mover";
+import { moverApi, type MoverStats, type MoverTrip } from "@/src/services/api/mover";
 import { useBookingStore } from "@/src/store/bookingStore";
 import { profileApi } from "@/src/services/api/profile";
 import type { UserProfile } from "@/src/types/user/types";
@@ -41,13 +41,27 @@ export default function MoverDashboardView() {
   // ── UI state ────────────────────────────────────────────────────────────────
   const [onlineStatus, setOnlineStatus] = useState<OnlineStatus>("online");
   const [activeView, setActiveView] = useState<ActiveView>("dashboard");
-  const [incomingRequest, setIncomingRequest] = useState<IncomingRequest | null>(null);
   const [activeTrip, setActiveTrip] = useState<{ stage: "pickup" | "dropoff" } | null>(null);
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState("");
 
-  // Shared booking state — used to push mover info to the customer's TrackView
-  const { setStatus: setBookingStatus, setMoverInfo } = useBookingStore();
+  // Read live customer booking from shared store
+  const {
+    pickup: customerPickup,
+    dropoff: customerDropoff,
+    price: customerPrice,
+    service: customerService,
+    status: customerStatus,
+    setStatus: setBookingStatus,
+    setMoverInfo,
+  } = useBookingStore();
+
+  // A pending request exists when the customer is searching and no trip is active
+  const hasPendingRequest =
+    onlineStatus === "online" &&
+    customerStatus === "searching" &&
+    !!customerPickup &&
+    !activeTrip;
 
   // ── Fetch dashboard data ────────────────────────────────────────────────────
   // To swap in the real API: set NEXT_PUBLIC_API_URL in .env.local.
@@ -79,15 +93,6 @@ export default function MoverDashboardView() {
     return () => clearInterval(t);
   }, []);
 
-  // Simulate incoming request after 3s when online
-  useEffect(() => {
-    if (onlineStatus !== "online" || incomingRequest || activeTrip) return;
-    const t = setTimeout(() => {
-      setIncomingRequest(moverApi._dummy.DUMMY_INCOMING);
-    }, 3000);
-    return () => clearTimeout(t);
-  }, [onlineStatus, incomingRequest, activeTrip]);
-
   const handleToggleStatus = async () => {
     const next: OnlineStatus = onlineStatus === "online" ? "offline" : "online";
     setOnlineStatus(next);
@@ -95,30 +100,25 @@ export default function MoverDashboardView() {
   };
 
   const handleAccept = async () => {
-    if (!incomingRequest || !token) return;
-    await moverApi.acceptRequest(incomingRequest.id, token);
+    if (!token) return;
     setActiveTrip({ stage: "pickup" });
-    setIncomingRequest(null);
-
-    // Push mover info + matched status into the shared booking store so the
-    // customer's TrackView reflects the acceptance immediately (cross-tab via
-    // localStorage persistence).
+    // Push mover identity + matched status into the shared store so the
+    // customer's TrackView updates immediately (cross-tab via localStorage).
     setMoverInfo({
-      id: incomingRequest.id,
+      id: `M-${Math.floor(1000 + Math.random() * 9000)}`,
       name: profile?.fullName ?? "Your Mover",
       phone: profile?.phone ?? "+234 800 000 0000",
       rating: stats?.rating ?? 4.8,
       vehicle: "Toyota Hilux",
       plate: "LND 482 KJ",
-      eta: incomingRequest.eta,
+      eta: "8 mins",
     });
     setBookingStatus("matched");
   };
 
-  const handleDecline = async () => {
-    if (!incomingRequest || !token) return;
-    await moverApi.declineRequest(incomingRequest.id, token);
-    setIncomingRequest(null);
+  const handleDecline = () => {
+    // Mover declines — customer stays in searching state for another mover
+    setBookingStatus("searching");
   };
 
   const handleLogout = () => {
@@ -259,47 +259,73 @@ export default function MoverDashboardView() {
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto p-4 lg:p-6">
 
-          {/* ── Incoming request modal ─────────────────────────────────────── */}
+          {/* ── Incoming request (live from customer booking store) ────────── */}
           <AnimatePresence>
-            {incomingRequest && (
+            {hasPendingRequest && (
               <motion.div
-                initial={{ opacity: 0, y: -20 }}
+                initial={{ opacity: 0, y: -12 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="mb-6 bg-[#0e0e0e] border border-violet-500/30 rounded-2xl p-5 shadow-xl shadow-violet-500/10"
+                exit={{ opacity: 0, y: -12 }}
+                className="mb-6 bg-[#0e0e0e] border border-violet-500/20 rounded-2xl overflow-hidden"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
-                    <span className="text-sm font-bold text-violet-400">New Request</span>
+                {/* Pulse header bar */}
+                <div className="h-1 w-full bg-gradient-to-r from-violet-600 to-indigo-600 animate-pulse" />
+
+                <div className="p-5">
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
+                      <span className="text-sm font-bold text-violet-400">Incoming Request</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-2 py-1 bg-zinc-900 rounded-lg border border-white/5 capitalize">
+                      {customerService}
+                    </span>
                   </div>
-                  <span className="text-xs text-zinc-500 font-mono">{incomingRequest.id}</span>
-                </div>
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-start gap-2 text-sm">
-                    <MapPin size={14} className="text-emerald-400 mt-0.5 shrink-0" />
-                    <span className="text-zinc-300">{incomingRequest.pickup}</span>
+
+                  {/* Route */}
+                  <div className="relative space-y-5 mb-5">
+                    <div className="absolute left-[9px] top-3 bottom-3 w-[2px] bg-zinc-800" />
+                    <div className="relative flex gap-3">
+                      <div className="w-5 h-5 rounded-full bg-violet-500/10 border border-violet-500/30 flex items-center justify-center shrink-0 z-10 bg-[#0e0e0e]">
+                        <div className="w-1.5 h-1.5 rounded-full bg-violet-500" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-0.5">Pickup</p>
+                        <p className="text-sm font-medium text-zinc-200">{customerPickup}</p>
+                      </div>
+                    </div>
+                    <div className="relative flex gap-3">
+                      <div className="w-5 h-5 rounded-full bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center shrink-0 z-10 bg-[#0e0e0e]">
+                        <div className="w-1.5 h-1.5 rounded-sm border border-indigo-500" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-0.5">Destination</p>
+                        <p className="text-sm font-medium text-zinc-200">{customerDropoff}</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-start gap-2 text-sm">
-                    <MapPin size={14} className="text-rose-400 mt-0.5 shrink-0" />
-                    <span className="text-zinc-300">{incomingRequest.dropoff}</span>
+
+                  {/* Fare */}
+                  <div className="flex items-center justify-between mb-5 px-4 py-3 bg-zinc-900/50 rounded-xl border border-white/5">
+                    <span className="text-xs text-zinc-500 font-medium">Fare</span>
+                    <span className="text-xl font-black text-white">{formatNaira(customerPrice)}</span>
                   </div>
-                </div>
-                <div className="flex items-center gap-4 mb-4 text-xs text-zinc-500">
-                  <span>{incomingRequest.distance}</span>
-                  <span>·</span>
-                  <span>{incomingRequest.eta}</span>
-                  <span>·</span>
-                  <span>{incomingRequest.service}</span>
-                  <span className="ml-auto text-lg font-black text-white">{formatNaira(incomingRequest.price)}</span>
-                </div>
-                <div className="flex gap-3">
-                  <button onClick={handleDecline} className="flex-1 py-2.5 rounded-xl border border-white/10 text-zinc-400 hover:text-white hover:border-white/20 text-sm font-bold transition-all">
-                    Decline
-                  </button>
-                  <button onClick={handleAccept} className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold transition-all shadow-lg shadow-emerald-500/20">
-                    Accept
-                  </button>
+
+                  {/* Actions */}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleDecline}
+                      className="flex-1 py-3 rounded-xl border border-white/10 text-zinc-400 hover:text-white hover:border-white/20 text-sm font-bold transition-all"
+                    >
+                      Decline
+                    </button>
+                    <button
+                      onClick={handleAccept}
+                      className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold transition-all shadow-lg shadow-emerald-500/20"
+                    >
+                      Accept
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -318,15 +344,17 @@ export default function MoverDashboardView() {
                     <p className="text-sm font-bold text-emerald-400 mb-1">
                       {activeTrip.stage === "pickup" ? "En route to pickup" : "En route to dropoff"}
                     </p>
-                    <p className="text-xs text-zinc-500">{moverApi._dummy.DUMMY_INCOMING.pickup}</p>
+                    <p className="text-xs text-zinc-500">{customerPickup}</p>
                   </div>
                   <button
                     onClick={() => {
                       if (activeTrip.stage === "pickup") {
                         setActiveTrip({ stage: "dropoff" });
+                        setBookingStatus("in-progress");
                       } else {
                         setActiveTrip(null);
-                        fetchData(); // refresh stats after trip completes
+                        setBookingStatus("completed");
+                        fetchData();
                       }
                     }}
                     className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition-all"
