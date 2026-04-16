@@ -44,26 +44,26 @@ const ALERTS = [
 type ActiveView = "overview" | "users" | "orders" | "alerts" | "settings";
 
 const STATUS_STYLES: Record<string, string> = {
-  active: "bg-emerald-50 text-emerald-600 border-emerald-200",
-  pending: "bg-amber-50 text-amber-600 border-amber-200",
-  suspended: "bg-rose-50 text-rose-600 border-rose-200",
-  completed: "bg-emerald-50 text-emerald-600 border-emerald-200",
+  active: "bg-green-50 text-green-600 border-green-200",
+  pending: "bg-blue-50 text-blue-600 border-blue-200",
+  suspended: "bg-red-50 text-red-600 border-red-200",
+  completed: "bg-green-50 text-green-600 border-green-200",
   "in-transit": "bg-blue-50 text-blue-600 border-blue-200",
-  cancelled: "bg-rose-50 text-rose-600 border-rose-200",
+  cancelled: "bg-red-50 text-red-600 border-red-200",
 };
 
 const ROLE_STYLES: Record<string, string> = {
   customer: "bg-blue-50 text-blue-600 border-blue-200",
-  mover: "bg-violet-50 text-violet-600 border-violet-200",
-  company: "bg-indigo-50 text-indigo-600 border-indigo-200",
+  mover: "bg-blue-50 text-blue-600 border-blue-200",
+  company: "bg-blue-50 text-blue-600 border-blue-200",
   admin: "bg-slate-100 text-slate-600 border-slate-200",
 };
 
 const ALERT_STYLES: Record<string, { bg: string; icon: React.ComponentType<{ className?: string; size?: number }>; color: string }> = {
-  warning: { bg: "bg-amber-50 border-amber-200", icon: AlertCircle, color: "text-amber-500" },
+  warning: { bg: "bg-blue-50 border-blue-200" },
   error: { bg: "bg-rose-50 border-rose-200", icon: AlertCircle, color: "text-rose-500" },
   info: { bg: "bg-blue-50 border-blue-200", icon: Bell, color: "text-blue-500" },
-  success: { bg: "bg-emerald-50 border-emerald-200", icon: CheckCircle2, color: "text-emerald-500" },
+  success: { bg: "bg-green-50 border-green-200", icon: CheckCircle2, color: "text-green-500" },
 };
 
 export default function AdminDashboardView() {
@@ -100,12 +100,12 @@ export default function AdminDashboardView() {
       <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-white/5 flex flex-col transition-transform duration-300 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
         <div className="h-16 flex items-center justify-between px-6 border-b border-white/5">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-gradient-to-br from-rose-600 to-orange-500 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-green-700 to-green-500 rounded-lg flex items-center justify-center">
               <ShieldCheck className="w-4 h-4 text-white" />
             </div>
             <div>
               <span className="font-black text-white tracking-tight text-sm">MoversPadi</span>
-              <span className="block text-[9px] font-bold uppercase tracking-widest text-rose-400">Admin Console</span>
+              <span className="block text-[9px] font-bold uppercase tracking-widest text-red-400">Admin Console</span>
             </div>
           </div>
           <button onClick={() => setMobileMenuOpen(false)} className="lg:hidden text-slate-500"><X size={18} /></button>
@@ -116,7 +116,7 @@ export default function AdminDashboardView() {
             <button
               key={item.id}
               onClick={() => { setActiveView(item.id); setMobileMenuOpen(false); }}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium ${activeView === item.id ? "bg-rose-500/10 text-rose-400 border border-rose-500/20" : "text-slate-500 hover:bg-white/5 hover:text-slate-300"}`}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium ${activeView === item.id ? "bg-red-500/10 text-red-400 border border-red-500/20" : "text-slate-500 hover:bg-white/5 hover:text-slate-300"}`}
             >
               <item.icon size={17} />
               <span className="flex-1 text-left">{item.label}</span>
@@ -131,15 +131,15 @@ export default function AdminDashboardView() {
 
         <div className="p-4 border-t border-white/5 space-y-2">
           <div className="flex items-center gap-3 px-3 py-2">
-            <div className="w-9 h-9 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
-              <ShieldCheck className="w-4 h-4 text-rose-400" />
+            <div className="w-9 h-9 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+              <ShieldCheck className="w-4 h-4 text-red-400" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold text-white truncate">{user?.name || "Admin"}</p>
               <p className="text-[10px] text-slate-500 font-medium">Super Admin</p>
             </div>
           </div>
-          <button onClick={handleLogout} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-500 hover:text-rose-400 transition-colors rounded-lg hover:bg-rose-500/5">
+          <button onClick={handleLogout} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-500 hover:text-red-400 transition-colors rounded-lg hover:bg-red-500/5">
             <LogOut size={14} />Sign out
           </button>
         </div>
@@ -158,7 +158,7 @@ export default function AdminDashboardView() {
           <div className="flex items-center gap-3">
             <button className="relative p-2 text-slate-500 hover:text-white hover:bg-white/5 rounded-lg transition-all">
               <Bell size={17} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-green-500 rounded-full" />
             </button>
           </div>
         </header>
@@ -181,7 +181,7 @@ export default function AdminDashboardView() {
                       <div key={s.label} className="bg-slate-900 border border-white/5 rounded-2xl p-5 hover:border-white/10 transition-colors">
                         <div className="flex justify-between items-start mb-3">
                           <div className="p-2 bg-slate-800 rounded-lg"><s.icon className="w-4 h-4 text-slate-400" /></div>
-                          <div className={`flex items-center gap-1 text-[10px] font-bold ${s.up ? "text-emerald-400" : "text-rose-400"}`}>
+                          <div className={`flex items-center gap-1 text-[10px] font-bold ${s.up ? "text-green-400" : "text-red-400"}`}>
                             {s.up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                             {s.change}
                           </div>
@@ -196,7 +196,7 @@ export default function AdminDashboardView() {
                   <div className="bg-slate-900 border border-white/5 rounded-2xl overflow-hidden">
                     <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
                       <h3 className="font-bold text-white">System Alerts</h3>
-                      <button onClick={() => setActiveView("alerts")} className="text-xs text-rose-400 font-bold hover:underline flex items-center gap-1">
+                      <button onClick={() => setActiveView("alerts")} className="text-xs text-red-400 font-bold hover:underline flex items-center gap-1">
                         View all <ChevronRight className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -220,7 +220,7 @@ export default function AdminDashboardView() {
                   <div className="bg-slate-900 border border-white/5 rounded-2xl overflow-hidden">
                     <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
                       <h3 className="font-bold text-white">Recent Registrations</h3>
-                      <button onClick={() => setActiveView("users")} className="text-xs text-rose-400 font-bold hover:underline flex items-center gap-1">
+                      <button onClick={() => setActiveView("users")} className="text-xs text-red-400 font-bold hover:underline flex items-center gap-1">
                         View all <ChevronRight className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -261,7 +261,7 @@ export default function AdminDashboardView() {
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       placeholder="Search users by name, email, or role…"
-                      className="w-full bg-slate-900 border border-white/5 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-rose-500/30 focus:ring-1 focus:ring-rose-500/10 transition-all"
+                      className="w-full bg-slate-900 border border-white/5 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/30 focus:ring-1 focus:ring-blue-500/10 transition-all"
                     />
                   </div>
 
@@ -285,7 +285,7 @@ export default function AdminDashboardView() {
                             <button className="p-1.5 text-slate-600 hover:text-blue-400 transition-colors rounded-lg hover:bg-blue-500/10">
                               <Eye className="w-3.5 h-3.5" />
                             </button>
-                            <button className="p-1.5 text-slate-600 hover:text-rose-400 transition-colors rounded-lg hover:bg-rose-500/10">
+                            <button className="p-1.5 text-slate-600 hover:text-red-400 transition-colors rounded-lg hover:bg-red-500/10">
                               <Ban className="w-3.5 h-3.5" />
                             </button>
                           </div>

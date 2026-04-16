@@ -26,10 +26,10 @@ import ProfileView  from "@/src/features/customer/profile/views/ProfileView";
 // ── Mock data ─────────────────────────────────────────────────────────────────
 
 const SERVICES = [
-  { id: "dispatch", label: "Dispatch", icon: Bike,   desc: "Lightweight delivery",  color: "text-orange-500", bg: "bg-orange-50",   bgDark: "bg-orange-500/10", border: "border-orange-100", borderDark: "border-orange-500/20", route: "/customer/book?type=dispatch" },
+  { id: "dispatch", label: "Dispatch", icon: Bike,   desc: "Lightweight delivery",  color: "text-green-600", bg: "bg-green-50",   bgDark: "bg-green-500/10", border: "border-green-100", borderDark: "border-green-500/20", route: "/customer/book?type=dispatch" },
   { id: "ride",     label: "Ride",     icon: Car,    desc: "Passenger transport",   color: "text-blue-500",   bg: "bg-blue-50",     bgDark: "bg-blue-500/10",   border: "border-blue-100",   borderDark: "border-blue-500/20",   route: "/customer/book?type=ride" },
-  { id: "haulage",  label: "Haulage",  icon: Truck,  desc: "Heavy logistics",       color: "text-violet-500", bg: "bg-violet-50",   bgDark: "bg-violet-500/10", border: "border-violet-100", borderDark: "border-violet-500/20", route: "/customer/book?type=haulage" },
-  { id: "tow",      label: "Towing",   icon: Wrench, desc: "Vehicle recovery",      color: "text-rose-500",   bg: "bg-rose-50",     bgDark: "bg-rose-500/10",   border: "border-rose-100",   borderDark: "border-rose-500/20",   route: "/customer/book?type=tow" },
+  { id: "haulage",  label: "Haulage",  icon: Truck,  desc: "Heavy logistics",       color: "text-blue-600", bg: "bg-blue-50",   bgDark: "bg-blue-500/10", border: "border-blue-100", borderDark: "border-blue-500/20", route: "/customer/book?type=haulage" },
+  { id: "tow",      label: "Towing",   icon: Wrench, desc: "Vehicle recovery",      color: "text-slate-500",   bg: "bg-slate-50",     bgDark: "bg-slate-500/10",   border: "border-slate-200",   borderDark: "border-slate-200",   route: "/customer/book?type=tow" },
 ];
 
 const TRANSACTIONS = [
@@ -170,7 +170,7 @@ function DashboardInner() {
             {/* Theme toggle — visible in header on mobile */}
             <button
               onClick={toggleTheme}
-              className={`p-2 rounded-lg transition-all ${D ? "text-amber-400 hover:bg-white/5" : "text-slate-500 hover:bg-slate-100"}`}
+              className={`p-2 rounded-lg transition-all ${D ? "text-blue-400 hover:bg-white/5" : "text-slate-500 hover:bg-slate-100"}`}
             >
               {D ? <Sun size={18} /> : <Moon size={18} />}
             </button>
@@ -180,7 +180,7 @@ function DashboardInner() {
               className={`p-2 rounded-lg transition-all relative ${D ? "text-zinc-500 hover:text-zinc-200 hover:bg-white/5" : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"}`}
             >
               <Bell size={18} />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full" />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-green-600 rounded-full" />
             </button>
 
             <div className={`hidden sm:block h-5 w-px mx-1 ${D ? "bg-white/10" : "bg-slate-200"}`} />
@@ -240,7 +240,7 @@ function DashboardInner() {
                     <div className={`p-2 rounded-xl ${D ? "bg-white/5" : "bg-slate-100"}`}>
                       <Package size={16} className={D ? "text-zinc-400" : "text-slate-500"} />
                     </div>
-                    <span className="flex h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]" />
+                    <span className="flex h-2 w-2 rounded-full bg-green-500 shadow-[0_0_6px_#10b981]" />
                   </div>
                   <div className="mt-4">
                     <p className={`text-xs font-semibold uppercase tracking-wider mb-2 ${D ? "text-zinc-600" : "text-slate-400"}`}>Active Orders</p>
@@ -248,7 +248,7 @@ function DashboardInner() {
                       {ACTIVE_ORDERS.map((o) => (
                         <div key={o.id} className="flex items-center justify-between text-xs">
                           <span className={`truncate max-w-[130px] font-medium ${D ? "text-zinc-300" : "text-slate-600"}`}>{o.route}</span>
-                          <span className="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 font-bold whitespace-nowrap ml-2">{o.eta}</span>
+                          <span className="text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-200 font-bold whitespace-nowrap ml-2">{o.eta}</span>
                         </div>
                       ))}
                     </div>
@@ -256,11 +256,11 @@ function DashboardInner() {
                 </div>
 
                 {/* Promo */}
-                <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-5 text-white relative overflow-hidden flex flex-col justify-between">
+                <div className="bg-gradient-to-br from-green-600 to-blue-600 rounded-2xl p-5 text-white relative overflow-hidden flex flex-col justify-between">
                   <div className="relative z-10">
-                    <p className="text-blue-200 text-xs font-bold uppercase tracking-wider mb-1">Upgrade</p>
+                    <p className="text-green-200 text-xs font-bold uppercase tracking-wider mb-1">Upgrade</p>
                     <h3 className="font-black text-lg leading-tight mb-2">Priority Fleet</h3>
-                    <p className="text-blue-100 text-xs leading-relaxed mb-4 max-w-[180px]">Dedicated support and reduced wait times.</p>
+                    <p className="text-green-100 text-xs leading-relaxed mb-4 max-w-[180px]">Dedicated support and reduced wait times.</p>
                     <button className="bg-white/15 hover:bg-white/25 border border-white/20 text-xs font-bold px-4 py-2 rounded-xl transition-all">View Plans</button>
                   </div>
                   <div className="absolute -right-4 -bottom-4 w-28 h-28 bg-white/10 rounded-full blur-2xl" />
@@ -309,17 +309,17 @@ function DashboardInner() {
                         <div className="flex items-center gap-3">
                           <div className={`w-9 h-9 rounded-full flex items-center justify-center border shrink-0 ${
                             trx.status === "processing"
-                              ? D ? "bg-amber-500/10 border-amber-500/20" : "bg-amber-50 border-amber-200"
+                              ? D ? "bg-blue-500/10 border-blue-500/20" : "bg-blue-50 border-blue-200"
                               : D ? "bg-white/5 border-white/10"          : "bg-slate-100 border-slate-200"
                           }`}>
-                            <div className={`w-2 h-2 rounded-full ${trx.status === "processing" ? "bg-amber-500 animate-pulse" : D ? "bg-zinc-600" : "bg-slate-400"}`} />
+                            <div className={`w-2 h-2 rounded-full ${trx.status === "processing" ? "bg-blue-500 animate-pulse" : D ? "bg-zinc-600" : "bg-slate-400"}`} />
                           </div>
                           <div className="min-w-0">
                             <p className={`text-sm font-semibold truncate ${D ? "text-zinc-200" : "text-slate-800"}`}>{trx.entity}</p>
                             <p className={`text-[11px] ${D ? "text-zinc-600" : "text-slate-400"}`}>{trx.date} · {trx.id}</p>
                           </div>
                         </div>
-                        <span className={`text-sm font-bold shrink-0 ml-3 ${trx.amount.startsWith("+") ? "text-emerald-500" : D ? "text-zinc-300" : "text-slate-800"}`}>
+                        <span className={`text-sm font-bold shrink-0 ml-3 ${trx.amount.startsWith("+") ? "text-green-600" : D ? "text-zinc-300" : "text-slate-800"}`}>
                           {trx.amount}
                         </span>
                       </div>
@@ -335,12 +335,12 @@ function DashboardInner() {
                       <div key={i} className="flex items-center gap-3 relative z-10">
                         <div className={`w-3.5 h-3.5 rounded-full border-2 shadow-sm shrink-0 ${
                           item.ok
-                            ? D ? "bg-emerald-500 border-[#0e0e0e]" : "bg-emerald-500 border-white"
-                            : D ? "bg-amber-400 border-[#0e0e0e]"  : "bg-amber-400 border-white"
+                            ? D ? "bg-green-500 border-[#0e0e0e]" : "bg-green-500 border-white"
+                            : D ? "bg-blue-400 border-[#0e0e0e]"  : "bg-blue-400 border-white"
                         }`} />
                         <div className="flex-1 flex justify-between items-center min-w-0">
                           <span className={`text-xs truncate ${D ? "text-zinc-400" : "text-slate-600"}`}>{item.label}</span>
-                          <span className={`text-[10px] font-bold uppercase ml-2 shrink-0 ${item.ok ? "text-emerald-500" : "text-amber-500"}`}>
+                          <span className={`text-[10px] font-bold uppercase ml-2 shrink-0 ${item.ok ? "text-green-600" : "text-blue-500"}`}>
                             {item.ok ? "OK" : "Degraded"}
                           </span>
                         </div>

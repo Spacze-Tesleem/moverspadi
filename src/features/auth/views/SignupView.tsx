@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { authApi, isNetworkError, warmupBackend } from "@/src/services/api/auth";
 
-type Role = "customer" | "mover" | "company";
+type Role = "customer" | "mover" | "provider" | "company";
 
 export default function SignupView() {
   return (
@@ -36,7 +36,11 @@ function SignupPageInner() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const roleLabel = role === "company" ? "Company" : role === "mover" ? "Mover" : "Customer";
+  const roleLabel =
+    role === "company"   ? "Logistics Company" :
+    role === "mover"     ? "Independent Mover" :
+    role === "provider"  ? "Transport Provider" :
+    "Customer";
 
   const validate = () => {
     if (!formData.fullName.trim()) return "Full name is required.";
@@ -128,7 +132,7 @@ function SignupPageInner() {
           <p className="text-slate-500 font-medium">
             Signing up as a{" "}
             <span className="font-bold text-slate-700">{roleLabel}</span>
-            {(role === "mover" || role === "company") && (
+            {(role === "mover" || role === "provider" || role === "company") && (
               <> — complete your profile after verification</>
             )}
           </p>

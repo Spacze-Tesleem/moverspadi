@@ -12,7 +12,7 @@ import { authApi, isNetworkError, warmupBackend } from "@/src/services/api/auth"
 import { useAuthStore } from "@/src/store/authStore";
 import { useEffect } from "react";
 
-type Role = "customer" | "mover" | "company" | "admin";
+type Role = "customer" | "mover" | "provider" | "company" | "admin";
 
 const ROLE_DATA: Record<Role, {
   label: string;
@@ -25,11 +25,15 @@ const ROLE_DATA: Record<Role, {
     description: "Book moves, track real-time shipments, and manage your personal logistics dashboard.",
   },
   mover: {
-    label: "Mover", icon: Truck, tagline: "Earn on the go.",
+    label: "Independent Mover", icon: Truck, tagline: "Earn on the go.",
     description: "Access high-quality leads, manage your schedule, and grow your independent moving business.",
   },
+  provider: {
+    label: "Transport Provider", icon: Truck, tagline: "Transport at scale.",
+    description: "Offer private car hire or bus services, manage vehicle compliance, and grow your transport business.",
+  },
   company: {
-    label: "Company", icon: Building2, tagline: "Scale operations.",
+    label: "Logistics Company", icon: Building2, tagline: "Scale operations.",
     description: "Full-scale fleet management, driver dispatching, and enterprise-grade logistics analytics.",
   },
   admin: {
@@ -39,16 +43,17 @@ const ROLE_DATA: Record<Role, {
 };
 
 const DEV_CREDENTIALS: Record<Role, { id: string; password: string; name: string }> = {
-  customer: { id: "customer@demo.com", password: "demo1234", name: "Demo Customer" },
-  mover:    { id: "mover@demo.com",    password: "demo1234", name: "Demo Mover" },
-  company:  { id: "COMPANY-001",       password: "demo1234", name: "Demo Company" },
-  admin:    { id: "ADMIN-001",         password: "demo1234", name: "Demo Admin" },
+  customer: { id: "customer@demo.com",  password: "demo1234", name: "Demo Customer" },
+  mover:    { id: "mover@demo.com",     password: "demo1234", name: "Demo Mover" },
+  provider: { id: "provider@demo.com",  password: "demo1234", name: "Demo Provider" },
+  company:  { id: "COMPANY-001",        password: "demo1234", name: "Demo Company" },
+  admin:    { id: "ADMIN-001",          password: "demo1234", name: "Demo Admin" },
 };
 
-const QUICK_ACCESS_ROLES: { role: Role | "provider"; label: string; color: string; portal: string }[] = [
+const QUICK_ACCESS_ROLES: { role: Role; label: string; color: string; portal: string }[] = [
   { role: "customer", label: "Customer",  color: "bg-blue-500",   portal: "/customer" },
   { role: "mover",    label: "Mover",     color: "bg-indigo-500", portal: "/mover" },
-  { role: "provider", label: "Provider",  color: "bg-cyan-500",   portal: "/mover" },
+  { role: "provider", label: "Provider",  color: "bg-cyan-500",   portal: "/provider" },
   { role: "company",  label: "Company",   color: "bg-violet-500", portal: "/company" },
   { role: "admin",    label: "Admin",     color: "bg-slate-700",  portal: "/admin" },
 ];
@@ -143,12 +148,14 @@ function LoginPageInner() {
 
   const handleQuickAccess = (entry: typeof QUICK_ACCESS_ROLES[number]) => {
     setQuickLoading(entry.role);
-    const storeRole = entry.role === "provider" ? "mover" : entry.role;
-    const creds = DEV_CREDENTIALS[storeRole as Role] ?? DEV_CREDENTIALS.customer;
+    const creds = DEV_CREDENTIALS[entry.role] ?? DEV_CREDENTIALS.customer;
     login(
       { name: `Demo ${entry.label}`, email: creds.id },
-      storeRole as Role,
-      "dev-token"
+      entry.role,
+      "dev-token",
+      // Customers and admins are immediately approved; supply-side roles start approved
+      // in quick-access dev mode so the full dashboard is visible for testing
+      "approved"
     );
     setProfileComplete(true);
     router.push(entry.portal);

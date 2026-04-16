@@ -80,10 +80,14 @@ function OtpPageInner() {
   const otp = digits.join("");
   const isFilled = otp.length === OTP_LENGTH;
 
+  const SUPPLY_ROLES = ["mover", "provider", "company"] as const;
+  type SupplyRole = typeof SUPPLY_ROLES[number];
+  const isSupplyRole = (r: string): r is SupplyRole => SUPPLY_ROLES.includes(r as SupplyRole);
+
   const devLogin = () => {
     if (otp === "000000") throw new Error("Invalid OTP");
     login({ name, email }, role, "dev-token");
-    const needsOnboarding = mode === "signup" && (role === "mover" || role === "provider" || role === "company");
+    const needsOnboarding = mode === "signup" && isSupplyRole(role);
     needsOnboarding ? setProfileComplete(false) : setProfileComplete(true);
   };
 
@@ -96,8 +100,8 @@ function OtpPageInner() {
       if (process.env.NEXT_PUBLIC_API_URL) {
         try {
           const session = await authApi.verifyOtp({ email, otp, role });
-          login(session.user, session.role as typeof role, session.token);
-          const needsOnboarding = mode === "signup" && (role === "mover" || role === "provider" || role === "company");
+          login(session.user, session.role as typeof role, session.token, session.verificationStatus);
+          const needsOnboarding = mode === "signup" && isSupplyRole(session.role);
           needsOnboarding ? setProfileComplete(false) : setProfileComplete(true);
         } catch (apiErr) {
           if (isNetworkError(apiErr)) {
@@ -114,12 +118,13 @@ function OtpPageInner() {
       setSuccess(true);
       await new Promise((r) => setTimeout(r, 800));
 
-      const portalRole = role === "provider" ? "mover" : role;
-      const needsOnboarding = mode === "signup" && (role === "mover" || role === "provider" || role === "company");
+      const needsOnboarding = mode === "signup" && isSupplyRole(role);
       if (needsOnboarding) {
-        router.push(`/${portalRole}/onboarding`);
+        // Each supply-side role has its own onboarding route
+        router.push(`/${role}/onboarding`);
       } else {
-        router.push(`/${portalRole}`);
+        // provider portal lives at /provider, not /mover
+        router.push(`/${role}`);
       }
     } catch {
       setError("Incorrect code. Please try again.");
@@ -184,7 +189,7 @@ function OtpPageInner() {
               </div>
               <h3 className="text-2xl font-black text-slate-900 mb-2">Verified!</h3>
               <p className="text-slate-500 font-medium">
-                {mode === "signup" && (role === "mover" || role === "company")
+                {mode === "signup" && isSupplyRole(role)
                   ? "Setting up your profile…"
                   : "Redirecting to your dashboard…"}
               </p>

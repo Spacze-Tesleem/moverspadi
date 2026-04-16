@@ -108,7 +108,7 @@ export default function Sidebar({ isSidebarOpen, activeTab, setActiveTab, onClos
           }`}
         >
           {D
-            ? <Sun className="w-4 h-4 shrink-0 text-amber-400" />
+            ? <Sun className="w-4 h-4 shrink-0 text-blue-400" />
             : <Moon className="w-4 h-4 shrink-0 text-slate-400" />}
           {isSidebarOpen && <span>{D ? "Light Mode" : "Dark Mode"}</span>}
         </button>
@@ -138,8 +138,8 @@ export default function Sidebar({ isSidebarOpen, activeTab, setActiveTab, onClos
           title={!isSidebarOpen ? "Sign out" : undefined}
           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm ${
             D
-              ? "text-zinc-500 hover:text-rose-400 hover:bg-rose-500/5"
-              : "text-slate-500 hover:text-rose-500 hover:bg-rose-50"
+              ? "text-zinc-500 hover:text-red-500 hover:bg-red-500/5"
+              : "text-slate-500 hover:text-red-500 hover:bg-red-50"
           }`}
         >
           <LogOut className="w-4 h-4 shrink-0" />

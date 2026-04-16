@@ -9,6 +9,7 @@ import {
   LogOut, Menu, X, ChevronRight, TrendingUp, TrendingDown,
   Package, MapPin, Clock, CheckCircle2, Building2, ShieldCheck, Phone, Star
 } from "lucide-react";
+import PendingApprovalView from "@/src/features/auth/views/PendingApprovalView";
 
 const FLEET = [
   { id: "VH-001", driver: "Emeka Obi", plate: "LND-421-AA", type: "Van", status: "active", route: "Ikeja → Lekki", load: "82%" },
@@ -35,15 +36,19 @@ const STATS = [
 type ActiveView = "overview" | "fleet" | "orders" | "drivers" | "settings";
 
 const STATUS_STYLES: Record<string, string> = {
-  active: "bg-emerald-500/10 text-emerald-600 border-emerald-200",
+  active: "bg-green-500/10 text-green-600 border-green-200",
   idle: "bg-slate-100 text-slate-500 border-slate-200",
-  maintenance: "bg-amber-50 text-amber-600 border-amber-200",
+  maintenance: "bg-blue-50 text-blue-600 border-blue-200",
   "in-transit": "bg-blue-50 text-blue-600 border-blue-200",
-  completed: "bg-emerald-50 text-emerald-600 border-emerald-200",
+  completed: "bg-green-50 text-green-600 border-green-200",
   pending: "bg-slate-100 text-slate-500 border-slate-200",
 };
 
 export default function CompanyDashboardView() {
+  return <PendingApprovalView approvedDashboard={<CompanyDashboardInner />} />;
+}
+
+function CompanyDashboardInner() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
   const [activeView, setActiveView] = useState<ActiveView>("overview");
@@ -69,7 +74,7 @@ export default function CompanyDashboardView() {
       <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-100 flex flex-col shadow-sm transition-transform duration-300 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
         <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-green-600 to-blue-600 rounded-lg flex items-center justify-center">
               <Building2 className="w-4 h-4 text-white" />
             </div>
             <span className="font-black text-slate-900 tracking-tight">Movers<span className="text-blue-600">Padi</span></span>
@@ -96,7 +101,7 @@ export default function CompanyDashboardView() {
               <p className="text-[10px] text-slate-400 font-medium">Enterprise Account</p>
             </div>
           </div>
-          <button onClick={handleLogout} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-400 hover:text-rose-500 transition-colors rounded-lg hover:bg-rose-50">
+          <button onClick={handleLogout} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50">
             <LogOut size={14} />Sign out
           </button>
         </div>
@@ -134,7 +139,7 @@ export default function CompanyDashboardView() {
                       <div key={s.label} className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex justify-between items-start mb-3">
                           <div className="p-2 bg-slate-50 rounded-lg"><s.icon className="w-4 h-4 text-slate-500" /></div>
-                          <div className={`flex items-center gap-1 text-[10px] font-bold ${s.up ? "text-emerald-600" : "text-rose-500"}`}>
+                          <div className={`flex items-center gap-1 text-[10px] font-bold ${s.up ? "text-green-600" : "text-red-500"}`}>
                             {s.up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                             {s.change}
                           </div>
@@ -196,9 +201,9 @@ export default function CompanyDashboardView() {
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     {[
-                      { label: "Active", count: FLEET.filter(v => v.status === "active").length, cls: "text-emerald-600 bg-emerald-50 border-emerald-100" },
+                      { label: "Active", count: FLEET.filter(v => v.status === "active").length, cls: "text-green-600 bg-green-50 border-green-100" },
                       { label: "Idle", count: FLEET.filter(v => v.status === "idle").length, cls: "text-slate-600 bg-slate-50 border-slate-100" },
-                      { label: "Maintenance", count: FLEET.filter(v => v.status === "maintenance").length, cls: "text-amber-600 bg-amber-50 border-amber-100" },
+                      { label: "Maintenance", count: FLEET.filter(v => v.status === "maintenance").length, cls: "text-blue-600 bg-blue-50 border-blue-100" },
                     ].map((s) => (
                       <div key={s.label} className={`rounded-xl p-3 text-center border ${s.cls}`}>
                         <p className="text-2xl font-black">{s.count}</p>

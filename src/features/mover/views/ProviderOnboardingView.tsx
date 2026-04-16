@@ -6,8 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   User, MapPin, FileText, Camera, ShieldCheck,
   Phone, Users, Check, UploadCloud, ChevronRight,
-  ChevronLeft, Loader2, CheckCircle2, CreditCard, Link2,
-  Truck,
+  ChevronLeft, Loader2, CheckCircle2, Truck, Link2,
+  CreditCard, AlertCircle,
 } from "lucide-react";
 import { useAuthStore } from "@/src/store/authStore";
 import { profileApi } from "@/src/services/api/profile";
@@ -18,13 +18,13 @@ const STEPS = [
   { id: 1, label: "Personal Info",    icon: User },
   { id: 2, label: "Identity Docs",    icon: FileText },
   { id: 3, label: "Trust & Location", icon: MapPin },
-  { id: 4, label: "Vehicle Papers",   icon: Truck },
+  { id: 4, label: "Vehicle Details",  icon: Truck },
   { id: 5, label: "Bank & Links",     icon: CreditCard },
 ];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type OnboardingFormData = {
+type FormData = {
   gender: string;
   dob: string;
   emergencyContact: string;
@@ -35,6 +35,16 @@ type OnboardingFormData = {
   nextOfKinRelationship: string;
   guarantorName: string;
   guarantorPhone: string;
+  // Vehicle
+  vehicleType: string;
+  vehicleMake: string;
+  vehicleModel: string;
+  vehicleYear: string;
+  plateNumber: string;
+  passengerCapacity: string;
+  cargoCapacity: string;
+  serviceType: string;
+  // Bank & social
   bankName: string;
   accountName: string;
   accountNumber: string;
@@ -54,15 +64,16 @@ type DocsState = {
 
 // ─── Main view ────────────────────────────────────────────────────────────────
 
-export default function MoverOnboardingView() {
+export default function ProviderOnboardingView() {
   const router = useRouter();
   const { user, token, setProfileComplete } = useAuthStore();
 
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState<OnboardingFormData>({
+  const [formData, setFormData] = useState<FormData>({
     gender: "",
     dob: "",
     emergencyContact: "",
@@ -73,6 +84,14 @@ export default function MoverOnboardingView() {
     nextOfKinRelationship: "",
     guarantorName: "",
     guarantorPhone: "",
+    vehicleType: "",
+    vehicleMake: "",
+    vehicleModel: "",
+    vehicleYear: "",
+    plateNumber: "",
+    passengerCapacity: "",
+    cargoCapacity: "",
+    serviceType: "",
     bankName: "",
     accountName: "",
     accountNumber: "",
@@ -93,6 +112,7 @@ export default function MoverOnboardingView() {
   const progress = (step / STEPS.length) * 100;
 
   const handleNext = () => {
+    setError(null);
     if (step < STEPS.length) {
       setStep((s) => s + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -102,6 +122,7 @@ export default function MoverOnboardingView() {
   };
 
   const handleBack = () => {
+    setError(null);
     if (step > 1) {
       setStep((s) => s - 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -112,19 +133,19 @@ export default function MoverOnboardingView() {
     setIsSubmitting(true);
     try {
       await profileApi.completeProfile(
-        { ...formData, documents: docs },
+        { ...formData, documents: docs, role: "provider" },
         token ?? ""
       );
       setProfileComplete(true);
       setDone(true);
       await new Promise((r) => setTimeout(r, 1200));
-      router.push("/mover");
+      router.push("/provider");
     } catch {
       // Dev fallback — advance without a backend
       setProfileComplete(true);
       setDone(true);
       await new Promise((r) => setTimeout(r, 1200));
-      router.push("/mover");
+      router.push("/provider");
     } finally {
       setIsSubmitting(false);
     }
@@ -138,8 +159,8 @@ export default function MoverOnboardingView() {
           animate={{ opacity: 1, scale: 1 }}
           className="flex flex-col items-center text-center p-8"
         >
-          <div className="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center mb-6">
-            <CheckCircle2 className="w-12 h-12 text-green-600" />
+          <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mb-6">
+            <CheckCircle2 className="w-12 h-12 text-blue-600" />
           </div>
           <h2 className="text-3xl font-black text-slate-900 mb-2">Submitted for Review</h2>
           <p className="text-slate-500 font-medium max-w-xs">
@@ -154,7 +175,7 @@ export default function MoverOnboardingView() {
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-4 py-12 relative overflow-hidden font-sans">
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-100/40 blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-green-100/30 blur-[120px]" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-100/30 blur-[120px]" />
       </div>
 
       <div className="relative w-full max-w-[560px]">
@@ -162,17 +183,17 @@ export default function MoverOnboardingView() {
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-green-600/20">
-                <ShieldCheck className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20">
+                <Truck className="w-6 h-6 text-white" />
               </div>
               <span className="text-2xl font-black text-slate-900 tracking-tight">
                 Movers <b className="text-green-600">Padi</b>
               </span>
             </div>
           </div>
-          <h2 className="text-3xl font-black text-slate-900 mb-1">Complete your profile</h2>
+          <h2 className="text-3xl font-black text-slate-900 mb-1">Transport Provider Setup</h2>
           <p className="text-slate-500 font-medium">
-            Hi {user?.name?.split(" ")[0] ?? "there"} — just a few more details before you start earning.
+            Hi {user?.name?.split(" ")[0] ?? "there"} — complete your profile to start accepting transport jobs.
           </p>
         </div>
 
@@ -185,15 +206,15 @@ export default function MoverOnboardingView() {
             return (
               <div key={s.id} className="flex items-center gap-1.5">
                 <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                  isActive ? "bg-green-600 text-white shadow-lg shadow-green-600/30"
-                  : isDone ? "bg-green-100 text-green-700"
+                  isActive ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
+                  : isDone ? "bg-blue-100 text-blue-700"
                   : "bg-slate-100 text-slate-400"
                 }`}>
                   {isDone ? <Check className="w-3 h-3" /> : <Icon className="w-3 h-3" />}
                   <span className="hidden sm:inline">{s.label}</span>
                 </div>
                 {i < STEPS.length - 1 && (
-                  <div className={`w-4 h-px ${isDone ? "bg-green-400" : "bg-slate-200"}`} />
+                  <div className={`w-4 h-px ${isDone ? "bg-blue-400" : "bg-slate-200"}`} />
                 )}
               </div>
             );
@@ -208,7 +229,7 @@ export default function MoverOnboardingView() {
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                 Step {step} of {STEPS.length}
               </span>
-              <span className="text-[10px] font-bold text-green-600 uppercase tracking-widest">
+              <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">
                 {Math.round(progress)}%
               </span>
             </div>
@@ -217,10 +238,17 @@ export default function MoverOnboardingView() {
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
                 transition={{ duration: 0.4 }}
-                className="h-full bg-green-600 rounded-full"
+                className="h-full bg-blue-600 rounded-full"
               />
             </div>
           </div>
+
+          {error && (
+            <div className="flex items-center gap-2 p-4 bg-rose-50 border border-rose-100 rounded-2xl text-rose-600 text-sm font-bold mb-6">
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              {error}
+            </div>
+          )}
 
           <AnimatePresence mode="wait">
             <motion.div
@@ -233,7 +261,7 @@ export default function MoverOnboardingView() {
               {step === 1 && <StepPersonalInfo formData={formData} setFormData={setFormData} />}
               {step === 2 && <StepIdentityDocs docs={docs} setDocs={setDocs} />}
               {step === 3 && <StepTrustLocation formData={formData} setFormData={setFormData} />}
-              {step === 4 && <StepVehiclePapers docs={docs} setDocs={setDocs} />}
+              {step === 4 && <StepVehicleDetails formData={formData} setFormData={setFormData} docs={docs} setDocs={setDocs} />}
               {step === 5 && <StepBankLinks formData={formData} setFormData={setFormData} />}
             </motion.div>
           </AnimatePresence>
@@ -246,7 +274,7 @@ export default function MoverOnboardingView() {
               className={`w-full group py-4 rounded-2xl font-bold text-lg transition-all flex items-center justify-center gap-3 shadow-xl disabled:opacity-70 disabled:cursor-not-allowed ${
                 step === STEPS.length
                   ? "bg-slate-900 text-white hover:bg-black shadow-slate-900/20"
-                  : "bg-green-600 text-white hover:bg-green-700 shadow-green-600/20"
+                  : "bg-blue-600 text-white hover:bg-blue-700 shadow-blue-600/20"
               }`}
             >
               {isSubmitting ? (
@@ -277,10 +305,10 @@ export default function MoverOnboardingView() {
 // ─── Step 1: Personal Info ────────────────────────────────────────────────────
 
 function StepPersonalInfo({ formData, setFormData }: {
-  formData: OnboardingFormData;
-  setFormData: (d: OnboardingFormData) => void;
+  formData: FormData;
+  setFormData: (d: FormData) => void;
 }) {
-  const set = (key: keyof OnboardingFormData) => (v: string) => setFormData({ ...formData, [key]: v });
+  const set = (key: keyof FormData) => (v: string) => setFormData({ ...formData, [key]: v });
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-black text-slate-800 mb-4">Personal Information</h3>
@@ -316,10 +344,10 @@ function StepIdentityDocs({ docs, setDocs }: {
 // ─── Step 3: Trust & Location ─────────────────────────────────────────────────
 
 function StepTrustLocation({ formData, setFormData }: {
-  formData: OnboardingFormData;
-  setFormData: (d: OnboardingFormData) => void;
+  formData: FormData;
+  setFormData: (d: FormData) => void;
 }) {
-  const set = (key: keyof OnboardingFormData) => (v: string) => setFormData({ ...formData, [key]: v });
+  const set = (key: keyof FormData) => (v: string) => setFormData({ ...formData, [key]: v });
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-black text-slate-800 mb-4">Trust & Location</h3>
@@ -352,22 +380,70 @@ function StepTrustLocation({ formData, setFormData }: {
   );
 }
 
-// ─── Step 4: Vehicle Papers ───────────────────────────────────────────────────
+// ─── Step 4: Vehicle Details ──────────────────────────────────────────────────
 
-function StepVehiclePapers({ docs, setDocs }: {
+const VEHICLE_TYPES = ["Sedan", "SUV", "Minibus", "Bus", "Van", "Pickup Truck", "Lorry", "Other"];
+const SERVICE_TYPES = ["Private Car Hire", "Bus Service", "Cargo Transport", "Mixed (Passengers & Cargo)"];
+
+function StepVehicleDetails({ formData, setFormData, docs, setDocs }: {
+  formData: FormData;
+  setFormData: (d: FormData) => void;
   docs: DocsState;
   setDocs: (d: DocsState) => void;
 }) {
-  const toggle = (key: keyof DocsState) => setDocs({ ...docs, [key]: !docs[key] });
+  const set = (key: keyof FormData) => (v: string) => setFormData({ ...formData, [key]: v });
+  const toggleDoc = (key: keyof DocsState) => setDocs({ ...docs, [key]: !docs[key] });
+
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-black text-slate-800 mb-4">Vehicle Papers</h3>
-      <p className="text-sm text-slate-500 -mt-2 mb-4">
-        Upload documents for the vehicle you use for deliveries.
-      </p>
-      <UploadBox icon={FileText} label="Vehicle Registration" sub="Proof of ownership document" checked={docs.vehicleRegistration} onToggle={() => toggle("vehicleRegistration")} />
-      <UploadBox icon={ShieldCheck} label="Roadworthiness Certificate" sub="Current valid certificate" checked={docs.roadworthiness} onToggle={() => toggle("roadworthiness")} />
-      <UploadBox icon={ShieldCheck} label="Vehicle Insurance" sub="Comprehensive or third-party" checked={docs.insurance} onToggle={() => toggle("insurance")} />
+      <h3 className="text-lg font-black text-slate-800 mb-4">Vehicle & Compliance Details</h3>
+
+      <div className="space-y-1">
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Vehicle Type</p>
+        <select
+          value={formData.vehicleType}
+          onChange={(e) => set("vehicleType")(e.target.value)}
+          className="w-full px-4 py-3.5 bg-slate-50 border-2 border-transparent rounded-2xl outline-none text-slate-700 font-semibold focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all"
+        >
+          <option value="">Select vehicle type</option>
+          {VEHICLE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+        </select>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <Input icon={Truck} placeholder="Make (e.g. Toyota)" value={formData.vehicleMake} onChange={set("vehicleMake")} />
+        <Input icon={Truck} placeholder="Model (e.g. Hiace)" value={formData.vehicleModel} onChange={set("vehicleModel")} />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <Input icon={Truck} placeholder="Year (e.g. 2019)" value={formData.vehicleYear} onChange={set("vehicleYear")} />
+        <Input icon={Truck} placeholder="Plate Number" value={formData.plateNumber} onChange={set("plateNumber")} />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <Input icon={Users} placeholder="Passenger Capacity" type="number" value={formData.passengerCapacity} onChange={set("passengerCapacity")} />
+        <Input icon={Truck} placeholder="Cargo Capacity (kg)" type="number" value={formData.cargoCapacity} onChange={set("cargoCapacity")} />
+      </div>
+
+      <div className="space-y-1">
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Service Type</p>
+        <select
+          value={formData.serviceType}
+          onChange={(e) => set("serviceType")(e.target.value)}
+          className="w-full px-4 py-3.5 bg-slate-50 border-2 border-transparent rounded-2xl outline-none text-slate-700 font-semibold focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all"
+        >
+          <option value="">Select service type</option>
+          {SERVICE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+        </select>
+      </div>
+
+      <div className="pt-2">
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Vehicle Papers</p>
+        <div className="space-y-3">
+          <UploadBox icon={FileText} label="Vehicle Registration" sub="Proof of ownership document" checked={docs.vehicleRegistration} onToggle={() => toggleDoc("vehicleRegistration")} />
+          <UploadBox icon={ShieldCheck} label="Roadworthiness Certificate" sub="Current valid certificate" checked={docs.roadworthiness} onToggle={() => toggleDoc("roadworthiness")} />
+          <UploadBox icon={ShieldCheck} label="Vehicle Insurance" sub="Comprehensive or third-party" checked={docs.insurance} onToggle={() => toggleDoc("insurance")} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -375,10 +451,10 @@ function StepVehiclePapers({ docs, setDocs }: {
 // ─── Step 5: Bank & Social Links ──────────────────────────────────────────────
 
 function StepBankLinks({ formData, setFormData }: {
-  formData: OnboardingFormData;
-  setFormData: (d: OnboardingFormData) => void;
+  formData: FormData;
+  setFormData: (d: FormData) => void;
 }) {
-  const set = (key: keyof OnboardingFormData) => (v: string) => setFormData({ ...formData, [key]: v });
+  const set = (key: keyof FormData) => (v: string) => setFormData({ ...formData, [key]: v });
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-black text-slate-800 mb-4">Payout Account</h3>
@@ -411,7 +487,7 @@ function Input({
 }) {
   return (
     <div className="relative group">
-      <div className="absolute left-4 top-1/2 -translate-y-1/2 p-1.5 rounded-lg bg-slate-100 text-slate-400 group-focus-within:bg-green-600 group-focus-within:text-white transition-all duration-300">
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 p-1.5 rounded-lg bg-slate-100 text-slate-400 group-focus-within:bg-blue-600 group-focus-within:text-white transition-all duration-300">
         <Icon className="w-4 h-4" strokeWidth={2.5} />
       </div>
       <input
@@ -419,7 +495,7 @@ function Input({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full pl-14 pr-4 py-3.5 bg-slate-50 border-2 border-transparent rounded-2xl outline-none transition-all duration-300 text-slate-700 font-semibold placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:border-green-500/10 focus:ring-4 focus:ring-green-500/5 text-sm"
+        className="w-full pl-14 pr-4 py-3.5 bg-slate-50 border-2 border-transparent rounded-2xl outline-none transition-all duration-300 text-slate-700 font-semibold placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:border-blue-500/10 focus:ring-4 focus:ring-blue-500/5 text-sm"
       />
     </div>
   );
@@ -439,12 +515,12 @@ function UploadBox({
       onClick={onToggle}
       className={`relative border-2 border-dashed rounded-3xl p-5 flex items-center gap-5 cursor-pointer transition-all duration-300 ${
         checked
-          ? "border-green-500 bg-green-50"
-          : "border-slate-200 hover:border-green-500/50 hover:bg-slate-50"
+          ? "border-blue-500 bg-blue-50"
+          : "border-slate-200 hover:border-blue-500/50 hover:bg-slate-50"
       }`}
     >
       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all shrink-0 ${
-        checked ? "bg-green-600 text-white" : "bg-slate-100 text-slate-400"
+        checked ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-400"
       }`}>
         {checked ? <Check className="w-6 h-6" /> : <Icon className="w-6 h-6" />}
       </div>
@@ -453,7 +529,7 @@ function UploadBox({
         <p className="text-[11px] text-slate-400 font-medium">{sub}</p>
       </div>
       <div className={`w-9 h-9 rounded-full border flex items-center justify-center shrink-0 transition-all ${
-        checked ? "bg-green-600 border-green-600 text-white" : "border-slate-200 text-slate-300"
+        checked ? "bg-blue-600 border-cyan-600 text-white" : "border-slate-200 text-slate-300"
       }`}>
         <UploadCloud className="w-4 h-4" />
       </div>
