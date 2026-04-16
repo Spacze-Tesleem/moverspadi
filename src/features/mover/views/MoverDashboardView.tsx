@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/src/store/authStore";
 import { moverApi, type MoverStats, type MoverTrip, type IncomingRequest } from "@/src/services/api/mover";
+import { useBookingStore } from "@/src/store/bookingStore";
 import { profileApi } from "@/src/services/api/profile";
 import type { UserProfile } from "@/src/types/user/types";
 import { formatNaira } from "@/src/lib/format";
@@ -44,6 +45,9 @@ export default function MoverDashboardView() {
   const [activeTrip, setActiveTrip] = useState<{ stage: "pickup" | "dropoff" } | null>(null);
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState("");
+
+  // Shared booking state — used to push mover info to the customer's TrackView
+  const { setStatus: setBookingStatus, setMoverInfo } = useBookingStore();
 
   // ── Fetch dashboard data ────────────────────────────────────────────────────
   // To swap in the real API: set NEXT_PUBLIC_API_URL in .env.local.
@@ -95,6 +99,20 @@ export default function MoverDashboardView() {
     await moverApi.acceptRequest(incomingRequest.id, token);
     setActiveTrip({ stage: "pickup" });
     setIncomingRequest(null);
+
+    // Push mover info + matched status into the shared booking store so the
+    // customer's TrackView reflects the acceptance immediately (cross-tab via
+    // localStorage persistence).
+    setMoverInfo({
+      id: incomingRequest.id,
+      name: profile?.fullName ?? "Your Mover",
+      phone: profile?.phone ?? "+234 800 000 0000",
+      rating: stats?.rating ?? 4.8,
+      vehicle: "Toyota Hilux",
+      plate: "LND 482 KJ",
+      eta: incomingRequest.eta,
+    });
+    setBookingStatus("matched");
   };
 
   const handleDecline = async () => {
