@@ -51,20 +51,20 @@ export default function ConfirmStep({ bookingData, onPrev, onConfirm }: Props) {
           Edit Details
         </button>
         <div className="flex items-center gap-2">
-          <ShieldCheck size={14} className="text-emerald-500" />
+          <ShieldCheck size={14} className="text-green-500" />
           <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Verified</span>
         </div>
       </div>
 
       <header>
         <h1 className="text-2xl font-semibold text-white tracking-tight mb-1">
-          Order <span className="text-violet-400">Review</span>
+          Order <span className="text-blue-400">Review</span>
         </h1>
         <p className="text-zinc-500 text-sm">Finalize details to generate pricing.</p>
       </header>
 
       {/* --- RECEIPT CARD --- */}
-      <div className="bg-[#0e0e0e] border border-white/5 rounded-3xl p-6 relative shadow-2xl space-y-6">
+      <div className="bg-slate-900 border border-white/5 rounded-3xl p-6 relative shadow-2xl space-y-6">
         
         {/* Route Timeline */}
         <div className="relative space-y-6">
@@ -72,8 +72,8 @@ export default function ConfirmStep({ bookingData, onPrev, onConfirm }: Props) {
           <div className="absolute left-[19px] top-3 bottom-3 w-[2px] bg-zinc-800" />
           
           <div className="relative flex gap-4">
-            <div className="w-10 h-10 rounded-full bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shrink-0 z-10 bg-[#0e0e0e]">
-              <div className="w-2.5 h-2.5 rounded-full bg-violet-500" />
+            <div className="w-10 h-10 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0 z-10 bg-slate-900">
+              <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />
             </div>
             <div>
               <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Origin</p>
@@ -82,8 +82,8 @@ export default function ConfirmStep({ bookingData, onPrev, onConfirm }: Props) {
           </div>
 
           <div className="relative flex gap-4">
-            <div className="w-10 h-10 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0 z-10 bg-[#0e0e0e]">
-              <div className="w-2.5 h-2.5 rounded-sm border-2 border-indigo-500" />
+            <div className="w-10 h-10 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0 z-10 bg-slate-900">
+              <div className="w-2.5 h-2.5 rounded-sm border-2 border-blue-500" />
             </div>
             <div>
               <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Destination</p>

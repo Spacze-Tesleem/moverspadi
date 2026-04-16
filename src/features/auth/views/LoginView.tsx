@@ -52,9 +52,9 @@ const DEV_CREDENTIALS: Record<Role, { id: string; password: string; name: string
 
 const QUICK_ACCESS_ROLES: { role: Role; label: string; color: string; portal: string }[] = [
   { role: "customer", label: "Customer",  color: "bg-blue-500",   portal: "/customer" },
-  { role: "mover",    label: "Mover",     color: "bg-indigo-500", portal: "/mover" },
-  { role: "provider", label: "Provider",  color: "bg-cyan-500",   portal: "/provider" },
-  { role: "company",  label: "Company",   color: "bg-violet-500", portal: "/company" },
+  { role: "mover",    label: "Mover",     color: "bg-blue-600", portal: "/mover" },
+  { role: "provider", label: "Provider",  color: "bg-blue-500",   portal: "/provider" },
+  { role: "company",  label: "Company",   color: "bg-blue-500", portal: "/company" },
   { role: "admin",    label: "Admin",     color: "bg-slate-700",  portal: "/admin" },
 ];
 
@@ -165,7 +165,7 @@ function LoginPageInner() {
     <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4 md:p-6 relative overflow-hidden font-sans">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-100/40 blur-[120px] rounded-full" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-100/40 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-100/40 blur-[120px] rounded-full" />
       </div>
 
       <motion.div
@@ -249,7 +249,7 @@ function LoginPageInner() {
               className="space-y-5"
             >
               {error && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 bg-rose-50 border border-rose-100 text-rose-600 text-sm font-bold rounded-2xl flex items-center gap-3">
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 bg-red-50 border border-red-100 text-rose-600 text-sm font-bold rounded-2xl flex items-center gap-3">
                   <AlertCircle className="w-5 h-5" /> {error}
                 </motion.div>
               )}
@@ -302,7 +302,7 @@ function LoginPageInner() {
               className="w-full flex items-center justify-between px-4 py-3 rounded-2xl border border-dashed border-slate-200 hover:border-slate-300 hover:bg-slate-50/60 transition-all text-slate-500 text-xs font-bold uppercase tracking-widest"
             >
               <span className="flex items-center gap-2">
-                <Zap className="w-3.5 h-3.5 text-amber-500" />
+                <Zap className="w-3.5 h-3.5 text-blue-500" />
                 Quick Access (Dev)
               </span>
               <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${quickOpen ? "rotate-180" : ""}`} />

@@ -5,8 +5,8 @@ import { MapPin, Home, Briefcase, Star, Plus, Trash2, Edit2 } from "lucide-react
 
 const INITIAL_PLACES = [
   { id: "1", label: "Home",   address: "14 Bode Thomas St, Surulere, Lagos",    icon: Home,      color: "text-blue-500",   bg: "bg-blue-50",   bgDark: "bg-blue-500/10" },
-  { id: "2", label: "Office", address: "Plot 1234, Adeola Odeku St, Victoria Island", icon: Briefcase, color: "text-violet-500", bg: "bg-violet-50", bgDark: "bg-violet-500/10" },
-  { id: "3", label: "Gym",    address: "Ikoyi Club, Ikoyi, Lagos",              icon: Star,      color: "text-amber-500",  bg: "bg-amber-50",  bgDark: "bg-amber-500/10" },
+  { id: "2", label: "Office", address: "Plot 1234, Adeola Odeku St, Victoria Island", icon: Briefcase, color: "text-blue-500", bg: "bg-blue-50", bgDark: "bg-blue-500/10" },
+  { id: "3", label: "Gym",    address: "Ikoyi Club, Ikoyi, Lagos",              icon: Star,      color: "text-blue-500",  bg: "bg-blue-50",  bgDark: "bg-blue-500/10" },
 ];
 
 interface Props { isDark: boolean }
@@ -77,7 +77,7 @@ export default function SavedPlacesPanel({ isDark: D }: Props) {
               </button>
               <button
                 onClick={() => setPlaces(places.filter((p) => p.id !== place.id))}
-                className={`p-2 rounded-lg transition-colors ${D ? "text-zinc-600 hover:text-rose-400 hover:bg-rose-500/5" : "text-slate-300 hover:text-rose-500 hover:bg-rose-50"}`}
+                className={`p-2 rounded-lg transition-colors ${D ? "text-zinc-600 hover:text-red-400 hover:bg-red-500/5" : "text-slate-300 hover:text-red-500 hover:bg-red-50"}`}
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>

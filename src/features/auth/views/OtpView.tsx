@@ -159,7 +159,7 @@ function OtpPageInner() {
     <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4 relative overflow-hidden font-sans">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-[-10%] right-[-10%] w-[45%] h-[45%] bg-blue-100/40 blur-[120px] rounded-full" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[45%] h-[45%] bg-indigo-100/40 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[45%] h-[45%] bg-blue-100/40 blur-[120px] rounded-full" />
       </div>
 
       <motion.div
@@ -223,7 +223,7 @@ function OtpPageInner() {
                     className={`w-12 h-14 text-center text-xl font-black rounded-2xl border-2 outline-none transition-all duration-200 bg-slate-50 text-slate-900
                       ${d ? "border-blue-500 bg-white shadow-sm shadow-blue-100" : "border-slate-200"}
                       focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10
-                      ${error ? "border-rose-400 bg-rose-50" : ""}
+                      ${error ? "border-rose-400 bg-red-50" : ""}
                     `}
                   />
                 ))}
@@ -235,7 +235,7 @@ function OtpPageInner() {
                     initial={{ opacity: 0, y: -4 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className="flex items-center gap-2 p-3 bg-rose-50 border border-rose-100 rounded-2xl text-rose-600 text-sm font-bold mb-5"
+                    className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-2xl text-rose-600 text-sm font-bold mb-5"
                   >
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     {error}

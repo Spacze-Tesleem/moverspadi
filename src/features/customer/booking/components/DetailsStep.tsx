@@ -22,16 +22,16 @@ const VehicleCard = ({ label, icon: Icon, active, onClick }: { label: string, ic
     onClick={onClick}
     className={`relative flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border transition-all duration-300 group ${
       active
-        ? "bg-violet-500/10 border-violet-500/50 shadow-[0_0_20px_rgba(139,92,246,0.15)]"
+        ? "bg-blue-500/10 border-blue-500/50 shadow-[0_0_20px_rgba(139,92,246,0.15)]"
         : "bg-zinc-900/50 border-zinc-800 hover:bg-zinc-900 hover:border-zinc-700"
     }`}
   >
-    <Icon size={28} className={`transition-colors ${active ? "text-violet-400" : "text-zinc-500 group-hover:text-zinc-300"}`} />
+    <Icon size={28} className={`transition-colors ${active ? "text-blue-400" : "text-zinc-500 group-hover:text-zinc-300"}`} />
     <span className={`text-xs font-semibold ${active ? "text-white" : "text-zinc-500 group-hover:text-zinc-300"}`}>
       {label}
     </span>
     {active && (
-      <motion.div layoutId="active-vehicle" className="absolute inset-0 border-2 border-violet-500/50 rounded-2xl" />
+      <motion.div layoutId="active-vehicle" className="absolute inset-0 border-2 border-blue-500/50 rounded-2xl" />
     )}
   </button>
 );
@@ -92,10 +92,10 @@ const DispatchForm = ({ bookingData, setBookingFormData, onNext }: Props) => {
                 className="flex gap-2"
               >
                 <div className="relative flex-1">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-violet-500/50" />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-blue-500/50" />
                   <input
                     placeholder="Item description (e.g. Documents, Box)"
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 pl-8 pr-4 text-sm text-white placeholder:text-zinc-600 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 outline-none transition-all"
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 pl-8 pr-4 text-sm text-white placeholder:text-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-violet-500/20 outline-none transition-all"
                     value={item.name}
                     onChange={(e) => updateItem(idx, e.target.value)}
                   />
@@ -109,7 +109,7 @@ const DispatchForm = ({ bookingData, setBookingFormData, onNext }: Props) => {
             ))}
           </AnimatePresence>
           
-          <button onClick={addItem} className="w-full py-3 border border-dashed border-zinc-700 rounded-xl text-xs font-medium text-zinc-500 hover:text-violet-400 hover:border-violet-500/50 hover:bg-violet-500/5 transition-all flex items-center justify-center gap-2">
+          <button onClick={addItem} className="w-full py-3 border border-dashed border-zinc-700 rounded-xl text-xs font-medium text-zinc-500 hover:text-blue-400 hover:border-blue-500/50 hover:bg-blue-500/5 transition-all flex items-center justify-center gap-2">
             <Plus size={14} /> Add Line Item
           </button>
         </div>
@@ -148,7 +148,7 @@ const RideForm = ({ bookingData, setBookingFormData, onNext }: Props) => {
                type="number" min="1"
                value={bookingData.passengers}
                onChange={(e) => setBookingFormData(p => ({ ...p, passengers: e.target.value }))}
-               className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 outline-none transition-all"
+               className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-blue-500/50 focus:ring-1 focus:ring-violet-500/20 outline-none transition-all"
              />
           </div>
         </div>
@@ -157,7 +157,7 @@ const RideForm = ({ bookingData, setBookingFormData, onNext }: Props) => {
           <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Special Instructions</label>
           <textarea
             placeholder="E.g. Extra luggage, Child seat required..."
-            className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 outline-none transition-all resize-none h-24"
+            className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-blue-500/50 focus:ring-1 focus:ring-violet-500/20 outline-none transition-all resize-none h-24"
             value={bookingData.vehicleDescription || ""}
             onChange={(e) => setBookingFormData(p => ({ ...p, vehicleDescription: e.target.value }))}
           />
@@ -179,9 +179,9 @@ const TowForm = ({ bookingData, setBookingFormData, onNext }: Props) => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-4 flex gap-3">
-        <Info className="text-amber-500 shrink-0" size={18} />
-        <p className="text-xs text-amber-200/70 leading-relaxed">
+      <div className="bg-blue-500/5 border border-amber-500/10 rounded-xl p-4 flex gap-3">
+        <Info className="text-blue-500 shrink-0" size={18} />
+        <p className="text-xs text-blue-200/70 leading-relaxed">
           Please describe the vehicle and the nature of the breakdown to help us dispatch the correct tow truck.
         </p>
       </div>
@@ -237,19 +237,19 @@ export default function DetailsStep({ bookingData, setBookingFormData, onNext, o
         </button>
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{service} Config</span>
-          <Settings size={14} className="text-violet-500" />
+          <Settings size={14} className="text-blue-500" />
         </div>
       </div>
 
       <header>
         <h1 className="text-2xl font-semibold text-white tracking-tight mb-1">
-          Service <span className="text-violet-400">Details</span>
+          Service <span className="text-blue-400">Details</span>
         </h1>
         <p className="text-zinc-500 text-sm">Specify parameters for the selected operation.</p>
       </header>
 
       {/* Dynamic Content */}
-      <div className="bg-[#0e0e0e] border border-white/5 rounded-3xl p-6 relative shadow-2xl">
+      <div className="bg-slate-900 border border-white/5 rounded-3xl p-6 relative shadow-2xl">
         {renderForm()}
       </div>
 

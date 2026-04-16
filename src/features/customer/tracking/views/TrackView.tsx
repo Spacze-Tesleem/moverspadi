@@ -14,7 +14,7 @@ import type { LucideIcon } from "lucide-react";
 
 const MapPreview = dynamic(() => import("@/src/ui/map/MapPreview"), {
   ssr: false,
-  loading: () => <div className="h-full w-full bg-[#080808]" />,
+  loading: () => <div className="h-full w-full bg-slate-950" />,
 });
 
 type StatusKey = "searching" | "matched" | "in-progress" | "completed" | "cancelled";
@@ -38,33 +38,33 @@ const STATUS_CONFIG: Record<StatusKey, {
   matched: {
     title: "Mover Assigned",
     description: "A professional has been matched and is on the way.",
-    color: "text-violet-400",
-    bg: "bg-violet-600",
-    dot: "bg-violet-500",
+    color: "text-blue-400",
+    bg: "bg-blue-600",
+    dot: "bg-blue-500",
     icon: Truck,
   },
   "in-progress": {
     title: "Mission In Progress",
     description: "Your goods are securely in transit to the destination.",
-    color: "text-amber-400",
-    bg: "bg-amber-600",
-    dot: "bg-amber-500",
+    color: "text-blue-400",
+    bg: "bg-blue-600",
+    dot: "bg-blue-500",
     icon: Truck,
   },
   completed: {
     title: "Delivery Successful",
     description: "Mission accomplished. Your goods have been delivered.",
-    color: "text-emerald-400",
-    bg: "bg-emerald-600",
-    dot: "bg-emerald-500",
+    color: "text-green-400",
+    bg: "bg-green-600",
+    dot: "bg-green-500",
     icon: CheckCircle2,
   },
   cancelled: {
     title: "Request Cancelled",
     description: "This booking was cancelled and is no longer active.",
-    color: "text-rose-400",
-    bg: "bg-rose-600",
-    dot: "bg-rose-500",
+    color: "text-red-400",
+    bg: "bg-red-600",
+    dot: "bg-red-500",
     icon: XCircle,
   },
 };
@@ -99,7 +99,7 @@ export default function TrackView() {
 
   if (status === "idle") {
     return (
-      <div className="flex h-screen bg-[#080808] items-center justify-center p-6 text-center font-sans">
+      <div className="flex h-screen bg-slate-950 items-center justify-center p-6 text-center font-sans">
         <div className="space-y-4">
           <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs">No active booking</p>
           <button
@@ -117,7 +117,7 @@ export default function TrackView() {
   const Icon = current.icon;
 
   return (
-    <div className="flex h-screen bg-[#080808] text-zinc-100 overflow-hidden font-sans selection:bg-violet-500/30">
+    <div className="flex h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans selection:bg-blue-500/30">
 
       {/* --- LEFT PANEL --- */}
       <div className="w-full lg:w-[540px] bg-[#0a0a0a] border-r border-white/5 flex flex-col h-full relative z-20 shadow-2xl">
@@ -151,7 +151,7 @@ export default function TrackView() {
                 <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Live</span>
               </div>
               <div className="flex items-center gap-2">
-                <ShieldCheck size={14} className="text-emerald-500" />
+                <ShieldCheck size={14} className="text-green-500" />
                 <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Encrypted</span>
               </div>
             </div>
@@ -209,21 +209,21 @@ export default function TrackView() {
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  className="bg-[#0e0e0e] border border-white/5 rounded-3xl p-5 space-y-4"
+                  className="bg-slate-900 border border-white/5 rounded-3xl p-5 space-y-4"
                 >
                   <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Your Mover</p>
 
                   <div className="flex items-center gap-4">
                     {/* Avatar placeholder */}
-                    <div className="w-12 h-12 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shrink-0">
-                      <span className="text-lg font-black text-violet-400">
+                    <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
+                      <span className="text-lg font-black text-blue-400">
                         {moverInfo.name.charAt(0)}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold text-white">{moverInfo.name}</p>
                       <div className="flex items-center gap-1 mt-0.5">
-                        <Star size={11} className="text-amber-400 fill-amber-400" />
+                        <Star size={11} className="text-blue-400 fill-blue-400" />
                         <span className="text-xs text-zinc-400">{moverInfo.rating}</span>
                         <span className="text-zinc-700 mx-1">·</span>
                         <span className="text-xs text-zinc-500">{moverInfo.vehicle}</span>
@@ -272,14 +272,14 @@ export default function TrackView() {
             </AnimatePresence>
 
             {/* Trip card */}
-            <div className="bg-[#0e0e0e] border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
+            <div className="bg-slate-900 border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
               {/* Route */}
               <div className="p-6 border-b border-white/5">
                 <div className="relative space-y-6">
                   <div className="absolute left-[19px] top-3 bottom-3 w-[2px] bg-zinc-800" />
                   <div className="relative flex gap-4">
-                    <div className="w-10 h-10 rounded-full bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shrink-0 z-10 bg-[#0e0e0e]">
-                      <div className="w-2.5 h-2.5 rounded-full bg-violet-500" />
+                    <div className="w-10 h-10 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0 z-10 bg-slate-900">
+                      <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />
                     </div>
                     <div>
                       <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Pickup</p>
@@ -287,8 +287,8 @@ export default function TrackView() {
                     </div>
                   </div>
                   <div className="relative flex gap-4">
-                    <div className="w-10 h-10 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0 z-10 bg-[#0e0e0e]">
-                      <div className="w-2.5 h-2.5 rounded-sm border-2 border-indigo-500" />
+                    <div className="w-10 h-10 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0 z-10 bg-slate-900">
+                      <div className="w-2.5 h-2.5 rounded-sm border-2 border-blue-500" />
                     </div>
                     <div>
                       <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Destination</p>
@@ -323,7 +323,7 @@ export default function TrackView() {
             {status === "searching" && (
               <button
                 onClick={handleCancel}
-                className="w-full py-3 text-xs font-bold uppercase tracking-[0.2em] text-rose-500/40 hover:text-rose-500 transition-colors"
+                className="w-full py-3 text-xs font-bold uppercase tracking-[0.2em] text-red-500/40 hover:text-red-500 transition-colors"
               >
                 Cancel Request
               </button>
@@ -363,7 +363,7 @@ export default function TrackView() {
       </div>
 
       {/* --- MAP PANEL (RIGHT) --- */}
-      <div className="hidden lg:block flex-1 bg-[#080808] relative">
+      <div className="hidden lg:block flex-1 bg-slate-950 relative">
         <MapPreview pickup={pickup} dropoff={dropoff} />
         <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-[#0a0a0a] via-transparent to-transparent opacity-50" />
         <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.8)]" />

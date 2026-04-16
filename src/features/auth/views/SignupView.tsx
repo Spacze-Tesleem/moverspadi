@@ -145,7 +145,7 @@ function SignupPageInner() {
             className="space-y-4"
           >
             {error && (
-              <div className="flex items-center gap-2 p-4 bg-rose-50 border border-rose-100 rounded-2xl text-rose-600 text-sm font-bold">
+              <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-100 rounded-2xl text-rose-600 text-sm font-bold">
                 <AlertCircle className="w-5 h-5 shrink-0" />
                 {error}
               </div>

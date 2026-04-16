@@ -15,7 +15,7 @@ import {
 
 const MapPreview = dynamic(() => import("@/src/ui/map/MapPreview"), {
   ssr: false,
-  loading: () => <div className="h-full w-full bg-[#080808]" />,
+  loading: () => <div className="h-full w-full bg-slate-950" />,
 });
 
 const getPriceEstimate = bookingApi.getPriceEstimate;
@@ -34,7 +34,7 @@ export default function PriceView() {
   };
 
   return (
-    <div className="flex h-screen bg-[#080808] text-zinc-100 overflow-hidden font-sans selection:bg-violet-500/30">
+    <div className="flex h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans selection:bg-blue-500/30">
 
       {/* --- FORM PANEL (LEFT) --- */}
       <div className="w-full lg:w-[540px] bg-[#0a0a0a] border-r border-white/5 flex flex-col h-full relative z-20 shadow-2xl">
@@ -60,7 +60,7 @@ export default function PriceView() {
             {[0, 1, 2, 3].map((idx) => (
               <div
                 key={idx}
-                className="flex-1 rounded-full bg-violet-500/30"
+                className="flex-1 rounded-full bg-blue-500/30"
               />
             ))}
           </div>
@@ -83,20 +83,20 @@ export default function PriceView() {
                 Edit Details
               </button>
               <div className="flex items-center gap-2">
-                <ShieldCheck size={14} className="text-emerald-500" />
+                <ShieldCheck size={14} className="text-green-500" />
                 <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Insured</span>
               </div>
             </div>
 
             <header>
               <h1 className="text-2xl font-semibold text-white tracking-tight mb-1">
-                Fare <span className="text-violet-400">Summary</span>
+                Fare <span className="text-blue-400">Summary</span>
               </h1>
               <p className="text-zinc-500 text-sm">Review your order before confirming.</p>
             </header>
 
             {/* Receipt card */}
-            <div className="bg-[#0e0e0e] border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
+            <div className="bg-slate-900 border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
 
               {/* Route */}
               <div className="p-6 border-b border-white/5">
@@ -104,8 +104,8 @@ export default function PriceView() {
                   <div className="absolute left-[19px] top-3 bottom-3 w-[2px] bg-zinc-800" />
 
                   <div className="relative flex gap-4">
-                    <div className="w-10 h-10 rounded-full bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shrink-0 z-10 bg-[#0e0e0e]">
-                      <div className="w-2.5 h-2.5 rounded-full bg-violet-500" />
+                    <div className="w-10 h-10 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0 z-10 bg-slate-900">
+                      <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />
                     </div>
                     <div>
                       <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Pickup</p>
@@ -114,8 +114,8 @@ export default function PriceView() {
                   </div>
 
                   <div className="relative flex gap-4">
-                    <div className="w-10 h-10 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0 z-10 bg-[#0e0e0e]">
-                      <div className="w-2.5 h-2.5 rounded-sm border-2 border-indigo-500" />
+                    <div className="w-10 h-10 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0 z-10 bg-slate-900">
+                      <div className="w-2.5 h-2.5 rounded-sm border-2 border-blue-500" />
                     </div>
                     <div>
                       <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Destination</p>
@@ -133,11 +133,11 @@ export default function PriceView() {
                 </div>
 
                 <div className="flex justify-between items-center text-sm">
-                  <div className="flex items-center gap-1.5 text-emerald-500">
+                  <div className="flex items-center gap-1.5 text-green-500">
                     <ShieldCheck size={14} />
                     <span className="font-medium">Insurance</span>
                   </div>
-                  <span className="font-semibold text-emerald-500">+₦{insurance.toLocaleString()}</span>
+                  <span className="font-semibold text-green-500">+₦{insurance.toLocaleString()}</span>
                 </div>
 
                 <div className="h-px w-full bg-white/5" />
@@ -156,7 +156,7 @@ export default function PriceView() {
                     <p className="text-xs font-bold text-zinc-300">Wallet Balance</p>
                     <p className="text-[10px] text-zinc-600">₦21,850 available</p>
                   </div>
-                  <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20">
+                  <span className="text-[10px] font-bold text-green-500 bg-green-500/10 px-2 py-1 rounded-lg border border-emerald-500/20">
                     Sufficient
                   </span>
                 </div>
@@ -188,7 +188,7 @@ export default function PriceView() {
       </div>
 
       {/* --- MAP PANEL (RIGHT) --- */}
-      <div className="hidden lg:block flex-1 bg-[#080808] relative">
+      <div className="hidden lg:block flex-1 bg-slate-950 relative">
         <MapPreview pickup={pickup} dropoff={dropoff} />
         <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-[#0a0a0a] via-transparent to-transparent opacity-50" />
         <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.8)]" />

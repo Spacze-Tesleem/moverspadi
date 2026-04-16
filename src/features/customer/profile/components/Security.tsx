@@ -32,9 +32,9 @@ export default function Security({ isDark: D = false }: Props) {
         ))}
       </div>
 
-      <div className={`rounded-2xl border p-4 ${D ? "bg-amber-500/5 border-amber-500/20" : "bg-amber-50 border-amber-200"}`}>
-        <p className={`text-xs font-bold mb-1 ${D ? "text-amber-400" : "text-amber-700"}`}>Recommendation</p>
-        <p className={`text-xs leading-relaxed ${D ? "text-amber-500/80" : "text-amber-600"}`}>
+      <div className={`rounded-2xl border p-4 ${D ? "bg-blue-500/5 border-blue-500/20" : "bg-blue-50 border-blue-200"}`}>
+        <p className={`text-xs font-bold mb-1 ${D ? "text-blue-400" : "text-blue-700"}`}>Recommendation</p>
+        <p className={`text-xs leading-relaxed ${D ? "text-blue-500/80" : "text-blue-600"}`}>
           Enable 2-step verification to protect your account from unauthorised access.
         </p>
       </div>

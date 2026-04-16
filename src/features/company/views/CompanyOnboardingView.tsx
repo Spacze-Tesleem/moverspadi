@@ -139,7 +139,7 @@ export default function CompanyOnboardingView() {
       <div className="w-full max-w-[560px]">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-600/20">
+          <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-600/20">
             <Building2 className="w-7 h-7 text-white" />
           </div>
           <h2 className="text-3xl font-black text-slate-900">Company Setup</h2>
@@ -151,12 +151,12 @@ export default function CompanyOnboardingView() {
           {STEPS.map((s, i) => (
             <div key={s.id} className="flex items-center gap-2 flex-1">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0 transition-all ${
-                step > s.id ? "bg-indigo-600 text-white" : step === s.id ? "bg-indigo-600 text-white ring-4 ring-indigo-100" : "bg-slate-200 text-slate-400"
+                step > s.id ? "bg-blue-600 text-white" : step === s.id ? "bg-blue-600 text-white ring-4 ring-indigo-100" : "bg-slate-200 text-slate-400"
               }`}>
                 {step > s.id ? <CheckCircle2 className="w-4 h-4" /> : s.id}
               </div>
               {i < STEPS.length - 1 && (
-                <div className={`h-0.5 flex-1 rounded-full transition-all ${step > s.id ? "bg-indigo-600" : "bg-slate-200"}`} />
+                <div className={`h-0.5 flex-1 rounded-full transition-all ${step > s.id ? "bg-blue-600" : "bg-slate-200"}`} />
               )}
             </div>
           ))}
@@ -165,7 +165,7 @@ export default function CompanyOnboardingView() {
         {/* Progress bar */}
         <div className="h-1.5 bg-slate-100 rounded-full mb-8 overflow-hidden">
           <motion.div
-            className="h-full bg-indigo-600 rounded-full"
+            className="h-full bg-blue-600 rounded-full"
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.4 }}
           />
@@ -246,10 +246,10 @@ export default function CompanyOnboardingView() {
                     type="checkbox"
                     checked={formData.agreedToCommission}
                     onChange={(e) => update("agreedToCommission", e.target.checked)}
-                    className="w-4 h-4 mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    className="w-4 h-4 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-indigo-500"
                   />
                   <span className="text-sm text-slate-500 font-medium">
-                    I agree to MoversPadi&apos;s <span className="text-indigo-600 font-bold">commission terms</span> and understand that a platform fee will be deducted from each completed order.
+                    I agree to MoversPadi&apos;s <span className="text-blue-600 font-bold">commission terms</span> and understand that a platform fee will be deducted from each completed order.
                   </span>
                 </label>
               </motion.div>
@@ -269,7 +269,7 @@ export default function CompanyOnboardingView() {
             <button
               onClick={handleNext}
               disabled={isSubmitting}
-              className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition-all disabled:opacity-70"
+              className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-blue-600 text-white font-bold hover:bg-indigo-700 shadow-lg shadow-blue-600/20 transition-all disabled:opacity-70"
             >
               {isSubmitting ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -324,7 +324,7 @@ function UploadRow({
         uploaded ? "border-indigo-500/30 bg-indigo-50/50" : "border-slate-100 bg-slate-50 hover:border-slate-200"
       }`}
     >
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${uploaded ? "bg-indigo-600 text-white" : "bg-white text-slate-400 border border-slate-200"}`}>
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${uploaded ? "bg-blue-600 text-white" : "bg-white text-slate-400 border border-slate-200"}`}>
         {uploaded ? <CheckCircle2 className="w-5 h-5" /> : <UploadCloud className="w-5 h-5" />}
       </div>
       <div className="flex-1">

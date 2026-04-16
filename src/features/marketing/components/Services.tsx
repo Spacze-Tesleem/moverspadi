@@ -19,9 +19,9 @@ const services = [
     desc: "Hyper-local parcel delivery with real-time tracking. Perfect for documents and food.",
     icon: <Bike className="w-6 h-6" />,
     tag: "15-30 min",
-    lightBg: "bg-emerald-50",
-    darkBg: "bg-emerald-500",
-    text: "text-emerald-600",
+    lightBg: "bg-green-50",
+    darkBg: "bg-green-500",
+    text: "text-green-600",
   },
   {
     title: "Enterprise Haulage",
@@ -37,18 +37,18 @@ const services = [
     desc: "Stuck on the road? Get connected to the nearest tow truck in minutes.",
     icon: <Car className="w-6 h-6" />,
     tag: "24/7",
-    lightBg: "bg-orange-50",
-    darkBg: "bg-orange-500",
-    text: "text-orange-600",
+    lightBg: "bg-green-50",
+    darkBg: "bg-green-500",
+    text: "text-green-600",
   },
   {
     title: "Inter-state Logistics",
     desc: "Moving goods across borders? Our transport network ensures safe long-distance delivery.",
     icon: <Globe className="w-6 h-6" />,
     tag: "Nationwide",
-    lightBg: "bg-purple-50",
-    darkBg: "bg-purple-500",
-    text: "text-purple-600",
+    lightBg: "bg-blue-50",
+    darkBg: "bg-blue-500",
+    text: "text-blue-600",
   },
 ];
 
@@ -78,7 +78,7 @@ export default function Services() {
       {/* Background Glow */}
       <div className="absolute inset-0 opacity-40 pointer-events-none">
         <div className="absolute top-0 left-1/3 w-[500px] h-[500px] bg-green-200 blur-[140px] rounded-full" />
-        <div className="absolute bottom-0 right-1/3 w-[400px] h-[400px] bg-emerald-200 blur-[120px] rounded-full" />
+        <div className="absolute bottom-0 right-1/3 w-[400px] h-[400px] bg-green-200 blur-[120px] rounded-full" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">

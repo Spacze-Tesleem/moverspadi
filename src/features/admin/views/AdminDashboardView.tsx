@@ -61,7 +61,7 @@ const ROLE_STYLES: Record<string, string> = {
 
 const ALERT_STYLES: Record<string, { bg: string; icon: React.ComponentType<{ className?: string; size?: number }>; color: string }> = {
   warning: { bg: "bg-blue-50 border-blue-200" },
-  error: { bg: "bg-rose-50 border-rose-200", icon: AlertCircle, color: "text-rose-500" },
+  error: { bg: "bg-red-50 border-red-200", icon: AlertCircle, color: "text-red-500" },
   info: { bg: "bg-blue-50 border-blue-200", icon: Bell, color: "text-blue-500" },
   success: { bg: "bg-green-50 border-green-200", icon: CheckCircle2, color: "text-green-500" },
 };
@@ -249,7 +249,7 @@ export default function AdminDashboardView() {
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-black text-white">User Management</h2>
                     <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
-                      <span className="w-2 h-2 bg-emerald-500 rounded-full" />
+                      <span className="w-2 h-2 bg-green-500 rounded-full" />
                       {RECENT_USERS.filter(u => u.status === "active").length} active
                     </div>
                   </div>

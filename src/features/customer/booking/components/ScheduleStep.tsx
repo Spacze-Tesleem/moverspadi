@@ -40,31 +40,31 @@ export default function ScheduleStep({ bookingData, setBookingFormData, onNext, 
           Back
         </button>
         <div className="flex items-center gap-2">
-          <Calendar size={14} className="text-violet-500" />
+          <Calendar size={14} className="text-blue-500" />
           <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Scheduling</span>
         </div>
       </div>
 
       <header>
         <h1 className="text-2xl font-semibold text-white tracking-tight mb-1">
-          Time <span className="text-violet-400">Frame</span>
+          Time <span className="text-blue-400">Frame</span>
         </h1>
         <p className="text-zinc-500 text-sm">Synchronize operation with system clock.</p>
       </header>
 
       {/* --- MAIN CARD --- */}
-      <div className="bg-[#0e0e0e] border border-white/5 rounded-3xl p-6 relative shadow-2xl space-y-8">
+      <div className="bg-slate-900 border border-white/5 rounded-3xl p-6 relative shadow-2xl space-y-8">
         
         {/* DATE SELECTION */}
         <div className="space-y-3">
           <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">01. Operation Date</label>
           <div className="relative group">
-            <Calendar size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-violet-500 transition-colors" />
+            <Calendar size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-blue-500 transition-colors" />
             <input 
               type="date"
               value={bookingData.scheduleDate}
               onChange={(e) => setBookingFormData(prev => ({ ...prev, scheduleDate: e.target.value }))}
-              className="w-full bg-zinc-900/50 border border-white/5 rounded-xl py-3.5 pl-12 pr-4 text-sm text-white placeholder:text-zinc-600 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 outline-none transition-all [color-scheme:dark]"
+              className="w-full bg-zinc-900/50 border border-white/5 rounded-xl py-3.5 pl-12 pr-4 text-sm text-white placeholder:text-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-violet-500/20 outline-none transition-all [color-scheme:dark]"
             />
           </div>
         </div>
@@ -83,11 +83,11 @@ export default function ScheduleStep({ bookingData, setBookingFormData, onNext, 
                   onClick={() => setBookingFormData(prev => ({ ...prev, scheduleTime: slot.time }))}
                   className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all duration-200 group ${
                     active 
-                      ? "bg-violet-500/10 border-violet-500/50 shadow-[0_0_15px_rgba(139,92,246,0.15)]" 
+                      ? "bg-blue-500/10 border-blue-500/50 shadow-[0_0_15px_rgba(139,92,246,0.15)]" 
                       : "bg-zinc-900/30 border-white/5 hover:bg-zinc-900 hover:border-white/10"
                   }`}
                 >
-                  <slot.icon size={20} className={active ? "text-violet-400" : "text-zinc-500 group-hover:text-zinc-300"} />
+                  <slot.icon size={20} className={active ? "text-blue-400" : "text-zinc-500 group-hover:text-zinc-300"} />
                   <div className="text-center">
                     <p className={`text-[10px] font-bold uppercase tracking-wider ${active ? "text-white" : "text-zinc-500"}`}>{slot.label}</p>
                     <p className="text-[10px] text-zinc-600">{slot.time}</p>
@@ -103,17 +103,17 @@ export default function ScheduleStep({ bookingData, setBookingFormData, onNext, 
                <div className="w-full border-t border-white/5"></div>
              </div>
              <div className="relative flex justify-center">
-               <span className="bg-[#0e0e0e] px-2 text-[10px] text-zinc-600 uppercase tracking-widest">Or Specific Time</span>
+               <span className="bg-slate-900 px-2 text-[10px] text-zinc-600 uppercase tracking-widest">Or Specific Time</span>
              </div>
           </div>
 
           <div className="relative group">
-            <Clock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-violet-500 transition-colors" />
+            <Clock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-blue-500 transition-colors" />
             <input 
               type="time"
               value={bookingData.scheduleTime}
               onChange={(e) => setBookingFormData(prev => ({ ...prev, scheduleTime: e.target.value }))}
-              className="w-full bg-zinc-900/50 border border-white/5 rounded-xl py-3.5 pl-12 pr-4 text-sm text-white focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 outline-none transition-all [color-scheme:dark]"
+              className="w-full bg-zinc-900/50 border border-white/5 rounded-xl py-3.5 pl-12 pr-4 text-sm text-white focus:border-blue-500/50 focus:ring-1 focus:ring-violet-500/20 outline-none transition-all [color-scheme:dark]"
             />
           </div>
         </div>
@@ -125,13 +125,13 @@ export default function ScheduleStep({ bookingData, setBookingFormData, onNext, 
         {isValid && (
           <motion.div 
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-            className="p-4 rounded-2xl bg-gradient-to-r from-violet-500/10 to-indigo-500/10 border border-violet-500/20 flex items-center gap-4"
+            className="p-4 rounded-2xl bg-gradient-to-r from-violet-500/10 to-indigo-500/10 border border-blue-500/20 flex items-center gap-4"
           >
-            <div className="w-10 h-10 rounded-xl bg-violet-500 flex items-center justify-center text-black shadow-lg shadow-violet-900/20">
+            <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center text-black shadow-lg shadow-violet-900/20">
               <CheckCircle2 size={20} />
             </div>
             <div>
-              <p className="text-[10px] font-bold text-violet-400 uppercase tracking-widest">Confirmed Slot</p>
+              <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Confirmed Slot</p>
               <p className="text-sm font-semibold text-white">
                 {new Date(bookingData.scheduleDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
                 <span className="text-zinc-500 mx-2">|</span>

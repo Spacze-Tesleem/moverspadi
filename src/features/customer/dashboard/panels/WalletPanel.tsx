@@ -98,8 +98,8 @@ export default function WalletPanel({ isDark: D }: Props) {
             <div key={t.id} className={`px-5 py-4 flex items-center gap-4 transition-colors ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
               <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
                 t.type === "credit"
-                  ? D ? "bg-emerald-500/10 text-emerald-400" : "bg-emerald-50 text-emerald-600"
-                  : D ? "bg-rose-500/10 text-rose-400"    : "bg-rose-50 text-rose-500"
+                  ? D ? "bg-green-500/10 text-green-400" : "bg-green-50 text-green-600"
+                  : D ? "bg-red-500/10 text-red-400"    : "bg-red-50 text-red-500"
               }`}>
                 {t.type === "credit"
                   ? <ArrowDownLeft className="w-4 h-4" />
@@ -111,7 +111,7 @@ export default function WalletPanel({ isDark: D }: Props) {
               </div>
               <span className={`text-sm font-bold shrink-0 ${
                 t.type === "credit"
-                  ? "text-emerald-500"
+                  ? "text-green-500"
                   : D ? "text-zinc-300" : "text-slate-800"
               }`}>
                 {t.type === "credit" ? "+" : "-"}₦{Math.abs(t.amount).toLocaleString()}

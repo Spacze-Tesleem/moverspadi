@@ -36,9 +36,9 @@ export default function SupportPanel({ isDark: D }: Props) {
       {/* Contact options */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[
-          { icon: Phone,        label: "Call Us",   sub: "+234 800 MOVERS",    color: "text-emerald-500", bg: "bg-emerald-50", bgDark: "bg-emerald-500/10" },
+          { icon: Phone,        label: "Call Us",   sub: "+234 800 MOVERS",    color: "text-green-500", bg: "bg-green-50", bgDark: "bg-green-500/10" },
           { icon: Mail,         label: "Email",     sub: "help@moverspadi.com", color: "text-blue-500",    bg: "bg-blue-50",    bgDark: "bg-blue-500/10" },
-          { icon: MessageSquare,label: "Live Chat", sub: "Avg. 2 min reply",   color: "text-violet-500",  bg: "bg-violet-50",  bgDark: "bg-violet-500/10" },
+          { icon: MessageSquare,label: "Live Chat", sub: "Avg. 2 min reply",   color: "text-blue-500",  bg: "bg-blue-50",  bgDark: "bg-blue-500/10" },
         ].map((c) => (
           <button key={c.label} className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${D ? "bg-white/5 border-white/5 hover:bg-white/10" : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm"}`}>
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${D ? c.bgDark : c.bg}`}>
@@ -55,7 +55,7 @@ export default function SupportPanel({ isDark: D }: Props) {
         <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>Send a Message</p>
         {sent ? (
           <div className="py-4 text-center">
-            <p className="text-emerald-500 font-bold text-sm">Message sent! We&apos;ll reply within 2 hours.</p>
+            <p className="text-green-500 font-bold text-sm">Message sent! We&apos;ll reply within 2 hours.</p>
           </div>
         ) : (
           <>

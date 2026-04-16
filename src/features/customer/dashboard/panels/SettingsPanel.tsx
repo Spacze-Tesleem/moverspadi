@@ -71,7 +71,7 @@ export default function SettingsPanel({ isDark: D }: Props) {
                 : "border-slate-200 text-slate-600 hover:bg-slate-100"
             }`}
           >
-            {D ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5" />}
+            {D ? <Sun className="w-3.5 h-3.5 text-blue-400" /> : <Moon className="w-3.5 h-3.5" />}
             Switch
           </button>
         </Row>

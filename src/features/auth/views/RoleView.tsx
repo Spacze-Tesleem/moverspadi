@@ -44,26 +44,25 @@ const MOVER_SUBTYPES: { role: MoverSubType; label: string; description: string; 
     role: "mover",
     label: "Independent Mover",
     description: "Individual courier or driver operating solo",
-    color: "blue",
+    color: "green",
   },
   {
     role: "provider",
     label: "Transport Provider",
     description: "Heavy-duty or specialised transport services",
-    color: "cyan",
+    color: "blue",
   },
   {
     role: "company",
     label: "Logistics Company",
     description: "Enterprise fleet with multiple drivers",
-    color: "violet",
+    color: "blue",
   },
 ];
 
 const COLOR_MAP: Record<string, string> = {
-  blue:   "bg-blue-500/10 border-blue-500/40 text-blue-600",
-  cyan:   "bg-cyan-500/10 border-cyan-500/40 text-cyan-600",
-  violet: "bg-violet-500/10 border-violet-500/40 text-violet-600",
+  blue:  "bg-blue-500/10 border-blue-500/40 text-blue-600",
+  green: "bg-green-500/10 border-green-500/40 text-green-600",
 };
 
 function RolePageInner() {

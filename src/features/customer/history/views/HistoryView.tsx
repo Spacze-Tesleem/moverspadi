@@ -26,15 +26,15 @@ const TYPE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
 
 const TYPE_COLORS_LIGHT: Record<string, string> = {
   ride:     "text-blue-500 bg-blue-50 border-blue-100",
-  dispatch: "text-orange-500 bg-orange-50 border-orange-100",
-  haulage:  "text-violet-500 bg-violet-50 border-violet-100",
-  tow:      "text-rose-500 bg-rose-50 border-rose-100",
+  dispatch: "text-green-500 bg-green-50 border-green-100",
+  haulage:  "text-blue-500 bg-blue-50 border-blue-100",
+  tow:      "text-red-500 bg-red-50 border-red-100",
 };
 const TYPE_COLORS_DARK: Record<string, string> = {
   ride:     "text-blue-400 bg-blue-500/10 border-blue-500/20",
-  dispatch: "text-orange-400 bg-orange-500/10 border-orange-500/20",
-  haulage:  "text-violet-400 bg-violet-500/10 border-violet-500/20",
-  tow:      "text-rose-400 bg-rose-500/10 border-rose-500/20",
+  dispatch: "text-green-400 bg-green-500/10 border-green-500/20",
+  haulage:  "text-blue-400 bg-blue-500/10 border-blue-500/20",
+  tow:      "text-red-400 bg-red-500/10 border-red-500/20",
 };
 
 function StarRating({ rating, isDark }: { rating: number | null; isDark: boolean }) {
@@ -71,8 +71,8 @@ export default function HistoryView({ isDark = false, embedded = false }: Props)
     .reduce((sum, o) => sum + parseInt(o.amount.replace(/[₦,]/g, "") || "0"), 0);
 
   const STATUS_STYLES = {
-    completed:    D ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" : "text-emerald-600 bg-emerald-50 border-emerald-200",
-    cancelled:    D ? "text-rose-400 bg-rose-500/10 border-rose-500/20"          : "text-rose-500 bg-rose-50 border-rose-200",
+    completed:    D ? "text-green-400 bg-green-500/10 border-green-500/20" : "text-green-600 bg-green-50 border-green-200",
+    cancelled:    D ? "text-red-400 bg-red-500/10 border-red-500/20"          : "text-red-500 bg-red-50 border-rose-200",
     "in-progress":D ? "text-blue-400 bg-blue-500/10 border-blue-500/20"          : "text-blue-500 bg-blue-50 border-blue-200",
   };
 

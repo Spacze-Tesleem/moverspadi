@@ -18,8 +18,8 @@ interface Props {
 
 const SERVICES = [
   { id: "ride" as const, label: "Ride", icon: Car, gradient: "from-blue-500 to-cyan-500" },
-  { id: "dispatch" as const, label: "Dispatch", icon: Package, gradient: "from-orange-500 to-amber-500" },
-  { id: "haulage" as const, label: "Haulage", icon: Truck, gradient: "from-purple-500 to-pink-500" },
+  { id: "dispatch" as const, label: "Dispatch", icon: Package, gradient: "from-green-500 to-green-600" },
+  { id: "haulage" as const, label: "Haulage", icon: Truck, gradient: "from-blue-500 to-blue-600" },
   { id: "tow" as const, label: "Recovery", icon: Wrench, gradient: "from-red-500 to-rose-500" },
 ] as const;
 
@@ -154,11 +154,11 @@ export default function LocationStep({ bookingData, setBookingFormData, onNext }
           {/* PICKUP */}
           <div className="relative group bg-[#16181D] rounded-t-[20px] rounded-b-lg p-4 flex items-start gap-4 transition-colors hover:bg-[#1A1D24]">
             <div className="mt-1 flex flex-col items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.6)]" />
-              <div className="w-[1px] h-8 bg-gradient-to-b from-cyan-500/50 to-transparent" />
+              <div className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+              <div className="w-[1px] h-8 bg-gradient-to-b from-green-500/50 to-transparent" />
             </div>
             <div className="flex-1">
-              <label className="block text-[10px] font-medium text-cyan-500/70 mb-1">Pickup Location</label>
+              <label className="block text-[10px] font-medium text-blue-500/70 mb-1">Pickup Location</label>
               <input 
                 value={bookingData.pickup}
                 onFocus={() => setActiveField("pickup")}
@@ -168,7 +168,7 @@ export default function LocationStep({ bookingData, setBookingFormData, onNext }
               />
             </div>
             {/* Geo Button hidden on mobile, visible on focus or desktop */}
-            <button onClick={useCurrentLocation} className="text-zinc-600 hover:text-cyan-400 transition-colors mt-2 mr-10">
+            <button onClick={useCurrentLocation} className="text-zinc-600 hover:text-green-400 transition-colors mt-2 mr-10">
               {geoLoading ? <Loader2 size={16} className="animate-spin" /> : <Locate size={16} />}
             </button>
           </div>
@@ -176,11 +176,11 @@ export default function LocationStep({ bookingData, setBookingFormData, onNext }
           {/* DROPOFF */}
           <div className="relative group bg-[#16181D] rounded-b-[20px] rounded-t-lg p-4 flex items-start gap-4 transition-colors hover:bg-[#1A1D24]">
             <div className="mt-1 flex flex-col items-center gap-1">
-              <div className="w-[1px] h-2 bg-gradient-to-b from-transparent to-purple-500/50" />
-              <div className="w-2 h-2 rounded-sm bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.6)]" />
+              <div className="w-[1px] h-2 bg-gradient-to-b from-transparent to-blue-500/50" />
+              <div className="w-2 h-2 rounded-sm bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
             </div>
             <div className="flex-1">
-              <label className="block text-[10px] font-medium text-purple-500/70 mb-1">Destination</label>
+              <label className="block text-[10px] font-medium text-blue-500/70 mb-1">Destination</label>
               <input 
                 value={bookingData.dropoff}
                 onFocus={() => setActiveField("dropoff")}
@@ -217,7 +217,7 @@ export default function LocationStep({ bookingData, setBookingFormData, onNext }
       <div>
         <div className="flex items-center justify-between mb-3 px-1">
           <span className="text-xs font-medium text-zinc-500">Saved Places</span>
-          <button className="text-[10px] text-cyan-500 hover:text-cyan-400">Edit</button>
+          <button className="text-[10px] text-blue-500 hover:text-green-400">Edit</button>
         </div>
         <div className="flex flex-col gap-2">
           {SAVED_PLACES.map((place) => (

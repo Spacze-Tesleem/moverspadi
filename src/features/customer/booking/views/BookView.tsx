@@ -15,7 +15,7 @@ import { BookingFormData } from "@/src/types/booking/types";
 // Map loads dynamically to avoid SSR issues
 const MapPreview = dynamic(() => import("@/src/ui/map/MapPreview"), { 
   ssr: false,
-  loading: () => <div className="h-full w-full bg-[#080808]" /> 
+  loading: () => <div className="h-full w-full bg-slate-950" /> 
 });
 
 const steps = ["Location", "Details", "Schedule", "Confirm"];
@@ -47,7 +47,7 @@ function BookServiceContent() {
   const handlePrev = () => setActiveStep((s) => (s > 0 ? s - 1 : s));
 
   return (
-    <div className="flex h-screen bg-[#080808] text-zinc-100 overflow-hidden font-sans selection:bg-violet-500/30">
+    <div className="flex h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans selection:bg-blue-500/30">
       
       {/* --- FORM PANEL (LEFT) --- */}
       <div className="w-full lg:w-[540px] bg-[#0a0a0a] border-r border-white/5 flex flex-col h-full relative z-20 shadow-2xl">
@@ -75,9 +75,9 @@ function BookServiceContent() {
                 key={idx} 
                 className={`flex-1 rounded-full transition-all duration-500 ${
                   idx === activeStep 
-                    ? "bg-violet-500" 
+                    ? "bg-blue-500" 
                     : idx < activeStep 
-                      ? "bg-violet-500/30" 
+                      ? "bg-blue-500/30" 
                       : "bg-white/5"
                 }`} 
               />
@@ -132,7 +132,7 @@ function BookServiceContent() {
       </div>
 
       {/* --- MAP PANEL (RIGHT) --- */}
-      <div className="hidden lg:block flex-1 bg-[#080808] relative">
+      <div className="hidden lg:block flex-1 bg-slate-950 relative">
         <MapPreview pickup={bookingData.pickup} dropoff={bookingData.dropoff} />
         
         {/* Gradient Overlay for seamless blending */}
@@ -148,8 +148,8 @@ function BookServiceContent() {
 export default function BookView() {
   return (
     <Suspense fallback={
-      <div className="h-screen w-full bg-[#080808] flex flex-col items-center justify-center gap-4">
-        <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+      <div className="h-screen w-full bg-slate-950 flex flex-col items-center justify-center gap-4">
+        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
         <span className="text-zinc-500 text-xs font-medium tracking-wide">INITIALIZING WORKSPACE...</span>
       </div>
     }>

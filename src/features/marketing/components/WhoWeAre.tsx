@@ -9,7 +9,7 @@ export default function WhoWeAre() {
       {/* Soft background glow */}
       <div className="absolute inset-0">
         <div className="absolute w-[400px] h-[400px] bg-green-200/40 blur-[120px] rounded-full top-[-100px] left-[-100px]" />
-        <div className="absolute w-[300px] h-[300px] bg-emerald-200/40 blur-[100px] rounded-full bottom-[-100px] right-[-100px]" />
+        <div className="absolute w-[300px] h-[300px] bg-green-200/40 blur-[100px] rounded-full bottom-[-100px] right-[-100px]" />
       </div>
 
       <motion.div

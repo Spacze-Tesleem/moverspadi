@@ -4,11 +4,11 @@ import { useState } from "react";
 import { Bell, Package, CreditCard, ShieldCheck, Truck, CheckCheck } from "lucide-react";
 
 const INITIAL_NOTIFS = [
-  { id: "1", icon: Truck,       title: "Order Delivered",          body: "ORD-9921 has been delivered to Lekki Phase 1.",       time: "2 mins ago",  read: false, color: "text-emerald-500", bg: "bg-emerald-50", bgDark: "bg-emerald-500/10" },
+  { id: "1", icon: Truck,       title: "Order Delivered",          body: "ORD-9921 has been delivered to Lekki Phase 1.",       time: "2 mins ago",  read: false, color: "text-green-500", bg: "bg-green-50", bgDark: "bg-green-500/10" },
   { id: "2", icon: CreditCard,  title: "Wallet Credited",          body: "₦50,000 has been added to your wallet.",              time: "1 hr ago",    read: false, color: "text-blue-500",    bg: "bg-blue-50",    bgDark: "bg-blue-500/10" },
-  { id: "3", icon: Package,     title: "New Booking Confirmed",    body: "Your haulage request ORD-9920 is confirmed.",         time: "3 hrs ago",   read: true,  color: "text-violet-500",  bg: "bg-violet-50",  bgDark: "bg-violet-500/10" },
-  { id: "4", icon: ShieldCheck, title: "Security Alert",           body: "New login detected from Lagos, Nigeria.",             time: "Yesterday",   read: true,  color: "text-amber-500",   bg: "bg-amber-50",   bgDark: "bg-amber-500/10" },
-  { id: "5", icon: Bell,        title: "Promo: 20% off Dispatch",  body: "Use code PADI20 on your next dispatch booking.",      time: "2 days ago",  read: true,  color: "text-rose-500",    bg: "bg-rose-50",    bgDark: "bg-rose-500/10" },
+  { id: "3", icon: Package,     title: "New Booking Confirmed",    body: "Your haulage request ORD-9920 is confirmed.",         time: "3 hrs ago",   read: true,  color: "text-blue-500",  bg: "bg-blue-50",  bgDark: "bg-blue-500/10" },
+  { id: "4", icon: ShieldCheck, title: "Security Alert",           body: "New login detected from Lagos, Nigeria.",             time: "Yesterday",   read: true,  color: "text-blue-500",   bg: "bg-blue-50",   bgDark: "bg-blue-500/10" },
+  { id: "5", icon: Bell,        title: "Promo: 20% off Dispatch",  body: "Use code PADI20 on your next dispatch booking.",      time: "2 days ago",  read: true,  color: "text-red-500",    bg: "bg-red-50",    bgDark: "bg-red-500/10" },
 ];
 
 interface Props { isDark: boolean }

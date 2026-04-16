@@ -67,7 +67,7 @@ export default function PendingApprovalView({ approvedDashboard }: Props) {
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
       {/* Background blobs */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-amber-100/50 blur-[120px]" />
+        <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-100/50 blur-[120px]" />
         <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-100/40 blur-[120px]" />
       </div>
 
@@ -92,16 +92,16 @@ export default function PendingApprovalView({ approvedDashboard }: Props) {
           {/* Status icon */}
           <div className="flex justify-center mb-6">
             {isRejected ? (
-              <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center">
-                <XCircle className="w-10 h-10 text-rose-500" />
+              <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center">
+                <XCircle className="w-10 h-10 text-red-500" />
               </div>
             ) : (
               <div className="relative w-20 h-20">
-                <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center">
-                  <Clock className="w-10 h-10 text-amber-500" />
+                <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center">
+                  <Clock className="w-10 h-10 text-blue-500" />
                 </div>
                 {/* Pulse ring */}
-                <span className="absolute inset-0 rounded-full animate-ping bg-amber-400/20" />
+                <span className="absolute inset-0 rounded-full animate-ping bg-blue-400/20" />
               </div>
             )}
           </div>
@@ -177,12 +177,12 @@ function StatusBadge({ status }: { status: VerificationStatus }) {
   if (status === "approved") return null;
   const styles =
     status === "rejected"
-      ? "bg-rose-100 text-rose-600 border-rose-200"
-      : "bg-amber-100 text-amber-700 border-amber-200";
+      ? "bg-red-100 text-red-600 border-red-200"
+      : "bg-blue-100 text-blue-700 border-blue-200";
   const label = status === "rejected" ? "Not Approved" : "Pending Review";
   return (
     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${styles}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${status === "rejected" ? "bg-rose-500" : "bg-amber-500"}`} />
+      <span className={`w-1.5 h-1.5 rounded-full ${status === "rejected" ? "bg-red-500" : "bg-blue-500"}`} />
       {label}
     </span>
   );
