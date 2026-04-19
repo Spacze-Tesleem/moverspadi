@@ -17,6 +17,8 @@ const nextConfig: NextConfig = {
   turbopack: {},
 
   async rewrites() {
+    // In production on Vercel, vercel.json handles this rewrite.
+    // Locally, NEXT_PUBLIC_API_URL must be set in .env.local.
     if (!BACKEND_URL) return [];
     return [
       {
