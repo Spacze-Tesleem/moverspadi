@@ -17,10 +17,10 @@ interface Props {
 }
 
 const SERVICES = [
-  { id: "ride" as const, label: "Ride", icon: Car, gradient: "from-blue-500 to-cyan-500" },
-  { id: "dispatch" as const, label: "Dispatch", icon: Package, gradient: "from-green-500 to-green-600" },
-  { id: "haulage" as const, label: "Haulage", icon: Truck, gradient: "from-blue-500 to-blue-600" },
-  { id: "tow" as const, label: "Recovery", icon: Wrench, gradient: "from-red-500 to-rose-500" },
+  { id: "dispatch" as const,  label: "Dispatch",  icon: Package, gradient: "from-amber-500 to-yellow-500" },
+  { id: "haulage" as const,   label: "Haulage",   icon: Truck,   gradient: "from-blue-500 to-blue-600" },
+  { id: "tow" as const,       label: "Recovery",  icon: Wrench,  gradient: "from-red-500 to-rose-500" },
+  { id: "transport" as const, label: "Transport", icon: Car,     gradient: "from-teal-500 to-cyan-500" },
 ] as const;
 
 const SAVED_PLACES = [
@@ -57,10 +57,11 @@ export default function LocationStep({ bookingData, setBookingFormData, onNext }
 
   // --- ACTIONS ---
   const selectService = (id: BookingFormData["serviceType"]) => {
-    setBookingFormData(prev => ({ 
-      ...prev, 
+    setBookingFormData(prev => ({
+      ...prev,
       serviceType: id,
-      items: (id === "dispatch" || id === "haulage") ? [{ name: "", qty: 1, weight: "" }] : []
+      vehicleType: "",
+      items: (id === "dispatch" || id === "haulage") ? [{ name: "", qty: 1, weight: "" }] : [],
     }));
   };
 

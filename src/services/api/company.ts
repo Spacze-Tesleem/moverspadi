@@ -1,6 +1,8 @@
 // Company API — fleet, orders, drivers, earnings
 
 import { apiClient } from "./client";
+import type { VehicleType, BookingStatus, PaymentStatus } from "@/src/types/booking/types";
+import type { UserStatus } from "@/src/types/auth/types";
 
 export interface CompanyStats {
   revenueMonth: number;
@@ -14,7 +16,7 @@ export interface Vehicle {
   id: string;
   driver: string;
   plate: string;
-  type: string;
+  type: VehicleType;
   status: "active" | "idle" | "maintenance";
   route: string;
   load: string;
@@ -26,7 +28,8 @@ export interface CompanyOrder {
   pickup: string;
   dropoff: string;
   value: string;
-  status: "in-transit" | "completed" | "pending" | "cancelled";
+  status: BookingStatus;
+  paymentStatus: PaymentStatus;
   driver: string;
 }
 
@@ -35,7 +38,7 @@ export interface CompanyDriver {
   name: string;
   phone: string;
   vehicleId: string | null;
-  status: "active" | "inactive" | "suspended";
+  status: UserStatus;
 }
 
 export const companyApi = {

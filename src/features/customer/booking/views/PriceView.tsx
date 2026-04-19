@@ -163,13 +163,21 @@ export default function PriceView() {
               </div>
             </div>
 
+            {/* Payment flow notice */}
+            <div className="flex items-start gap-3 p-4 bg-blue-500/5 border border-blue-500/10 rounded-2xl">
+              <ShieldCheck size={16} className="text-blue-400 shrink-0 mt-0.5" />
+              <p className="text-[11px] text-zinc-400 leading-relaxed">
+                Payment is collected upfront and held securely. Funds are only released to the mover after job completion and confirmation.
+              </p>
+            </div>
+
             {/* CTA */}
             <div className="pt-2">
               <button
                 onClick={handleConfirm}
                 className="w-full py-4 rounded-xl font-semibold text-sm bg-white text-black hover:bg-zinc-200 shadow-xl shadow-white/5 transition-all duration-300 flex items-center justify-center gap-2"
               >
-                Confirm Booking
+                Pay & Confirm Booking
                 <CheckCircle2 size={16} />
               </button>
               <p className="text-center text-[10px] text-zinc-600 mt-4 uppercase tracking-widest">

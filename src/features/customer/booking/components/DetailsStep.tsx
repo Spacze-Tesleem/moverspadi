@@ -55,7 +55,7 @@ const DispatchForm = ({ bookingData, setBookingFormData, onNext }: Props) => {
     setBookingFormData(prev => ({ ...prev, items: items.filter((_, i) => i !== idx) }));
   };
 
-  const isValid = items.length > 0 && items.every(i => i.name.trim().length > 0) && bookingData.vehicleType;
+  const isValid = items.length > 0 && items.every(i => i.name.trim().length > 0) && bookingData.vehicleType !== "";
 
   return (
     <div className="space-y-8">
@@ -65,7 +65,7 @@ const DispatchForm = ({ bookingData, setBookingFormData, onNext }: Props) => {
         <div className={`grid ${isHaulage ? "grid-cols-1" : "grid-cols-2"} gap-3`}>
           {!isHaulage ? (
             <>
-              <VehicleCard label="Motorbike" icon={Bike} active={bookingData.vehicleType === 'bike'} onClick={() => setBookingFormData(p => ({ ...p, vehicleType: 'bike' }))} />
+              <VehicleCard label="Motorcycle" icon={Bike} active={bookingData.vehicleType === 'motorcycle'} onClick={() => setBookingFormData(p => ({ ...p, vehicleType: 'motorcycle' }))} />
               <VehicleCard label="Delivery Van" icon={Package} active={bookingData.vehicleType === 'van'} onClick={() => setBookingFormData(p => ({ ...p, vehicleType: 'van' }))} />
             </>
           ) : (
@@ -124,17 +124,17 @@ const DispatchForm = ({ bookingData, setBookingFormData, onNext }: Props) => {
   );
 };
 
-// --- FORM: RIDE ---
-const RideForm = ({ bookingData, setBookingFormData, onNext }: Props) => {
-  const isValid = bookingData.vehicleType && parseInt(bookingData.passengers) > 0;
+// --- FORM: TRANSPORT ---
+const TransportForm = ({ bookingData, setBookingFormData, onNext }: Props) => {
+  const isValid = bookingData.vehicleType !== "" && parseInt(bookingData.passengers) > 0;
 
   return (
     <div className="space-y-8">
       {/* Vehicle Type */}
       <div className="space-y-3">
-        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Comfort Level</label>
+        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Vehicle Type</label>
         <div className="grid grid-cols-2 gap-3">
-          <VehicleCard label="Private Car" icon={Car} active={bookingData.vehicleType === 'car'} onClick={() => setBookingFormData(p => ({ ...p, vehicleType: 'car' }))} />
+          <VehicleCard label="Private Car" icon={Car} active={bookingData.vehicleType === 'private_car'} onClick={() => setBookingFormData(p => ({ ...p, vehicleType: 'private_car' }))} />
           <VehicleCard label="Bus / Coaster" icon={Bus} active={bookingData.vehicleType === 'bus'} onClick={() => setBookingFormData(p => ({ ...p, vehicleType: 'bus' }))} />
         </div>
       </div>
@@ -192,7 +192,7 @@ const TowForm = ({ bookingData, setBookingFormData, onNext }: Props) => {
           placeholder="Vehicle Model, Color, Fault (e.g. Toyota Camry, Silver, Engine failure)..."
           className="w-full h-48 bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 outline-none transition-all resize-none leading-relaxed"
           value={bookingData.vehicleDescription || ""}
-          onChange={(e) => setBookingFormData(p => ({ ...p, vehicleDescription: e.target.value, vehicleType: 'tow-truck' }))}
+          onChange={(e) => setBookingFormData(p => ({ ...p, vehicleDescription: e.target.value, vehicleType: 'tow_truck' }))}
         />
       </div>
 
@@ -211,7 +211,7 @@ export default function DetailsStep({ bookingData, setBookingFormData, onNext, o
 
   const renderForm = () => {
     if (service === "dispatch" || service === "haulage") return <DispatchForm {...{ bookingData, setBookingFormData, onNext, onPrev }} />;
-    if (service === "ride") return <RideForm {...{ bookingData, setBookingFormData, onNext, onPrev }} />;
+    if (service === "transport") return <TransportForm {...{ bookingData, setBookingFormData, onNext, onPrev }} />;
     if (service === "tow") return <TowForm {...{ bookingData, setBookingFormData, onNext, onPrev }} />;
     
     // Fallback/Error state

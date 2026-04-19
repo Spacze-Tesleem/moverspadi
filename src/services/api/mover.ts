@@ -24,8 +24,8 @@ export interface MoverTrip {
   amount: number;
   time: string;
   date: string;
-  status: "completed" | "cancelled" | "in-progress";
-  serviceType: string;
+  status: "completed" | "cancelled" | "in_progress";
+  serviceType: "dispatch" | "haulage" | "tow" | "transport";
   distance: string;
 }
 
@@ -53,7 +53,8 @@ export interface WalletTransaction {
   amount: number;
   description: string;
   date: string;
-  status: "completed" | "pending" | "failed";
+  /** Maps to PaymentStatus for credits, PayoutStatus for payouts */
+  status: "successful" | "pending" | "failed" | "processing";
 }
 
 export interface EarningsBreakdown {
@@ -73,12 +74,12 @@ const DUMMY_STATS: MoverStats = {
 };
 
 const DUMMY_TRIPS: MoverTrip[] = [
-  { id: "T-4421", from: "Ikeja", to: "Lekki Phase 1", amount: 4200, time: "2 hrs ago", date: "Today", status: "completed", serviceType: "Dispatch", distance: "14.2 km" },
-  { id: "T-4420", from: "Yaba", to: "Victoria Island", amount: 6800, time: "Yesterday", date: "Yesterday", status: "completed", serviceType: "Ride", distance: "9.8 km" },
-  { id: "T-4419", from: "Surulere", to: "Ajah", amount: 9100, time: "2 days ago", date: "Mon, Apr 14", status: "completed", serviceType: "Haulage", distance: "22.5 km" },
-  { id: "T-4418", from: "Oshodi", to: "Ikoyi", amount: 3500, time: "3 days ago", date: "Sun, Apr 13", status: "cancelled", serviceType: "Dispatch", distance: "11.1 km" },
-  { id: "T-4417", from: "Agege", to: "Apapa", amount: 11200, time: "4 days ago", date: "Sat, Apr 12", status: "completed", serviceType: "Haulage", distance: "18.7 km" },
-  { id: "T-4416", from: "Mushin", to: "Lekki Phase 2", amount: 5400, time: "5 days ago", date: "Fri, Apr 11", status: "completed", serviceType: "Ride", distance: "16.3 km" },
+  { id: "T-4421", from: "Ikeja",   to: "Lekki Phase 1",  amount: 4200,  time: "2 hrs ago",  date: "Today",        status: "completed", serviceType: "dispatch",  distance: "14.2 km" },
+  { id: "T-4420", from: "Yaba",    to: "Victoria Island", amount: 6800,  time: "Yesterday",  date: "Yesterday",    status: "completed", serviceType: "transport", distance: "9.8 km"  },
+  { id: "T-4419", from: "Surulere",to: "Ajah",            amount: 9100,  time: "2 days ago", date: "Mon, Apr 14",  status: "completed", serviceType: "haulage",   distance: "22.5 km" },
+  { id: "T-4418", from: "Oshodi",  to: "Ikoyi",           amount: 3500,  time: "3 days ago", date: "Sun, Apr 13",  status: "cancelled", serviceType: "dispatch",  distance: "11.1 km" },
+  { id: "T-4417", from: "Agege",   to: "Apapa",           amount: 11200, time: "4 days ago", date: "Sat, Apr 12",  status: "completed", serviceType: "haulage",   distance: "18.7 km" },
+  { id: "T-4416", from: "Mushin",  to: "Lekki Phase 2",   amount: 5400,  time: "5 days ago", date: "Fri, Apr 11",  status: "completed", serviceType: "transport", distance: "16.3 km" },
 ];
 
 const DUMMY_WALLET: WalletData = {
@@ -86,12 +87,12 @@ const DUMMY_WALLET: WalletData = {
   pendingPayout: 12800,
   totalEarned: 241800,
   transactions: [
-    { id: "TXN-001", type: "credit", amount: 4200, description: "Trip T-4421 · Dispatch", date: "Today, 2:14 PM", status: "completed" },
-    { id: "TXN-002", type: "credit", amount: 6800, description: "Trip T-4420 · Ride", date: "Yesterday, 5:40 PM", status: "completed" },
-    { id: "TXN-003", type: "payout", amount: 25000, description: "Bank transfer · GTBank ****4521", date: "Mon, Apr 14", status: "completed" },
-    { id: "TXN-004", type: "credit", amount: 9100, description: "Trip T-4419 · Haulage", date: "Mon, Apr 14", status: "completed" },
-    { id: "TXN-005", type: "payout", amount: 18000, description: "Bank transfer · GTBank ****4521", date: "Sat, Apr 12", status: "pending" },
-    { id: "TXN-006", type: "credit", amount: 11200, description: "Trip T-4417 · Haulage", date: "Sat, Apr 12", status: "completed" },
+    { id: "TXN-001", type: "credit", amount: 4200,  description: "Trip T-4421 · Dispatch",              date: "Today, 2:14 PM",    status: "successful"  },
+    { id: "TXN-002", type: "credit", amount: 6800,  description: "Trip T-4420 · Transport",             date: "Yesterday, 5:40 PM",status: "successful"  },
+    { id: "TXN-003", type: "payout", amount: 25000, description: "Bank transfer · GTBank ****4521",     date: "Mon, Apr 14",       status: "successful"  },
+    { id: "TXN-004", type: "credit", amount: 9100,  description: "Trip T-4419 · Haulage",              date: "Mon, Apr 14",       status: "successful"  },
+    { id: "TXN-005", type: "payout", amount: 18000, description: "Bank transfer · GTBank ****4521",     date: "Sat, Apr 12",       status: "processing"  },
+    { id: "TXN-006", type: "credit", amount: 11200, description: "Trip T-4417 · Haulage",              date: "Sat, Apr 12",       status: "successful"  },
   ],
 };
 
@@ -106,10 +107,10 @@ const DUMMY_EARNINGS: EarningsBreakdown = {
     { day: "Sun", amount: 14500 },
   ],
   byService: [
-    { service: "Dispatch", amount: 87400, count: 58 },
-    { service: "Haulage",  amount: 96200, count: 41 },
-    { service: "Ride",     amount: 48600, count: 35 },
-    { service: "Tow",      amount: 9600,  count: 8  },
+    { service: "dispatch",  amount: 87400, count: 58 },
+    { service: "haulage",   amount: 96200, count: 41 },
+    { service: "transport", amount: 48600, count: 35 },
+    { service: "tow",       amount: 9600,  count: 8  },
   ],
 };
 

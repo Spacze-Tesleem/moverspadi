@@ -17,7 +17,7 @@ const MapPreview = dynamic(() => import("@/src/ui/map/MapPreview"), {
   loading: () => <div className="h-full w-full bg-slate-950" />,
 });
 
-type StatusKey = "searching" | "matched" | "in-progress" | "completed" | "cancelled";
+type StatusKey = "pending" | "matched" | "accepted" | "in_progress" | "completed" | "cancelled" | "failed";
 
 const STATUS_CONFIG: Record<StatusKey, {
   title: string;
@@ -27,8 +27,8 @@ const STATUS_CONFIG: Record<StatusKey, {
   dot: string;
   icon: LucideIcon;
 }> = {
-  searching: {
-    title: "Scanning for Movers",
+  pending: {
+    title: "Finding a Mover",
     description: "Connecting to the nearest available fleet partners…",
     color: "text-blue-400",
     bg: "bg-blue-600",
@@ -36,15 +36,23 @@ const STATUS_CONFIG: Record<StatusKey, {
     icon: Loader2,
   },
   matched: {
-    title: "Mover Assigned",
-    description: "A professional has been matched and is on the way.",
+    title: "Mover Found",
+    description: "A professional has been matched. Awaiting acceptance.",
     color: "text-blue-400",
     bg: "bg-blue-600",
     dot: "bg-blue-500",
     icon: Truck,
   },
-  "in-progress": {
-    title: "Mission In Progress",
+  accepted: {
+    title: "Mover On the Way",
+    description: "Your mover has accepted and is heading to pickup.",
+    color: "text-blue-400",
+    bg: "bg-blue-600",
+    dot: "bg-blue-500",
+    icon: Truck,
+  },
+  in_progress: {
+    title: "Job In Progress",
     description: "Your goods are securely in transit to the destination.",
     color: "text-blue-400",
     bg: "bg-blue-600",
@@ -62,6 +70,14 @@ const STATUS_CONFIG: Record<StatusKey, {
   cancelled: {
     title: "Request Cancelled",
     description: "This booking was cancelled and is no longer active.",
+    color: "text-red-400",
+    bg: "bg-red-600",
+    dot: "bg-red-500",
+    icon: XCircle,
+  },
+  failed: {
+    title: "Request Failed",
+    description: "This booking could not be completed. Please try again.",
     color: "text-red-400",
     bg: "bg-red-600",
     dot: "bg-red-500",
@@ -113,7 +129,7 @@ export default function TrackView() {
     );
   }
 
-  const current = STATUS_CONFIG[(status as StatusKey)] ?? STATUS_CONFIG.searching;
+  const current = STATUS_CONFIG[(status as StatusKey)] ?? STATUS_CONFIG.pending;
   const Icon = current.icon;
 
   return (
@@ -166,7 +182,7 @@ export default function TrackView() {
                   exit={{ scale: 1.2, opacity: 0 }}
                   className="relative"
                 >
-                  {status === "searching" && (
+                  {status === "pending" && (
                     <div className="absolute inset-0 flex items-center justify-center">
                       {[1, 2, 3].map((i) => (
                         <motion.div
@@ -180,7 +196,7 @@ export default function TrackView() {
                     </div>
                   )}
                   <div className={`relative z-10 p-5 rounded-[2rem] ${current.bg} text-white shadow-2xl`}>
-                    <Icon className={`w-10 h-10 ${status === "searching" ? "animate-spin" : status === "in-progress" ? "animate-bounce" : ""}`} />
+                    <Icon className={`w-10 h-10 ${status === "pending" ? "animate-spin" : status === "in_progress" ? "animate-bounce" : ""}`} />
                   </div>
                 </motion.div>
               </AnimatePresence>
@@ -204,7 +220,7 @@ export default function TrackView() {
 
             {/* Mover card — appears when matched */}
             <AnimatePresence>
-              {moverInfo && status !== "searching" && status !== "cancelled" && (
+              {moverInfo && status !== "pending" && status !== "cancelled" && (
                 <motion.div
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -256,7 +272,7 @@ export default function TrackView() {
                         <p className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">ETA</p>
                       </div>
                       <p className="text-xs font-bold text-white">
-                        {status === "in-progress" ? "En route" : moverInfo.eta}
+                        {status === "in_progress" ? "En route" : moverInfo.eta}
                       </p>
                     </div>
                     <div className="p-3 bg-zinc-900/50 rounded-2xl border border-white/5">
@@ -320,7 +336,7 @@ export default function TrackView() {
             </div>
 
             {/* Actions */}
-            {status === "searching" && (
+            {status === "pending" && (
               <button
                 onClick={handleCancel}
                 className="w-full py-3 text-xs font-bold uppercase tracking-[0.2em] text-red-500/40 hover:text-red-500 transition-colors"

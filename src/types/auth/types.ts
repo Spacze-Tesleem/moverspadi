@@ -3,13 +3,30 @@
 export type UserRole = "customer" | "mover" | "provider" | "company" | "admin";
 
 /**
- * pending    — submitted, awaiting admin review
- * approved   — admin approved, can accept jobs
- * rejected   — admin rejected, must re-submit
- * suspended  — account suspended by admin
- * resubmit   — admin requested document resubmission
+ * User account status (backend: users.status)
+ *
+ * pending   — registered, OTP not yet verified (or awaiting admin action)
+ * active    — fully operational account
+ * suspended — admin-suspended, cannot log in or transact
+ * rejected  — application rejected by admin
  */
-export type VerificationStatus = "pending" | "approved" | "rejected" | "suspended" | "resubmit";
+export type UserStatus = "pending" | "active" | "suspended" | "rejected";
+
+/**
+ * Verification status for supply-side actors (backend: verifications.status)
+ *
+ * pending                — documents submitted, awaiting admin review
+ * approved               — admin approved, can accept jobs
+ * rejected               — admin rejected, must resubmit
+ * resubmission_required  — admin requested corrected/additional documents
+ * suspended              — account suspended post-approval
+ */
+export type VerificationStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "resubmission_required"
+  | "suspended";
 
 export interface User {
   id?: string;
@@ -17,6 +34,7 @@ export interface User {
   email?: string;
   phone?: string;
   avatarUrl?: string;
+  status?: UserStatus;
 }
 
 export interface AuthSession {
