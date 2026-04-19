@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Clock, ShieldCheck, CheckCircle2, XCircle, LogOut, RefreshCw } from "lucide-react";
+import { Clock, ShieldCheck, CheckCircle2, XCircle, LogOut, RefreshCw, AlertTriangle, FileWarning } from "lucide-react";
 import { useAuthStore } from "@/src/store/authStore";
 import { useRouter } from "next/navigation";
 import type { VerificationStatus } from "@/src/types/auth/types";
@@ -45,8 +45,10 @@ export default function PendingApprovalView({ approvedDashboard }: Props) {
     return <>{approvedDashboard}</>;
   }
 
-  const isRejected = verificationStatus === "rejected";
-  const roleLabel = ROLE_LABELS[role ?? ""] ?? "Account";
+  const isRejected   = verificationStatus === "rejected";
+  const isSuspended  = verificationStatus === "suspended";
+  const isResubmit   = verificationStatus === "resubmit";
+  const roleLabel    = ROLE_LABELS[role ?? ""] ?? "Account";
 
   const checklist = [
     ...CHECKLIST,
@@ -95,12 +97,19 @@ export default function PendingApprovalView({ approvedDashboard }: Props) {
               <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center">
                 <XCircle className="w-10 h-10 text-red-500" />
               </div>
+            ) : isSuspended ? (
+              <div className="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-10 h-10 text-orange-500" />
+              </div>
+            ) : isResubmit ? (
+              <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center">
+                <FileWarning className="w-10 h-10 text-amber-500" />
+              </div>
             ) : (
               <div className="relative w-20 h-20">
                 <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center">
                   <Clock className="w-10 h-10 text-blue-500" />
                 </div>
-                {/* Pulse ring */}
                 <span className="absolute inset-0 rounded-full animate-ping bg-blue-400/20" />
               </div>
             )}
@@ -109,47 +118,70 @@ export default function PendingApprovalView({ approvedDashboard }: Props) {
           <div className="text-center mb-8">
             <StatusBadge status={verificationStatus} />
             <h2 className="text-2xl font-black text-slate-900 mt-4 mb-2">
-              {isRejected ? "Application Not Approved" : "Application Under Review"}
+              {isRejected   ? "Application Not Approved"
+               : isSuspended ? "Account Suspended"
+               : isResubmit  ? "Documents Required"
+               : "Application Under Review"}
             </h2>
             <p className="text-slate-500 font-medium leading-relaxed">
               {isRejected
                 ? `Hi ${user?.name?.split(" ")[0] ?? "there"}, your ${roleLabel} application was not approved. Please review the requirements and resubmit.`
+                : isSuspended
+                ? `Hi ${user?.name?.split(" ")[0] ?? "there"}, your ${roleLabel} account has been suspended. Contact support for more information.`
+                : isResubmit
+                ? `Hi ${user?.name?.split(" ")[0] ?? "there"}, our team has reviewed your application and requires additional or corrected documents.`
                 : `Hi ${user?.name?.split(" ")[0] ?? "there"}, your ${roleLabel} profile has been submitted. Our team typically reviews applications within 24–48 hours.`}
             </p>
           </div>
 
-          {/* What was submitted */}
-          <div className="bg-slate-50 rounded-3xl p-6 mb-6">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">
-              {isRejected ? "Required documents" : "Submitted for review"}
-            </p>
-            <ul className="space-y-2.5">
-              {checklist.map((item) => (
-                <li key={item} className="flex items-start gap-3">
-                  <CheckCircle2 className={`w-4 h-4 mt-0.5 shrink-0 ${isRejected ? "text-slate-300" : "text-green-500"}`} />
-                  <span className="text-sm text-slate-600 font-medium">{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Checklist */}
+          {!isSuspended && (
+            <div className="bg-slate-50 rounded-3xl p-6 mb-6">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">
+                {isRejected || isResubmit ? "Required documents" : "Submitted for review"}
+              </p>
+              <ul className="space-y-2.5">
+                {checklist.map((item) => (
+                  <li key={item} className="flex items-start gap-3">
+                    <CheckCircle2 className={`w-4 h-4 mt-0.5 shrink-0 ${isRejected || isResubmit ? "text-slate-300" : "text-green-500"}`} />
+                    <span className="text-sm text-slate-600 font-medium">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-          {/* What happens next */}
-          {!isRejected && (
+          {/* Contextual info banners */}
+          {!isRejected && !isSuspended && !isResubmit && (
             <div className="bg-blue-50 rounded-3xl p-5 mb-6 text-sm text-blue-700 font-medium leading-relaxed">
               <p className="font-bold mb-1">What happens next?</p>
               Once approved, you will receive a notification and gain full access to your dashboard to start accepting jobs.
             </div>
           )}
+          {isResubmit && (
+            <div className="bg-amber-50 rounded-3xl p-5 mb-6 text-sm text-amber-700 font-medium leading-relaxed border border-amber-100">
+              <p className="font-bold mb-1">Action required</p>
+              Please resubmit your application with the correct or updated documents. Ensure all uploads are clear and valid.
+            </div>
+          )}
+          {isSuspended && (
+            <div className="bg-orange-50 rounded-3xl p-5 mb-6 text-sm text-orange-700 font-medium leading-relaxed border border-orange-100">
+              <p className="font-bold mb-1">Account suspended</p>
+              Your account has been temporarily suspended. Please contact{" "}
+              <a href="mailto:support@moverspadi.com" className="underline font-bold">support@moverspadi.com</a>{" "}
+              for assistance.
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex flex-col gap-3">
-            {isRejected && (
+            {(isRejected || isResubmit) && (
               <button
                 onClick={handleResubmit}
                 className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-green-600 text-white font-bold text-base hover:bg-green-700 shadow-lg shadow-green-600/20 transition-all"
               >
                 <RefreshCw className="w-4 h-4" />
-                Resubmit Application
+                {isResubmit ? "Resubmit Documents" : "Resubmit Application"}
               </button>
             )}
             <button
@@ -175,14 +207,16 @@ export default function PendingApprovalView({ approvedDashboard }: Props) {
 
 function StatusBadge({ status }: { status: VerificationStatus }) {
   if (status === "approved") return null;
-  const styles =
-    status === "rejected"
-      ? "bg-red-100 text-red-600 border-red-200"
-      : "bg-blue-100 text-blue-700 border-blue-200";
-  const label = status === "rejected" ? "Not Approved" : "Pending Review";
+  const map: Record<Exclude<VerificationStatus, "approved">, { styles: string; dot: string; label: string }> = {
+    pending:   { styles: "bg-blue-100 text-blue-700 border-blue-200",     dot: "bg-blue-500",   label: "Pending Review" },
+    rejected:  { styles: "bg-red-100 text-red-600 border-red-200",        dot: "bg-red-500",    label: "Not Approved" },
+    suspended: { styles: "bg-orange-100 text-orange-700 border-orange-200", dot: "bg-orange-500", label: "Suspended" },
+    resubmit:  { styles: "bg-amber-100 text-amber-700 border-amber-200",  dot: "bg-amber-500",  label: "Resubmit Documents" },
+  };
+  const { styles, dot, label } = map[status];
   return (
     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${styles}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${status === "rejected" ? "bg-red-500" : "bg-blue-500"}`} />
+      <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />
       {label}
     </span>
   );
