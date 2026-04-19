@@ -146,11 +146,22 @@ function LoginPageInner() {
       sessionStorage.setItem("otp_password", enteredPw);
       router.push(`/auth/otp?role=${role}&mode=login`);
     } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "";
+
+      // Backend returns 403 when the account exists but email isn't verified yet.
+      // Redirect to OTP so the user can complete verification.
+      if (message.includes("403") && message.toLowerCase().includes("verify")) {
+        sessionStorage.setItem("otp_email", enteredId);
+        sessionStorage.setItem("otp_name", DEV_CREDENTIALS?.[role]?.name ?? "User");
+        sessionStorage.setItem("otp_password", enteredPw);
+        router.push(`/auth/otp?role=${role}&mode=signup`);
+        return;
+      }
+
       // ── DEV FALLBACK ──────────────────────────────────────────────────────
       // When the backend is unreachable, validate against DEV_CREDENTIALS and
       // advance to OTP so the UI flow can be exercised without a live server.
       // ─────────────────────────────────────────────────────────────────────
-      const message = err instanceof Error ? err.message : "";
       const noBackend =
         !process.env.NEXT_PUBLIC_API_URL ||
         isNetworkError(err);
