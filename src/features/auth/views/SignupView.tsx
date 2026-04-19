@@ -75,12 +75,11 @@ function SignupPageInner() {
         role,
       });
 
-      // login() is called in OtpView after the code is verified — not here.
-      router.push(
-        `/auth/otp?role=${role}&mode=signup` +
-        `&email=${encodeURIComponent(formData.email)}` +
-        `&name=${encodeURIComponent(formData.fullName)}`
-      );
+      // Pass email/name via sessionStorage so they don't appear in the URL.
+      // OtpView reads and clears these after verification.
+      sessionStorage.setItem("otp_email", formData.email);
+      sessionStorage.setItem("otp_name", formData.fullName);
+      router.push(`/auth/otp?role=${role}&mode=signup`);
     } catch (err: unknown) {
       // ── DEV FALLBACK ──────────────────────────────────────────────────────
       // When NEXT_PUBLIC_API_URL is unset the fetch fails with a network error.
@@ -94,11 +93,9 @@ function SignupPageInner() {
         message.startsWith("API 5");
 
       if (noBackend) {
-        router.push(
-          `/auth/otp?role=${role}&mode=signup` +
-          `&email=${encodeURIComponent(formData.email)}` +
-          `&name=${encodeURIComponent(formData.fullName)}`
-        );
+        sessionStorage.setItem("otp_email", formData.email);
+        sessionStorage.setItem("otp_name", formData.fullName);
+        router.push(`/auth/otp?role=${role}&mode=signup`);
       } else {
         setError(message || "Signup failed. Please try again.");
       }

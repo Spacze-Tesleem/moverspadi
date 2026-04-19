@@ -26,8 +26,12 @@ function OtpPageInner() {
 
   const role = (params.get("role") || "customer") as UserRole;
   const mode = params.get("mode") || "login"; // "login" | "signup"
-  const email = params.get("email") || "";
-  const name = params.get("name") || "User";
+
+  // Read from sessionStorage (set by SignupView/LoginView before navigating).
+  // URL params are kept as a fallback only — email/name must not travel in URLs
+  // because they appear in server logs, browser history, and referrer headers.
+  const email = (typeof window !== "undefined" && sessionStorage.getItem("otp_email")) || params.get("email") || "";
+  const name  = (typeof window !== "undefined" && sessionStorage.getItem("otp_name"))  || params.get("name")  || "User";
 
   const OTP_LENGTH = 6;
   const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(""));
@@ -132,6 +136,10 @@ function OtpPageInner() {
         // Production with no API URL configured — fail closed
         throw new Error("Service unavailable. Please try again later.");
       }
+
+      // Clear the transient auth data now that it has been consumed.
+      sessionStorage.removeItem("otp_email");
+      sessionStorage.removeItem("otp_name");
 
       setSuccess(true);
       await new Promise((r) => setTimeout(r, 800));

@@ -141,11 +141,9 @@ function LoginPageInner() {
           : { email: enteredId, password: enteredPw, role }
       );
 
-      router.push(
-        `/auth/otp?role=${role}&mode=login` +
-        `&email=${encodeURIComponent(enteredId)}` +
-        `&name=${encodeURIComponent(DEV_CREDENTIALS?.[role]?.name ?? "User")}`
-      );
+      sessionStorage.setItem("otp_email", enteredId);
+      sessionStorage.setItem("otp_name", DEV_CREDENTIALS?.[role]?.name ?? "User");
+      router.push(`/auth/otp?role=${role}&mode=login`);
     } catch (err: unknown) {
       // ── DEV FALLBACK ──────────────────────────────────────────────────────
       // When the backend is unreachable, validate against DEV_CREDENTIALS and
@@ -166,11 +164,9 @@ function LoginPageInner() {
               : "Invalid credentials. Please try again."
           );
         } else {
-          router.push(
-            `/auth/otp?role=${role}&mode=login` +
-            `&email=${encodeURIComponent(enteredId)}` +
-            `&name=${encodeURIComponent(creds.name)}`
-          );
+          sessionStorage.setItem("otp_email", enteredId);
+          sessionStorage.setItem("otp_name", creds.name);
+          router.push(`/auth/otp?role=${role}&mode=login`);
         }
       } else {
         setError(message || "Invalid credentials. Please try again.");
