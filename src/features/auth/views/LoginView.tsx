@@ -152,8 +152,7 @@ function LoginPageInner() {
       const message = err instanceof Error ? err.message : "";
       const noBackend =
         !process.env.NEXT_PUBLIC_API_URL ||
-        isNetworkError(err) ||
-        message.startsWith("API 5");
+        isNetworkError(err);
 
       if (noBackend) {
         const creds = DEV_CREDENTIALS?.[role];
@@ -192,7 +191,7 @@ function LoginPageInner() {
       setForgotStatus("sent");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "";
-      if (isNetworkError(err) || message.startsWith("API 5")) {
+      if (isNetworkError(err)) {
         // Backend unreachable — treat as sent so the user isn't blocked
         setForgotStatus("sent");
       } else {

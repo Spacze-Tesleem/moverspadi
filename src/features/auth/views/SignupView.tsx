@@ -89,8 +89,7 @@ function SignupPageInner() {
       const message = err instanceof Error ? err.message : "";
       const noBackend =
         !process.env.NEXT_PUBLIC_API_URL ||
-        isNetworkError(err) ||
-        message.startsWith("API 5");
+        isNetworkError(err);
 
       if (noBackend) {
         sessionStorage.setItem("otp_email", formData.email);
