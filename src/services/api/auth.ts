@@ -84,7 +84,14 @@ export interface ResetPasswordPayload {
 export const authApi = {
   /** POST /auth/signup — registers a new user and triggers a signup OTP */
   signup: (payload: SignupPayload) =>
-    apiClient.post<void>("/auth/signup", payload),
+    apiClient.post<void>("/auth/signup", {
+      name: payload.fullName,
+      email: payload.email,
+      phone: payload.phone,
+      password: payload.password,
+      confirmPassword: payload.confirmPassword,
+      role: payload.role,
+    }),
 
   /** POST /auth/verify-otp — confirms the OTP sent after signup */
   verifyOtp: (payload: VerifyOtpPayload) =>
