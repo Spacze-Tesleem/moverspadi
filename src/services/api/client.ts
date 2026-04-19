@@ -1,10 +1,21 @@
 // Base HTTP client — wraps fetch with auth headers and error handling
 //
-// All API calls are routed through Next.js rewrites (/backend → backend/api)
-// so requests are same-origin from the browser's perspective, eliminating
-// any CORS issues regardless of which domain the app is served from.
+// All API calls go to /backend/* which Next.js (or vercel.json in production)
+// rewrites to NEXT_PUBLIC_API_URL/api/* server-side, keeping requests
+// same-origin from the browser's perspective and avoiding CORS entirely.
+//
+// NEXT_PUBLIC_API_URL must be set in every environment. Without it the
+// rewrite has no destination and API calls will hit Next.js page routes,
+// producing 404/405 errors.
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ? "/backend" : "";
+if (typeof window !== "undefined" && !process.env.NEXT_PUBLIC_API_URL) {
+  console.error(
+    "[apiClient] NEXT_PUBLIC_API_URL is not set. " +
+    "API calls will fail. Add it to .env.local or your Vercel environment variables."
+  );
+}
+
+const BASE_URL = "/backend";
 
 interface RequestOptions extends RequestInit {
   token?: string;

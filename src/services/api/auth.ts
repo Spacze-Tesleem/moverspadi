@@ -26,11 +26,10 @@ export function isNetworkError(err: unknown): boolean {
 /**
  * Fire-and-forget ping that wakes the Render free-tier instance so
  * it is ready by the time the user submits a form.
- * Hits the root path since the backend has no dedicated /health endpoint.
+ * Goes through the /backend rewrite so it works in all environments.
  */
 export function warmupBackend(): void {
-  if (!process.env.NEXT_PUBLIC_API_URL) return;
-  fetch(`${process.env.NEXT_PUBLIC_API_URL}/`).catch(() => { /* intentionally silent */ });
+  fetch("/backend/").catch(() => { /* intentionally silent */ });
 }
 
 // ── Payload types ─────────────────────────────────────────────────────────────
