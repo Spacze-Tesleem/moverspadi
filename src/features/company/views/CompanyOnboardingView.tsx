@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -332,7 +332,14 @@ export default function CompanyOnboardingView() {
 
 // ── Shared Visual Components ──
 
-function Input({ label, value, onChange, placeholder, type = "text", icon }: any) {
+function Input({ label, value, onChange, placeholder, type = "text", icon }: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  type?: string;
+  icon?: React.ReactNode;
+}) {
   return (
     <div className="space-y-2 group">
       <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">{label}</label>
@@ -350,7 +357,12 @@ function Input({ label, value, onChange, placeholder, type = "text", icon }: any
   );
 }
 
-function Select({ label, value, onChange, options }: any) {
+function Select({ label, value, onChange, options }: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}) {
   return (
     <div className="space-y-2">
       <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">{label}</label>
@@ -360,7 +372,7 @@ function Select({ label, value, onChange, options }: any) {
         className="w-full px-5 py-4 bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-white/5 rounded-2xl outline-none font-bold text-sm text-slate-800 dark:text-white focus:ring-4 focus:ring-blue-500/10 transition-all"
       >
         <option value="">Choose</option>
-        {options.map((o: any) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
     </div>
   );

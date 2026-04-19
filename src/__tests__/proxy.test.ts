@@ -1,5 +1,5 @@
 /**
- * Tests for middleware.ts — server-side route protection.
+ * Tests for proxy.ts — server-side route protection.
  *
  * Verifies that:
  *  - Protected portal routes redirect to /auth/login when the session cookie is absent
@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { middleware } from "../../middleware";
+import { middleware } from "../../proxy";
 import { NextRequest } from "next/server";
 
 const BASE = "http://localhost:3000";
