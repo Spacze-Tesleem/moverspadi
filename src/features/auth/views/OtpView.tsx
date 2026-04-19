@@ -155,8 +155,15 @@ function OtpPageInner() {
       } else {
         router.push(`/${role}`);
       }
-    } catch {
-      setError("Incorrect code. Please try again.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "";
+      // Show the real backend message so misconfigurations are visible.
+      // "Invalid OTP" / "expired" → wrong code; anything else → server/config issue.
+      const isWrongCode =
+        message.toLowerCase().includes("invalid") ||
+        message.toLowerCase().includes("expired") ||
+        message.toLowerCase().includes("incorrect");
+      setError(isWrongCode ? "Incorrect or expired code. Please try again." : (message || "Verification failed. Please try again."));
       setDigits(Array(OTP_LENGTH).fill(""));
       inputRefs.current[0]?.focus();
     } finally {
