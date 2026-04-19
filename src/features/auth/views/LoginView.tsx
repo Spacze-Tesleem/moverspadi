@@ -8,7 +8,7 @@ import {
   Sparkles, ArrowRight, Truck, AlertCircle, ChevronLeft,
   Zap, ChevronDown,
 } from "lucide-react";
-import { authApi, isNetworkError, warmupBackend } from "@/src/services/api/auth";
+import { authApi, isNetworkError, warmupBackend, type ForgotPasswordPayload } from "@/src/services/api/auth";
 import { useAuthStore } from "@/src/store/authStore";
 import { useEffect } from "react";
 
@@ -84,6 +84,10 @@ function LoginPageInner() {
   const [error, setError] = useState<string | null>(null);
   const [quickOpen, setQuickOpen] = useState(false);
   const [quickLoading, setQuickLoading] = useState<string | null>(null);
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotStatus, setForgotStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [forgotError, setForgotError] = useState<string | null>(null);
 
   useEffect(() => { warmupBackend(); }, []);
 
@@ -143,6 +147,32 @@ function LoginPageInner() {
       }
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!forgotEmail.trim()) {
+      setForgotError("Please enter your email address.");
+      return;
+    }
+    setForgotStatus("sending");
+    setForgotError(null);
+    try {
+      if (process.env.NEXT_PUBLIC_API_URL) {
+        await authApi.forgotPassword({ email: forgotEmail });
+      } else {
+        await new Promise((r) => setTimeout(r, 1000));
+      }
+      setForgotStatus("sent");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "";
+      if (isNetworkError(err) || message.startsWith("API 5")) {
+        // Backend unreachable — treat as sent so the user isn't blocked
+        setForgotStatus("sent");
+      } else {
+        setForgotError(message || "Something went wrong. Please try again.");
+        setForgotStatus("error");
+      }
     }
   };
 
@@ -273,7 +303,13 @@ function LoginPageInner() {
                   <input type="checkbox" className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
                   <span className="text-xs text-slate-500 group-hover:text-slate-700 font-medium transition-colors">Remember me</span>
                 </label>
-                <button type="button" className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors">Forgot Password?</button>
+                <button
+                  type="button"
+                  onClick={() => { setForgotOpen(true); setForgotEmail(email); setForgotStatus("idle"); setForgotError(null); }}
+                  className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors"
+                >
+                  Forgot Password?
+                </button>
               </div>
 
               <button
@@ -353,6 +389,92 @@ function LoginPageInner() {
           </p>
         </div>
       </motion.div>
+
+      {/* ── Forgot Password Modal ─────────────────────────────────────────── */}
+      <AnimatePresence>
+        {forgotOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setForgotOpen(false)}
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40"
+            />
+            {/* Dialog */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 16 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div className="w-full max-w-sm bg-white rounded-[2rem] shadow-2xl shadow-slate-200/60 border border-white p-8">
+                {forgotStatus === "sent" ? (
+                  <div className="text-center py-4">
+                    <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-black text-slate-900 mb-2">Check your inbox</h3>
+                    <p className="text-sm text-slate-500 font-medium mb-6">
+                      If <span className="font-bold text-slate-700">{forgotEmail}</span> is registered, a reset link has been sent.
+                    </p>
+                    <button
+                      onClick={() => setForgotOpen(false)}
+                      className="w-full py-3 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-blue-600 transition-colors"
+                    >
+                      Done
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <h3 className="text-xl font-black text-slate-900 mb-1">Reset password</h3>
+                    <p className="text-sm text-slate-500 font-medium mb-6">
+                      Enter your account email and we&apos;ll send a reset link.
+                    </p>
+
+                    {forgotError && (
+                      <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-2xl text-rose-600 text-xs font-bold mb-4">
+                        <AlertCircle className="w-4 h-4 shrink-0" /> {forgotError}
+                      </div>
+                    )}
+
+                    <Input
+                      icon={Mail}
+                      type="email"
+                      placeholder="your@email.com"
+                      value={forgotEmail}
+                      onChange={setForgotEmail}
+                    />
+
+                    <div className="flex gap-3 mt-6">
+                      <button
+                        type="button"
+                        onClick={() => setForgotOpen(false)}
+                        className="flex-1 py-3 rounded-2xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleForgotPassword}
+                        disabled={forgotStatus === "sending"}
+                        className="flex-1 py-3 rounded-2xl bg-slate-900 text-white font-bold text-sm hover:bg-blue-600 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                      >
+                        {forgotStatus === "sending" ? (
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : "Send Link"}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

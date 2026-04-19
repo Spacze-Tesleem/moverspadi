@@ -1,39 +1,41 @@
-// Auth API calls
+// Auth API — mapped to backend routes in authRoutes.js
+//
+// POST /auth/signup                → signup
+// POST /auth/verify-otp            → verifyOtp        (signup OTP)
+// POST /auth/login                 → login
+// POST /auth/verify-login-otp      → verifyLoginOtp   (login OTP)
+// POST /auth/forgot-password       → forgotPassword
+// POST /auth/reset-password/:token → resetPassword
+// POST /auth/logout                → logout
 
 import { apiClient } from "./client";
 import type { AuthSession } from "@/src/types/auth/types";
 
 /**
- * Returns true when `err` represents a network/connection failure
- * (backend unreachable, Render cold-start timeout, CORS, etc.)
- * as opposed to an explicit API error response (4xx / 5xx body).
+ * Returns true when `err` is a network/connection failure
+ * (backend unreachable, cold-start timeout, CORS, etc.)
+ * rather than an explicit API error response (4xx / 5xx body).
  */
 export function isNetworkError(err: unknown): boolean {
   if (!(err instanceof Error)) return false;
   // Our client always prefixes HTTP error messages with "API "
   if (err.message.startsWith("API ")) return false;
-  // fetch throws TypeError for all network-level failures
   return true;
 }
 
 /**
  * Fire-and-forget ping that wakes the Render free-tier instance so
- * it is ready by the time the user actually submits a form.
+ * it is ready by the time the user submits a form.
+ * Hits the root path since the backend has no dedicated /health endpoint.
  */
 export function warmupBackend(): void {
   if (!process.env.NEXT_PUBLIC_API_URL) return;
-  fetch("/backend/health").catch(() => { /* intentionally silent */ });
+  fetch(`${process.env.NEXT_PUBLIC_API_URL}/`).catch(() => { /* intentionally silent */ });
 }
 
-interface LoginPayload {
-  email?: string;
-  password?: string;
-  companyId?: string;
-  accessKey?: string;
-  role: string;
-}
+// ── Payload types ─────────────────────────────────────────────────────────────
 
-interface SignupPayload {
+export interface SignupPayload {
   fullName: string;
   email: string;
   phone: string;
@@ -42,32 +44,64 @@ interface SignupPayload {
   role: string;
 }
 
-interface VerifyOtpPayload {
+export interface VerifyOtpPayload {
   email: string;
   otp: string;
   role: string;
 }
 
-interface ResendOtpPayload {
-  email: string;
+export interface LoginPayload {
+  email?: string;
+  password?: string;
+  companyId?: string;
+  accessKey?: string;
   role: string;
 }
 
+export interface VerifyLoginOtpPayload {
+  email: string;
+  otp: string;
+  role: string;
+}
+
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+export interface ResetPasswordPayload {
+  token: string;
+  password: string;
+  confirmPassword: string;
+}
+
+// ── API methods ───────────────────────────────────────────────────────────────
+
 export const authApi = {
-  login: (payload: LoginPayload) =>
-    apiClient.post<AuthSession>("/auth/login", payload),
-
+  /** POST /auth/signup — registers a new user and triggers a signup OTP */
   signup: (payload: SignupPayload) =>
-    apiClient.post<AuthSession>("/auth/signup", payload),
+    apiClient.post<void>("/auth/signup", payload),
 
-  /** Verify the OTP sent after login or signup. Returns a full auth session. */
+  /** POST /auth/verify-otp — confirms the OTP sent after signup */
   verifyOtp: (payload: VerifyOtpPayload) =>
     apiClient.post<AuthSession>("/auth/verify-otp", payload),
 
-  /** Re-send an OTP to the user's email/phone. */
-  resendOtp: (payload: ResendOtpPayload) =>
-    apiClient.post<void>("/auth/resend-otp", payload),
+  /** POST /auth/login — authenticates credentials and triggers a login OTP */
+  login: (payload: LoginPayload) =>
+    apiClient.post<void>("/auth/login", payload),
 
+  /** POST /auth/verify-login-otp — confirms the OTP sent after login */
+  verifyLoginOtp: (payload: VerifyLoginOtpPayload) =>
+    apiClient.post<AuthSession>("/auth/verify-login-otp", payload),
+
+  /** POST /auth/forgot-password — sends a password-reset link to the email */
+  forgotPassword: (payload: ForgotPasswordPayload) =>
+    apiClient.post<void>("/auth/forgot-password", payload),
+
+  /** POST /auth/reset-password/:token — sets a new password using the reset token */
+  resetPassword: ({ token, ...body }: ResetPasswordPayload) =>
+    apiClient.post<void>(`/auth/reset-password/${token}`, body),
+
+  /** POST /auth/logout — invalidates the session token server-side */
   logout: (token: string) =>
     apiClient.post<void>("/auth/logout", {}, { token }),
 };

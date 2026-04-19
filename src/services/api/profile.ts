@@ -9,6 +9,7 @@ import { apiClient } from "./client";
 import type { UserProfile } from "@/src/types/user/types";
 
 export interface CompleteProfilePayload {
+  role?: string;
   gender?: string;
   dob?: string;
   emergencyContact?: string;

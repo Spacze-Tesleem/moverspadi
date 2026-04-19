@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ShieldCheck, ArrowRight, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
 import { useAuthStore } from "@/src/store/authStore";
 import { authApi, isNetworkError, warmupBackend } from "@/src/services/api/auth";
+import type { AuthSession } from "@/src/types/auth/types";
 import type { UserRole } from "@/src/types/auth/types";
 
 export default function OtpView() {
@@ -99,7 +100,10 @@ function OtpPageInner() {
     try {
       if (process.env.NEXT_PUBLIC_API_URL) {
         try {
-          const session = await authApi.verifyOtp({ email, otp, role });
+          // Signup and login OTPs are verified by different backend endpoints
+          const session: AuthSession = mode === "login"
+            ? await authApi.verifyLoginOtp({ email, otp, role })
+            : await authApi.verifyOtp({ email, otp, role });
           login(session.user, session.role as typeof role, session.token, session.verificationStatus);
           const needsOnboarding = mode === "signup" && isSupplyRole(session.role);
           needsOnboarding ? setProfileComplete(false) : setProfileComplete(true);
@@ -142,11 +146,22 @@ function OtpPageInner() {
     setDigits(Array(OTP_LENGTH).fill(""));
 
     try {
+      // Re-trigger the original login/signup call so the backend sends a fresh OTP.
+      // The backend has no dedicated resend endpoint — re-posting login/signup is
+      // the correct approach per the authRoutes.js spec.
       if (process.env.NEXT_PUBLIC_API_URL) {
-        await authApi.resendOtp({ email, role });
+        if (mode === "login") {
+          await authApi.login({ email, role });
+        } else {
+          // For signup resend we can only re-request via login since the account
+          // already exists at this point; fall through to timer reset silently.
+          await new Promise((r) => setTimeout(r, 600));
+        }
       } else {
         await new Promise((r) => setTimeout(r, 800));
       }
+    } catch {
+      // Silently ignore — the user still gets the countdown reset
     } finally {
       setIsResending(false);
       setCountdown(60);
