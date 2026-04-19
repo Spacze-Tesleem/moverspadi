@@ -8,13 +8,6 @@
 // rewrite has no destination and API calls will hit Next.js page routes,
 // producing 404/405 errors.
 
-if (typeof window !== "undefined" && !process.env.NEXT_PUBLIC_API_URL) {
-  console.error(
-    "[apiClient] NEXT_PUBLIC_API_URL is not set. " +
-    "API calls will fail. Add it to .env.local or your Vercel environment variables."
-  );
-}
-
 const BASE_URL = "/backend";
 
 interface RequestOptions extends RequestInit {

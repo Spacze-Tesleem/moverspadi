@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/backend",
+      "destination": "https://moverspadi.onrender.com/"
+    },
+    {
       "source": "/backend/:path*",
       "destination": "https://moverspadi.onrender.com/api/:path*"
     }
