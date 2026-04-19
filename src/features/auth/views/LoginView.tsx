@@ -224,44 +224,16 @@ function LoginPageInner() {
   const handleDemoLogin = async (account: typeof DEMO_ACCOUNTS[number]) => {
     setDemoLoading(account.role);
     setError(null);
-
-    const isCompanyOrAdmin = account.role === "company" || account.role === "admin";
-
-    try {
-      // Attempt real backend login — backend sends OTP, user verifies in OtpView.
-      await authApi.login(
-        isCompanyOrAdmin
-          ? { companyId: account.id, accessKey: account.password, role: account.role }
-          : { email: account.id, password: account.password, role: account.role }
-      );
-      router.push(
-        `/auth/otp?role=${account.role}&mode=login` +
-        `&email=${encodeURIComponent(account.id)}` +
-        `&name=${encodeURIComponent(account.name)}`
-      );
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "";
-      const backendDown =
-        isNetworkError(err) ||
-        message.startsWith("API 5") ||
-        !process.env.NEXT_PUBLIC_API_URL;
-
-      if (backendDown) {
-        // Backend unreachable — bypass OTP and log in directly with a demo token.
-        await persistSession("demo-token");
-        login(
-          { name: account.name, email: account.id },
-          account.role,
-          "demo-token",
-          "approved"
-        );
-        setProfileComplete(true);
-        router.push(`/${account.role}`);
-      } else {
-        setError(message || "Demo login failed. Please try again.");
-        setDemoLoading(null);
-      }
-    }
+    // Always bypass OTP — one-click straight into the portal.
+    await persistSession("demo-token");
+    login(
+      { name: account.name, email: account.id },
+      account.role,
+      "demo-token",
+      "approved"
+    );
+    setProfileComplete(true);
+    router.push(`/${account.role}`);
   };
 
   return (
