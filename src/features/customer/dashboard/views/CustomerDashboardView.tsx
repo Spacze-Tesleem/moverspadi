@@ -94,7 +94,7 @@ function DashboardInner() {
   };
 
   return (
-    <div className={`flex h-screen font-sans overflow-hidden transition-colors duration-200 ${D ? "bg-[#080808] text-zinc-100" : "bg-slate-50 text-slate-800"}`}>
+    <div className={`flex h-screen font-sans overflow-hidden transition-colors duration-200 ${D ? "bg-[#080808] text-zinc-100" : "bg-[#f5f7fb] text-slate-800"}`}>
 
       {/* Mobile overlay */}
       {isMobileMenuOpen && (
