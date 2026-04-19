@@ -8,10 +8,8 @@ import {
   Sparkles, ArrowRight, Truck, AlertCircle, ChevronLeft,
   Zap, ChevronDown, PlayCircle,
 } from "lucide-react";
-import { authApi, isNetworkError, type ForgotPasswordPayload } from "@/src/services/api/auth";
+import { authApi, isNetworkError } from "@/src/services/api/auth";
 import { useAuthStore } from "@/src/store/authStore";
-import { persistSession } from "@/src/lib/sessionClient";
-import { useEffect } from "react";
 
 type Role = "customer" | "mover" | "provider" | "company" | "admin";
 
@@ -65,23 +63,25 @@ const QUICK_ACCESS_ROLES: { role: Role; label: string; color: string; portal: st
   { role: "admin",    label: "Admin",     color: "bg-slate-700",  portal: "/admin" },
 ];
 
-// Demo accounts — always visible so reviewers can try the app even when the
-// backend (Render free tier) is cold or unavailable.
-// Attempts real login first; falls back to local bypass on network failure.
-const DEMO_ACCOUNTS: {
-  role: Role;
+// Demo accounts — always visible so reviewers can try the app.
+// Credentials are loaded from environment variables so they are never
+// committed to source control. The admin role is intentionally excluded
+// from the demo panel; admin access requires direct login.
+type DemoAccount = {
+  role: Exclude<Role, "admin">;
   label: string;
   id: string;
   password: string;
   name: string;
   color: string;
   icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
-}[] = [
-  { role: "customer", label: "Customer",  id: "customer@demo.com", password: "demo1234", name: "Demo Customer", color: "bg-blue-500",   icon: User      },
-  { role: "mover",    label: "Mover",     id: "mover@demo.com",    password: "demo1234", name: "Demo Mover",    color: "bg-violet-500", icon: Truck     },
-  { role: "company",  label: "Company",   id: "COMPANY-001",       password: "demo1234", name: "Demo Company",  color: "bg-emerald-500",icon: Building2 },
-  { role: "admin",    label: "Admin",     id: "ADMIN-001",         password: "demo1234", name: "Demo Admin",    color: "bg-slate-700",  icon: ShieldCheck},
-];
+};
+
+const DEMO_ACCOUNTS: DemoAccount[] = ([
+  { role: "customer" as const, label: "Customer", id: process.env.NEXT_PUBLIC_DEMO_CUSTOMER_ID ?? "", password: process.env.NEXT_PUBLIC_DEMO_CUSTOMER_PW ?? "", name: "Demo Customer", color: "bg-blue-500",    icon: User      },
+  { role: "mover"    as const, label: "Mover",    id: process.env.NEXT_PUBLIC_DEMO_MOVER_ID    ?? "", password: process.env.NEXT_PUBLIC_DEMO_MOVER_PW    ?? "", name: "Demo Mover",    color: "bg-violet-500", icon: Truck     },
+  { role: "company"  as const, label: "Company",  id: process.env.NEXT_PUBLIC_DEMO_COMPANY_ID  ?? "", password: process.env.NEXT_PUBLIC_DEMO_COMPANY_PW  ?? "", name: "Demo Company",  color: "bg-emerald-500",icon: Building2 },
+] as DemoAccount[]).filter((a) => a.id !== "");
 
 export default function LoginView() {
   return (
@@ -142,7 +142,7 @@ function LoginPageInner() {
       );
 
       sessionStorage.setItem("otp_email", enteredId);
-      sessionStorage.setItem("otp_name", DEV_CREDENTIALS?.[role]?.name ?? "User");
+      sessionStorage.setItem("otp_name", "User");
       sessionStorage.setItem("otp_password", enteredPw);
       router.push(`/auth/otp?role=${role}&mode=login`);
     } catch (err: unknown) {
@@ -152,7 +152,7 @@ function LoginPageInner() {
       // Redirect to OTP so the user can complete verification.
       if (message.includes("403") && message.toLowerCase().includes("verify")) {
         sessionStorage.setItem("otp_email", enteredId);
-        sessionStorage.setItem("otp_name", DEV_CREDENTIALS?.[role]?.name ?? "User");
+        sessionStorage.setItem("otp_name", "User");
         sessionStorage.setItem("otp_password", enteredPw);
         router.push(`/auth/otp?role=${role}&mode=signup`);
         return;
@@ -169,11 +169,8 @@ function LoginPageInner() {
       if (noBackend) {
         const creds = DEV_CREDENTIALS?.[role];
         if (!creds || enteredId !== creds.id || enteredPw !== creds.password) {
-          setError(
-            creds
-              ? `Dev mode — use: ${creds.id} / ${creds.password}`
-              : "Invalid credentials. Please try again."
-          );
+          // Never disclose credentials in the error message.
+          setError("Invalid credentials. Please try again.");
         } else {
           sessionStorage.setItem("otp_email", enteredId);
           sessionStorage.setItem("otp_name", creds.name);
@@ -230,18 +227,39 @@ function LoginPageInner() {
   };
 
   const handleDemoLogin = async (account: typeof DEMO_ACCOUNTS[number]) => {
+    if (!account.id || !account.password) {
+      setError("Demo credentials are not configured. Please log in manually.");
+      return;
+    }
     setDemoLoading(account.role);
-    // Set the session cookie so the proxy lets the request through,
-    // then update Zustand state and navigate — no backend calls made.
-    await persistSession("demo-token");
-    login(
-      { name: account.name, email: account.id },
-      account.role,
-      "demo-token",
-      "approved"
-    );
-    setProfileComplete(true);
-    router.push(`/${account.role}`);
+    try {
+      // Attempt real backend login — backend sends OTP to the demo account.
+      await authApi.login({ email: account.id, password: account.password, role: account.role });
+      sessionStorage.setItem("otp_email", account.id);
+      sessionStorage.setItem("otp_name", account.name);
+      // Do NOT store the password in sessionStorage for demo accounts;
+      // resend is not needed for a demo flow.
+      router.push(`/auth/otp?role=${account.role}&mode=login`);
+    } catch (err: unknown) {
+      // On network failure (Render cold start) fall back to a local offline
+      // demo session. Admin is excluded — offline demo never grants admin access.
+      if (isNetworkError(err)) {
+        // Offline demo: no real token, no cookie, clearly scoped to non-admin roles.
+        login(
+          { name: account.name, email: account.id },
+          account.role,
+          "", // no token — cookie is not set
+          account.role === "customer" ? "approved" : "pending"
+        );
+        setProfileComplete(account.role === "customer");
+        router.push(`/${account.role}`);
+      } else {
+        const message = err instanceof Error ? err.message : "";
+        setError(message || "Demo login failed. Please try again.");
+      }
+    } finally {
+      setDemoLoading(null);
+    }
   };
 
   return (
