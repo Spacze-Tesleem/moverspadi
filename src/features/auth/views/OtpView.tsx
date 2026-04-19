@@ -137,9 +137,9 @@ function OtpPageInner() {
         throw new Error("Service unavailable. Please try again later.");
       }
 
-      // Clear the transient auth data now that it has been consumed.
-      sessionStorage.removeItem("otp_email");
-      sessionStorage.removeItem("otp_name");
+      // Clear all transient auth data now that it has been consumed.
+      ["otp_email", "otp_name", "otp_phone", "otp_password", "otp_confirmPassword"]
+        .forEach((k) => sessionStorage.removeItem(k));
 
       setSuccess(true);
       await new Promise((r) => setTimeout(r, 800));
@@ -171,27 +171,32 @@ function OtpPageInner() {
     setDigits(Array(OTP_LENGTH).fill(""));
 
     try {
-      // Re-trigger the original login/signup call so the backend sends a fresh OTP.
-      // The backend has no dedicated resend endpoint — re-posting login/signup is
-      // the correct approach per the authRoutes.js spec.
-      if (process.env.NEXT_PUBLIC_API_URL) {
-        if (mode === "login") {
-          await authApi.login({ email, role });
-        } else {
-          // For signup resend we can only re-request via login since the account
-          // already exists at this point; fall through to timer reset silently.
-          await new Promise((r) => setTimeout(r, 600));
-        }
+      if (mode === "login") {
+        // Replay the original login call using the password stored in sessionStorage.
+        const password = sessionStorage.getItem("otp_password") ?? "";
+        await authApi.login({ email, password, role });
       } else {
-        await new Promise((r) => setTimeout(r, 800));
+        // Replay the original signup call using credentials stored in sessionStorage.
+        const phone           = sessionStorage.getItem("otp_phone") ?? "";
+        const password        = sessionStorage.getItem("otp_password") ?? "";
+        const confirmPassword = sessionStorage.getItem("otp_confirmPassword") ?? "";
+        await authApi.signup({
+          fullName: name,
+          email,
+          phone,
+          password,
+          confirmPassword,
+          role,
+        });
       }
-    } catch {
-      // Silently ignore — the user still gets the countdown reset
-    } finally {
-      setIsResending(false);
       setCountdown(60);
       setCanResend(false);
       inputRefs.current[0]?.focus();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "";
+      setError(message || "Failed to resend code. Please try again.");
+    } finally {
+      setIsResending(false);
     }
   };
 

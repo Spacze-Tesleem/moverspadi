@@ -75,10 +75,13 @@ function SignupPageInner() {
         role,
       });
 
-      // Pass email/name via sessionStorage so they don't appear in the URL.
-      // OtpView reads and clears these after verification.
+      // Pass credentials via sessionStorage so they don't appear in the URL.
+      // OtpView reads these for display and resend; all keys cleared after verification.
       sessionStorage.setItem("otp_email", formData.email);
       sessionStorage.setItem("otp_name", formData.fullName);
+      sessionStorage.setItem("otp_phone", formData.phone);
+      sessionStorage.setItem("otp_password", formData.password);
+      sessionStorage.setItem("otp_confirmPassword", formData.confirmPassword);
       router.push(`/auth/otp?role=${role}&mode=signup`);
     } catch (err: unknown) {
       // ── DEV FALLBACK ──────────────────────────────────────────────────────
@@ -94,6 +97,9 @@ function SignupPageInner() {
       if (noBackend) {
         sessionStorage.setItem("otp_email", formData.email);
         sessionStorage.setItem("otp_name", formData.fullName);
+        sessionStorage.setItem("otp_phone", formData.phone);
+        sessionStorage.setItem("otp_password", formData.password);
+        sessionStorage.setItem("otp_confirmPassword", formData.confirmPassword);
         router.push(`/auth/otp?role=${role}&mode=signup`);
       } else {
         setError(message || "Signup failed. Please try again.");

@@ -143,6 +143,7 @@ function LoginPageInner() {
 
       sessionStorage.setItem("otp_email", enteredId);
       sessionStorage.setItem("otp_name", DEV_CREDENTIALS?.[role]?.name ?? "User");
+      sessionStorage.setItem("otp_password", enteredPw);
       router.push(`/auth/otp?role=${role}&mode=login`);
     } catch (err: unknown) {
       // ── DEV FALLBACK ──────────────────────────────────────────────────────
@@ -165,6 +166,7 @@ function LoginPageInner() {
         } else {
           sessionStorage.setItem("otp_email", enteredId);
           sessionStorage.setItem("otp_name", creds.name);
+          sessionStorage.setItem("otp_password", enteredPw);
           router.push(`/auth/otp?role=${role}&mode=login`);
         }
       } else {
