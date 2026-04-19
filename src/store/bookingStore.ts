@@ -50,6 +50,24 @@ export const useBookingStore = create<BookingState>()(
     {
       name: "moverspadi-booking",
       storage: createJSONStorage(() => localStorage),
+      // Re-hydrate whenever another tab writes to the same localStorage key.
+      // This is what allows the mover dashboard (open in a separate tab) to
+      // react instantly when a customer confirms a booking.
+      onRehydrateStorage: () => () => {
+        if (typeof window === "undefined") return;
+        window.addEventListener("storage", (e) => {
+          if (e.key === "moverspadi-booking" && e.newValue) {
+            try {
+              const parsed = JSON.parse(e.newValue);
+              if (parsed?.state) {
+                useBookingStore.setState(parsed.state);
+              }
+            } catch {
+              // ignore malformed storage events
+            }
+          }
+        });
+      },
     }
   )
 );
