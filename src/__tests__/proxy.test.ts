@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { middleware } from "../../proxy";
+import { proxy as middleware } from "../../proxy";
 import { NextRequest } from "next/server";
 
 const BASE = "http://localhost:3000";
