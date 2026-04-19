@@ -82,7 +82,6 @@ export interface ResetPasswordPayload {
 // ── API methods ───────────────────────────────────────────────────────────────
 
 export const authApi = {
-  /** POST /auth/signup — registers a new user and triggers a signup OTP */
   signup: (payload: SignupPayload) =>
     apiClient.post<void>("/auth/signup", {
       name: payload.fullName,
@@ -93,27 +92,30 @@ export const authApi = {
       role: payload.role,
     }),
 
-  /** POST /auth/verify-otp — confirms the OTP sent after signup */
   verifyOtp: (payload: VerifyOtpPayload) =>
-    apiClient.post<AuthSession>("/auth/verify-otp", payload),
+    apiClient.post<AuthSession>("/auth/verify-otp", {
+      email: payload.email,
+      otp_code: payload.otp,
+    }),
 
-  /** POST /auth/login — authenticates credentials and triggers a login OTP */
   login: (payload: LoginPayload) =>
-    apiClient.post<void>("/auth/login", payload),
+    apiClient.post<void>("/auth/login", {
+      email: payload.email,
+      password: payload.password,
+    }),
 
-  /** POST /auth/verify-login-otp — confirms the OTP sent after login */
   verifyLoginOtp: (payload: VerifyLoginOtpPayload) =>
-    apiClient.post<AuthSession>("/auth/verify-login-otp", payload),
+    apiClient.post<AuthSession>("/auth/verify-login-otp", {
+      email: payload.email,
+      otp_code: payload.otp,
+    }),
 
-  /** POST /auth/forgot-password — sends a password-reset link to the email */
   forgotPassword: (payload: ForgotPasswordPayload) =>
     apiClient.post<void>("/auth/forgot-password", payload),
 
-  /** POST /auth/reset-password/:token — sets a new password using the reset token */
   resetPassword: ({ token, ...body }: ResetPasswordPayload) =>
     apiClient.post<void>(`/auth/reset-password/${token}`, body),
 
-  /** POST /auth/logout — invalidates the session token server-side */
   logout: (token: string) =>
     apiClient.post<void>("/auth/logout", {}, { token }),
 };
