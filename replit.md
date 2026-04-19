@@ -10,7 +10,7 @@ A Next.js 16 web application for the MoversPadi platform — a fleetless logisti
 - **Maps**: Leaflet / React-Leaflet, Pigeon Maps, Google Maps API
 - **Animations**: Framer Motion
 - **HTTP**: Custom fetch-based API client with Bearer token auth
-- **Dashboard styling**: Customer uses a smoke-white dashboard background; admin, mover, and company dashboards share a modern smoke-white glass/card skin via `customer-dashboard-skin`
+- **Dashboard styling**: Customer uses a smoke-white dashboard background; admin, mover, and company dashboards share a cleaner SaaS-style smoke-white skin via `customer-dashboard-skin` with crisp white cards, stronger slate text, and controlled blue/green status accents
 
 ## Project Structure
 
