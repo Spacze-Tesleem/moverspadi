@@ -9,16 +9,40 @@ import { apiClient } from "./client";
 import type { UserProfile } from "@/src/types/user/types";
 
 export interface CompleteProfilePayload {
+  // Common
   role?: string;
   gender?: string;
   dob?: string;
   emergencyContact?: string;
+
+  // Address & trust
   address?: string;
   nextOfKinName?: string;
   nextOfKinPhone?: string;
   nextOfKinRelationship?: string;
   guarantorName?: string;
   guarantorPhone?: string;
+
+  // Vehicle (mover / provider)
+  vehicleType?: string;
+  plateNumber?: string;
+  vehicleBrand?: string;
+  vehicleModel?: string;
+  vehicleColor?: string;
+  yearsOfExperience?: string;
+  coverageArea?: string;
+
+  // Payout
+  bankName?: string;
+  accountName?: string;
+  accountNumber?: string;
+
+  // Social links
+  facebookUrl?: string;
+  instagramUrl?: string;
+  twitterUrl?: string;
+
+  // Documents — keys vary by role, values indicate whether the file was attached
   documents?: Record<string, boolean>;
 }
 

@@ -3,11 +3,13 @@
 export type UserRole = "customer" | "mover" | "provider" | "company" | "admin";
 
 /**
- * pending   — submitted, awaiting admin review
- * approved  — admin approved, can accept jobs
- * rejected  — admin rejected, must re-submit
+ * pending    — submitted, awaiting admin review
+ * approved   — admin approved, can accept jobs
+ * rejected   — admin rejected, must re-submit
+ * suspended  — account suspended by admin
+ * resubmit   — admin requested document resubmission
  */
-export type VerificationStatus = "pending" | "approved" | "rejected";
+export type VerificationStatus = "pending" | "approved" | "rejected" | "suspended" | "resubmit";
 
 export interface User {
   id?: string;

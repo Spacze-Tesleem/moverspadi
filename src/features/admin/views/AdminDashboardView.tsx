@@ -8,15 +8,42 @@ import {
   LayoutGrid, Users, Truck, Package, Bell,
   Settings, LogOut, Menu, X, ChevronRight, TrendingUp,
   TrendingDown, ShieldCheck, AlertCircle, CheckCircle2,
-  Search, Eye, Filter, Download, Calendar, 
-  Clock, MapPin, Zap, BarChart3, UserPlus, 
-  Moon, Sun, Monitor, MoreHorizontal, Ban, CreditCard, Shield,
-  ArrowUpRight, Activity, Wallet, Target
+  Search, Eye, Filter, Download, Calendar,
+  Clock, MapPin, Zap, BarChart3, UserPlus,
+  Moon, Sun, MoreHorizontal, Ban, CreditCard, Shield,
+  ArrowUpRight, Activity, Wallet, Target, ClipboardList,
+  XCircle, RefreshCw, AlertTriangle, FileWarning, ChevronDown,
 } from "lucide-react";
+import type { VerificationStatus } from "@/src/types/auth/types";
 
 // ── Types ─────────────────────────────────────────────────
-type ActiveView = "overview" | "users" | "orders" | "alerts" | "settings";
+type ActiveView = "overview" | "users" | "orders" | "verification" | "alerts" | "settings";
 type Theme = "light" | "dark" | "system";
+
+// ── Verification Queue Data ────────────────────────────────
+type ApplicantRole = "mover" | "provider" | "company";
+
+interface Applicant {
+  id: string;
+  name: string;
+  role: ApplicantRole;
+  email: string;
+  submittedAt: string;
+  status: VerificationStatus;
+  documents: string[];
+  avatar: string;
+  avatarColor: string;
+  reason?: string;
+}
+
+const INITIAL_QUEUE: Applicant[] = [
+  { id: "MVR-001", name: "Chidi Okafor",       role: "mover",    email: "chidi@mail.com",    submittedAt: "2 hrs ago",   status: "pending",  avatar: "CO", avatarColor: "bg-cyan-500",    documents: ["Driver's License", "NIN", "Profile Photo", "Selfie", "Home Photo", "Vehicle Registration", "Roadworthiness", "Insurance", "Vehicle Photo"] },
+  { id: "PRV-002", name: "Amaka Eze",           role: "provider", email: "amaka@mail.com",    submittedAt: "5 hrs ago",   status: "pending",  avatar: "AE", avatarColor: "bg-violet-500",  documents: ["Driver's License", "Passport", "Profile Photo", "Selfie", "Home Photo", "Vehicle Registration", "Roadworthiness", "Insurance", "Vehicle Photo"] },
+  { id: "CMP-003", name: "Zenith Logistics Ltd",role: "company",  email: "info@zenith.ng",    submittedAt: "1 day ago",   status: "pending",  avatar: "ZL", avatarColor: "bg-emerald-500", documents: ["CAC Certificate", "Company Logo", "Premises Photo", "Authorized Signature"] },
+  { id: "MVR-004", name: "Emeka Nwosu",         role: "mover",    email: "emeka@mail.com",    submittedAt: "2 days ago",  status: "rejected", avatar: "EN", avatarColor: "bg-rose-500",    documents: ["Driver's License", "NIN", "Profile Photo", "Selfie", "Home Photo", "Vehicle Registration", "Roadworthiness", "Insurance", "Vehicle Photo"], reason: "Vehicle registration document is expired." },
+  { id: "PRV-005", name: "Funke Adeyemi",       role: "provider", email: "funke@mail.com",    submittedAt: "3 days ago",  status: "resubmit", avatar: "FA", avatarColor: "bg-amber-500",   documents: ["Driver's License", "Passport", "Profile Photo", "Selfie", "Home Photo", "Vehicle Registration", "Roadworthiness", "Insurance", "Vehicle Photo"], reason: "Selfie photo is blurry. Please resubmit a clear image." },
+  { id: "CMP-006", name: "FastMove Nigeria Ltd",role: "company",  email: "ops@fastmove.ng",   submittedAt: "4 days ago",  status: "approved", avatar: "FM", avatarColor: "bg-blue-500",    documents: ["CAC Certificate", "Company Logo", "Premises Photo", "Authorized Signature"] },
+];
 
 // ── Data with Color Metadata ──────────────────────────────
 const PLATFORM_STATS = [
@@ -47,6 +74,25 @@ export default function AdminDashboardView() {
   const [activeView, setActiveView] = useState<ActiveView>("overview");
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState<Theme>("dark");
+  const [queue, setQueue] = useState<Applicant[]>(INITIAL_QUEUE);
+  const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
+  const [actionReason, setActionReason] = useState("");
+  const [auditLog, setAuditLog] = useState<{ id: string; action: string; reason: string; admin: string; timestamp: string }[]>([]);
+
+  const handleVerificationAction = (applicantId: string, action: VerificationStatus, reason = "") => {
+    setQueue((prev) =>
+      prev.map((a) => a.id === applicantId ? { ...a, status: action, reason } : a)
+    );
+    setAuditLog((prev) => [{
+      id: applicantId,
+      action,
+      reason,
+      admin: "Admin Console",
+      timestamp: new Date().toLocaleString(),
+    }, ...prev]);
+    setSelectedApplicant(null);
+    setActionReason("");
+  };
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -55,11 +101,12 @@ export default function AdminDashboardView() {
   }, [theme]);
 
   const navItems = [
-    { id: "overview", label: "Overview", icon: LayoutGrid, color: "emerald" },
-    { id: "users", label: "User Management", icon: Users, color: "violet" },
-    { id: "orders", label: "Logistics Engine", icon: Truck, color: "cyan" },
-    { id: "alerts", label: "System Alerts", icon: Bell, color: "rose", badge: 3 },
-    { id: "settings", label: "Configuration", icon: Settings, color: "slate" },
+    { id: "overview",      label: "Overview",          icon: LayoutGrid,    color: "emerald" },
+    { id: "users",         label: "User Management",   icon: Users,         color: "violet" },
+    { id: "orders",        label: "Logistics Engine",  icon: Truck,         color: "cyan" },
+    { id: "verification",  label: "Verification Queue",icon: ClipboardList, color: "amber", badge: INITIAL_QUEUE.filter(a => a.status === "pending").length },
+    { id: "alerts",        label: "System Alerts",     icon: Bell,          color: "rose", badge: 3 },
+    { id: "settings",      label: "Configuration",     icon: Settings,      color: "slate" },
   ];
 
   return (
@@ -346,6 +393,190 @@ export default function AdminDashboardView() {
                 </motion.div>
               )}
 
+              {/* ── VIEW: VERIFICATION QUEUE ── */}
+              {activeView === "verification" && (
+                <motion.div key="vq" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+
+                  {/* Header */}
+                  <div className="flex items-center justify-between p-8 rounded-[2.5rem] bg-amber-500 text-white">
+                    <div>
+                      <h2 className="text-2xl font-black tracking-tight">Verification Queue</h2>
+                      <p className="text-xs font-bold opacity-80 uppercase tracking-widest mt-1">
+                        {queue.filter(a => a.status === "pending").length} pending · {queue.filter(a => a.status === "resubmit").length} resubmitted
+                      </p>
+                    </div>
+                    <div className="flex gap-3">
+                      <button className="px-5 py-2.5 bg-white/20 text-white rounded-2xl font-black text-xs flex items-center gap-2 hover:bg-white/30 transition-colors">
+                        <Filter size={14} /> Filter
+                      </button>
+                      <button className="px-5 py-2.5 bg-white text-amber-600 rounded-2xl font-black text-xs flex items-center gap-2 hover:bg-amber-50 transition-colors">
+                        <Download size={14} /> Export
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Status summary */}
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    {([
+                      { label: "Pending",   status: "pending",   color: "amber" },
+                      { label: "Resubmit",  status: "resubmit",  color: "orange" },
+                      { label: "Approved",  status: "approved",  color: "emerald" },
+                      { label: "Rejected",  status: "rejected",  color: "rose" },
+                      { label: "Suspended", status: "suspended", color: "slate" },
+                    ] as const).map(({ label, status, color }) => (
+                      <div key={status} className={`p-4 rounded-[1.5rem] bg-${color}-50 dark:bg-${color}-500/10 border border-${color}-100 dark:border-${color}-500/20 text-center`}>
+                        <p className={`text-2xl font-black text-${color}-600 dark:text-${color}-400`}>{queue.filter(a => a.status === status).length}</p>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">{label}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Applicant list */}
+                  <div className="rounded-[2.5rem] bg-white dark:bg-zinc-900/50 border border-slate-100 dark:border-white/5 overflow-hidden">
+                    <div className="p-6 border-b border-slate-100 dark:border-white/5">
+                      <h3 className="font-black text-lg">Applications</h3>
+                    </div>
+                    <div className="divide-y divide-slate-100 dark:divide-white/5">
+                      {queue.map((applicant) => (
+                        <div key={applicant.id} className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+                          <div className={`w-11 h-11 rounded-2xl ${applicant.avatarColor} flex items-center justify-center text-white text-sm font-black flex-shrink-0`}>
+                            {applicant.avatar}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-black">{applicant.name}</p>
+                            <p className="text-[11px] text-slate-500 font-bold flex items-center gap-2 mt-0.5">
+                              <span className="capitalize">{applicant.role}</span>
+                              <span className="text-slate-300">·</span>
+                              <Clock size={10} className="text-slate-400" /> {applicant.submittedAt}
+                            </p>
+                          </div>
+                          <VerifStatusBadge status={applicant.status} />
+                          <button
+                            onClick={() => { setSelectedApplicant(applicant); setActionReason(applicant.reason ?? ""); }}
+                            className="p-2.5 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors flex-shrink-0"
+                          >
+                            <Eye size={15} className="text-slate-500" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Audit log */}
+                  {auditLog.length > 0 && (
+                    <div className="rounded-[2.5rem] bg-white dark:bg-zinc-900/50 border border-slate-100 dark:border-white/5 overflow-hidden">
+                      <div className="p-6 border-b border-slate-100 dark:border-white/5">
+                        <h3 className="font-black text-lg">Audit Log</h3>
+                      </div>
+                      <div className="divide-y divide-slate-100 dark:divide-white/5">
+                        {auditLog.map((entry, i) => (
+                          <div key={i} className="flex items-start gap-4 px-6 py-4">
+                            <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-white/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <Shield size={14} className="text-slate-500" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-black">
+                                {entry.id} — <span className="capitalize text-amber-600 dark:text-amber-400">{entry.action}</span>
+                              </p>
+                              {entry.reason && <p className="text-xs text-slate-500 font-medium mt-0.5">"{entry.reason}"</p>}
+                              <p className="text-[10px] text-slate-400 font-bold mt-1 flex items-center gap-1">
+                                <Clock size={9} /> {entry.timestamp} · {entry.admin}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Detail / action modal */}
+                  <AnimatePresence>
+                    {selectedApplicant && (
+                      <>
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                          onClick={() => setSelectedApplicant(null)}
+                          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40" />
+                        <motion.div initial={{ opacity: 0, scale: 0.95, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 16 }}
+                          className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                          <div className="w-full max-w-lg bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-2xl border border-slate-100 dark:border-white/5 overflow-hidden max-h-[90vh] flex flex-col">
+                            {/* Modal header */}
+                            <div className="flex items-center gap-4 p-6 border-b border-slate-100 dark:border-white/5">
+                              <div className={`w-12 h-12 rounded-2xl ${selectedApplicant.avatarColor} flex items-center justify-center text-white font-black`}>
+                                {selectedApplicant.avatar}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-black text-slate-900 dark:text-white">{selectedApplicant.name}</p>
+                                <p className="text-xs text-slate-500 font-bold capitalize">{selectedApplicant.role} · {selectedApplicant.email}</p>
+                              </div>
+                              <VerifStatusBadge status={selectedApplicant.status} />
+                              <button onClick={() => setSelectedApplicant(null)} className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
+                                <XCircle size={18} className="text-slate-400" />
+                              </button>
+                            </div>
+
+                            {/* Documents */}
+                            <div className="p-6 overflow-y-auto flex-1">
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Submitted Documents</p>
+                              <div className="space-y-2 mb-6">
+                                {selectedApplicant.documents.map((doc) => (
+                                  <div key={doc} className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
+                                    <div className="flex items-center gap-3">
+                                      <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" />
+                                      <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{doc}</span>
+                                    </div>
+                                    <button className="text-[10px] font-black text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1">
+                                      <Eye size={11} /> View
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+
+                              {/* Reason input */}
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Reason / Note (required for reject, resubmit, suspend)</p>
+                              <textarea
+                                value={actionReason}
+                                onChange={(e) => setActionReason(e.target.value)}
+                                placeholder="Explain the action taken for the audit log..."
+                                rows={3}
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-800 border border-slate-100 dark:border-white/10 rounded-2xl text-sm font-medium text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500/30 resize-none transition-all"
+                              />
+                            </div>
+
+                            {/* Action buttons */}
+                            <div className="p-6 border-t border-slate-100 dark:border-white/5 grid grid-cols-2 gap-3">
+                              <button
+                                onClick={() => handleVerificationAction(selectedApplicant.id, "approved", actionReason)}
+                                className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-emerald-500 text-white font-black text-sm hover:bg-emerald-600 transition-colors"
+                              >
+                                <CheckCircle2 size={16} /> Approve
+                              </button>
+                              <button
+                                onClick={() => handleVerificationAction(selectedApplicant.id, "rejected", actionReason)}
+                                className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-rose-500 text-white font-black text-sm hover:bg-rose-600 transition-colors"
+                              >
+                                <XCircle size={16} /> Reject
+                              </button>
+                              <button
+                                onClick={() => handleVerificationAction(selectedApplicant.id, "resubmit", actionReason)}
+                                className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-amber-500 text-white font-black text-sm hover:bg-amber-600 transition-colors"
+                              >
+                                <RefreshCw size={16} /> Request Resubmit
+                              </button>
+                              <button
+                                onClick={() => handleVerificationAction(selectedApplicant.id, "suspended", actionReason)}
+                                className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-slate-700 text-white font-black text-sm hover:bg-slate-800 transition-colors"
+                              >
+                                <AlertTriangle size={16} /> Suspend
+                              </button>
+                            </div>
+                          </div>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              )}
+
               {/* ── VIEW: ALERTS (System Alerts) ── */}
               {activeView === "alerts" && (
                 <motion.div key="al" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
@@ -508,5 +739,20 @@ export default function AdminDashboardView() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+// ── Verification status badge ─────────────────────────────
+function VerifStatusBadge({ status }: { status: VerificationStatus }) {
+  const map: Record<VerificationStatus, { label: string; cls: string }> = {
+    pending:   { label: "Pending",   cls: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400" },
+    approved:  { label: "Approved",  cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400" },
+    rejected:  { label: "Rejected",  cls: "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400" },
+    suspended: { label: "Suspended", cls: "bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300" },
+    resubmit:  { label: "Resubmit",  cls: "bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400" },
+  };
+  const { label, cls } = map[status];
+  return (
+    <span className={`text-[10px] font-black px-3 py-1 rounded-full flex-shrink-0 ${cls}`}>{label}</span>
   );
 }
