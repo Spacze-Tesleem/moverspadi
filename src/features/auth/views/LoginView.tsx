@@ -64,24 +64,21 @@ const QUICK_ACCESS_ROLES: { role: Role; label: string; color: string; portal: st
 ];
 
 // Demo accounts — always visible so reviewers can try the app.
-// Credentials are loaded from environment variables so they are never
-// committed to source control. The admin role is intentionally excluded
-// from the demo panel; admin access requires direct login.
+// Uses a fully offline session — no backend call, no credentials needed.
+// Admin is intentionally excluded from this panel; admin access requires direct login.
 type DemoAccount = {
   role: Exclude<Role, "admin">;
   label: string;
-  id: string;
-  password: string;
   name: string;
   color: string;
   icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
 };
 
-const DEMO_ACCOUNTS: DemoAccount[] = ([
-  { role: "customer" as const, label: "Customer", id: process.env.NEXT_PUBLIC_DEMO_CUSTOMER_ID ?? "", password: process.env.NEXT_PUBLIC_DEMO_CUSTOMER_PW ?? "", name: "Demo Customer", color: "bg-blue-500",    icon: User      },
-  { role: "mover"    as const, label: "Mover",    id: process.env.NEXT_PUBLIC_DEMO_MOVER_ID    ?? "", password: process.env.NEXT_PUBLIC_DEMO_MOVER_PW    ?? "", name: "Demo Mover",    color: "bg-violet-500", icon: Truck     },
-  { role: "company"  as const, label: "Company",  id: process.env.NEXT_PUBLIC_DEMO_COMPANY_ID  ?? "", password: process.env.NEXT_PUBLIC_DEMO_COMPANY_PW  ?? "", name: "Demo Company",  color: "bg-emerald-500",icon: Building2 },
-] as DemoAccount[]).filter((a) => a.id !== "");
+const DEMO_ACCOUNTS: DemoAccount[] = [
+  { role: "customer", label: "Customer", name: "Demo Customer", color: "bg-blue-500",    icon: User      },
+  { role: "mover",    label: "Mover",    name: "Demo Mover",    color: "bg-violet-500", icon: Truck     },
+  { role: "company",  label: "Company",  name: "Demo Company",  color: "bg-emerald-500",icon: Building2 },
+];
 
 export default function LoginView() {
   return (
@@ -109,7 +106,6 @@ function LoginPageInner() {
   const [error, setError] = useState<string | null>(null);
   const [quickOpen, setQuickOpen] = useState(false);
   const [quickLoading, setQuickLoading] = useState<string | null>(null);
-  const [demoLoading, setDemoLoading] = useState<string | null>(null);
   const [forgotOpen, setForgotOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotStatus, setForgotStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
@@ -226,40 +222,18 @@ function LoginPageInner() {
     router.push(entry.portal);
   };
 
-  const handleDemoLogin = async (account: typeof DEMO_ACCOUNTS[number]) => {
-    if (!account.id || !account.password) {
-      setError("Demo credentials are not configured. Please log in manually.");
-      return;
-    }
-    setDemoLoading(account.role);
-    try {
-      // Attempt real backend login — backend sends OTP to the demo account.
-      await authApi.login({ email: account.id, password: account.password, role: account.role });
-      sessionStorage.setItem("otp_email", account.id);
-      sessionStorage.setItem("otp_name", account.name);
-      // Do NOT store the password in sessionStorage for demo accounts;
-      // resend is not needed for a demo flow.
-      router.push(`/auth/otp?role=${account.role}&mode=login`);
-    } catch (err: unknown) {
-      // On network failure (Render cold start) fall back to a local offline
-      // demo session. Admin is excluded — offline demo never grants admin access.
-      if (isNetworkError(err)) {
-        // Offline demo: no real token, no cookie, clearly scoped to non-admin roles.
-        login(
-          { name: account.name, email: account.id },
-          account.role,
-          "", // no token — cookie is not set
-          account.role === "customer" ? "approved" : "pending"
-        );
-        setProfileComplete(account.role === "customer");
-        router.push(`/${account.role}`);
-      } else {
-        const message = err instanceof Error ? err.message : "";
-        setError(message || "Demo login failed. Please try again.");
-      }
-    } finally {
-      setDemoLoading(null);
-    }
+  const handleDemoLogin = (account: typeof DEMO_ACCOUNTS[number]) => {
+    // Offline demo session — no backend call, no real token.
+    // Grants immediate access so reviewers can explore the UI without
+    // needing live backend credentials. Admin is excluded from this panel.
+    login(
+      { name: account.name, email: `demo-${account.role}@moverspadi.local` },
+      account.role,
+      "", // no token — no httpOnly cookie is set
+      account.role === "customer" ? "approved" : "pending"
+    );
+    setProfileComplete(account.role === "customer");
+    router.push(`/${account.role}`);
   };
 
   return (
@@ -410,26 +384,22 @@ function LoginPageInner() {
               </span>
               <div className="flex-1 h-px bg-slate-100" />
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {DEMO_ACCOUNTS.map((account) => {
                 const Icon = account.icon;
-                const loading = demoLoading === account.role;
                 return (
                   <button
                     key={account.role}
                     type="button"
                     onClick={() => handleDemoLogin(account)}
-                    disabled={demoLoading !== null}
-                    className="flex items-center gap-2.5 px-3.5 py-3 rounded-2xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50 active:scale-[0.97] transition-all disabled:opacity-50 disabled:cursor-not-allowed text-left"
+                    className="flex items-center gap-2.5 px-3.5 py-3 rounded-2xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50 active:scale-[0.97] transition-all text-left"
                   >
                     <div className={`w-7 h-7 ${account.color} rounded-xl flex items-center justify-center shrink-0`}>
-                      {loading
-                        ? <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                        : <Icon className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />}
+                      <Icon className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-black text-slate-700 leading-none mb-0.5">{account.label}</p>
-                      <p className="text-[10px] text-slate-400 font-medium truncate">{account.id}</p>
+                      <p className="text-[10px] text-slate-400 font-medium">Demo</p>
                     </div>
                   </button>
                 );
@@ -437,7 +407,7 @@ function LoginPageInner() {
             </div>
             <p className="text-center text-[10px] text-slate-400 font-medium mt-2.5 flex items-center justify-center gap-1">
               <PlayCircle className="w-3 h-3" />
-              Connects to live backend · falls back to local demo if unavailable
+              Instant access · explore the full UI without an account
             </p>
           </div>
 
