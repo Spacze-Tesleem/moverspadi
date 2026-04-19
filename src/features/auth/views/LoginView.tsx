@@ -6,10 +6,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   User, Lock, ShieldCheck, Building2, Mail,
   Sparkles, ArrowRight, Truck, AlertCircle, ChevronLeft,
-  Zap, ChevronDown,
+  Zap, ChevronDown, PlayCircle,
 } from "lucide-react";
 import { authApi, isNetworkError, warmupBackend, type ForgotPasswordPayload } from "@/src/services/api/auth";
 import { useAuthStore } from "@/src/store/authStore";
+import { persistSession } from "@/src/lib/sessionClient";
 import { useEffect } from "react";
 
 type Role = "customer" | "mover" | "provider" | "company" | "admin";
@@ -64,6 +65,24 @@ const QUICK_ACCESS_ROLES: { role: Role; label: string; color: string; portal: st
   { role: "admin",    label: "Admin",     color: "bg-slate-700",  portal: "/admin" },
 ];
 
+// Demo accounts — always visible so reviewers can try the app even when the
+// backend (Render free tier) is cold or unavailable.
+// Attempts real login first; falls back to local bypass on network failure.
+const DEMO_ACCOUNTS: {
+  role: Role;
+  label: string;
+  id: string;
+  password: string;
+  name: string;
+  color: string;
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+}[] = [
+  { role: "customer", label: "Customer",  id: "customer@demo.com", password: "demo1234", name: "Demo Customer", color: "bg-blue-500",   icon: User      },
+  { role: "mover",    label: "Mover",     id: "mover@demo.com",    password: "demo1234", name: "Demo Mover",    color: "bg-violet-500", icon: Truck     },
+  { role: "company",  label: "Company",   id: "COMPANY-001",       password: "demo1234", name: "Demo Company",  color: "bg-emerald-500",icon: Building2 },
+  { role: "admin",    label: "Admin",     id: "ADMIN-001",         password: "demo1234", name: "Demo Admin",    color: "bg-slate-700",  icon: ShieldCheck},
+];
+
 export default function LoginView() {
   return (
     <Suspense>
@@ -90,6 +109,7 @@ function LoginPageInner() {
   const [error, setError] = useState<string | null>(null);
   const [quickOpen, setQuickOpen] = useState(false);
   const [quickLoading, setQuickLoading] = useState<string | null>(null);
+  const [demoLoading, setDemoLoading] = useState<string | null>(null);
   const [forgotOpen, setForgotOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotStatus, setForgotStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
@@ -199,6 +219,49 @@ function LoginPageInner() {
     );
     setProfileComplete(true);
     router.push(entry.portal);
+  };
+
+  const handleDemoLogin = async (account: typeof DEMO_ACCOUNTS[number]) => {
+    setDemoLoading(account.role);
+    setError(null);
+
+    const isCompanyOrAdmin = account.role === "company" || account.role === "admin";
+
+    try {
+      // Attempt real backend login — backend sends OTP, user verifies in OtpView.
+      await authApi.login(
+        isCompanyOrAdmin
+          ? { companyId: account.id, accessKey: account.password, role: account.role }
+          : { email: account.id, password: account.password, role: account.role }
+      );
+      router.push(
+        `/auth/otp?role=${account.role}&mode=login` +
+        `&email=${encodeURIComponent(account.id)}` +
+        `&name=${encodeURIComponent(account.name)}`
+      );
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "";
+      const backendDown =
+        isNetworkError(err) ||
+        message.startsWith("API 5") ||
+        !process.env.NEXT_PUBLIC_API_URL;
+
+      if (backendDown) {
+        // Backend unreachable — bypass OTP and log in directly with a demo token.
+        await persistSession("demo-token");
+        login(
+          { name: account.name, email: account.id },
+          account.role,
+          "demo-token",
+          "approved"
+        );
+        setProfileComplete(true);
+        router.push(`/${account.role}`);
+      } else {
+        setError(message || "Demo login failed. Please try again.");
+        setDemoLoading(null);
+      }
+    }
   };
 
   return (
@@ -339,6 +402,46 @@ function LoginPageInner() {
               </button>
             </motion.form>
           </AnimatePresence>
+
+          {/* ── Try Demo — always visible ──────────────────────────────────── */}
+          <div className="mt-8">
+            <div className="relative flex items-center gap-3 mb-4">
+              <div className="flex-1 h-px bg-slate-100" />
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">
+                Try a demo account
+              </span>
+              <div className="flex-1 h-px bg-slate-100" />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {DEMO_ACCOUNTS.map((account) => {
+                const Icon = account.icon;
+                const loading = demoLoading === account.role;
+                return (
+                  <button
+                    key={account.role}
+                    type="button"
+                    onClick={() => handleDemoLogin(account)}
+                    disabled={demoLoading !== null}
+                    className="flex items-center gap-2.5 px-3.5 py-3 rounded-2xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50 active:scale-[0.97] transition-all disabled:opacity-50 disabled:cursor-not-allowed text-left"
+                  >
+                    <div className={`w-7 h-7 ${account.color} rounded-xl flex items-center justify-center shrink-0`}>
+                      {loading
+                        ? <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                        : <Icon className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-black text-slate-700 leading-none mb-0.5">{account.label}</p>
+                      <p className="text-[10px] text-slate-400 font-medium truncate">{account.id}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-center text-[10px] text-slate-400 font-medium mt-2.5 flex items-center justify-center gap-1">
+              <PlayCircle className="w-3 h-3" />
+              Connects to live backend · falls back to local demo if unavailable
+            </p>
+          </div>
 
           {/* ── Quick Access Panel — dev/staging only ──────────────────────── */}
           {process.env.NODE_ENV !== "production" && (
