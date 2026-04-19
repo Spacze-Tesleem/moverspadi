@@ -50,24 +50,60 @@ export const useBookingStore = create<BookingState>()(
     {
       name: "moverspadi-booking",
       storage: createJSONStorage(() => localStorage),
-      // Re-hydrate whenever another tab writes to the same localStorage key.
-      // This is what allows the mover dashboard (open in a separate tab) to
-      // react instantly when a customer confirms a booking.
-      onRehydrateStorage: () => () => {
-        if (typeof window === "undefined") return;
-        window.addEventListener("storage", (e) => {
-          if (e.key === "moverspadi-booking" && e.newValue) {
-            try {
-              const parsed = JSON.parse(e.newValue);
-              if (parsed?.state) {
-                useBookingStore.setState(parsed.state);
-              }
-            } catch {
-              // ignore malformed storage events
-            }
-          }
-        });
-      },
     }
   )
 );
+
+/**
+ * Polls localStorage every second and syncs the store if the persisted
+ * value has changed. This is what lets the mover dashboard (a separate
+ * browser tab) react when a customer confirms a booking — the storage
+ * event API is unreliable for same-origin cross-tab updates in some
+ * browsers, so polling is the safe fallback.
+ *
+ * Call this once inside the mover dashboard component.
+ */
+export function startBookingStoreSync() {
+  if (typeof window === "undefined") return () => {};
+
+  const STORAGE_KEY = "moverspadi-booking";
+  let lastValue = localStorage.getItem(STORAGE_KEY);
+
+  const id = setInterval(() => {
+    const current = localStorage.getItem(STORAGE_KEY);
+    if (current !== lastValue) {
+      lastValue = current;
+      if (current) {
+        try {
+          const parsed = JSON.parse(current);
+          if (parsed?.state) {
+            useBookingStore.setState(parsed.state);
+          }
+        } catch {
+          // ignore malformed data
+        }
+      }
+    }
+  }, 1000);
+
+  // Also listen for the storage event (fires reliably across different
+  // browser windows, even if not always across same-window tabs).
+  const onStorage = (e: StorageEvent) => {
+    if (e.key === STORAGE_KEY && e.newValue) {
+      try {
+        const parsed = JSON.parse(e.newValue);
+        if (parsed?.state) {
+          useBookingStore.setState(parsed.state);
+        }
+      } catch {
+        // ignore
+      }
+    }
+  };
+  window.addEventListener("storage", onStorage);
+
+  return () => {
+    clearInterval(id);
+    window.removeEventListener("storage", onStorage);
+  };
+}

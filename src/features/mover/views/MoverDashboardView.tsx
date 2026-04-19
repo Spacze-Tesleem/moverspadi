@@ -8,7 +8,7 @@ import {
   type MoverStats, type MoverTrip,
   type WalletData, type EarningsBreakdown,
 } from "@/src/services/api/mover";
-import { useBookingStore } from "@/src/store/bookingStore";
+import { useBookingStore, startBookingStoreSync } from "@/src/store/bookingStore";
 import { profileApi } from "@/src/services/api/profile";
 import type { UserProfile } from "@/src/types/user/types";
 import { formatNaira } from "@/src/lib/format";
@@ -69,6 +69,10 @@ export function MoverDashboardInner() {
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
+
+  // Poll localStorage every second so incoming customer bookings appear
+  // in the Work Queue even when the customer is in a different tab.
+  useEffect(() => startBookingStoreSync(), []);
 
   const fetchData = useCallback(async () => {
     if (!token) return;
