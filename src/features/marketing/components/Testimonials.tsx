@@ -31,7 +31,7 @@ export default function Testimonials() {
   return (
     <section className="relative bg-white py-24 px-6 overflow-hidden">
       {/* Subtle Grainy Background Effect */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('/noise.svg')]"></div>
       
       <div className="max-w-7xl mx-auto relative z-10">
         
