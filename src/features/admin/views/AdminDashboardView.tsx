@@ -41,7 +41,7 @@ const INITIAL_QUEUE: Applicant[] = [
   { id: "PRV-002", name: "Amaka Eze",           role: "provider", email: "amaka@mail.com",    submittedAt: "5 hrs ago",   status: "pending",  avatar: "AE", avatarColor: "bg-violet-500",  documents: ["Driver's License", "Passport", "Profile Photo", "Selfie", "Home Photo", "Vehicle Registration", "Roadworthiness", "Insurance", "Vehicle Photo"] },
   { id: "CMP-003", name: "Zenith Logistics Ltd",role: "company",  email: "info@zenith.ng",    submittedAt: "1 day ago",   status: "pending",  avatar: "ZL", avatarColor: "bg-emerald-500", documents: ["CAC Certificate", "Company Logo", "Premises Photo", "Authorized Signature"] },
   { id: "MVR-004", name: "Emeka Nwosu",         role: "mover",    email: "emeka@mail.com",    submittedAt: "2 days ago",  status: "rejected", avatar: "EN", avatarColor: "bg-rose-500",    documents: ["Driver's License", "NIN", "Profile Photo", "Selfie", "Home Photo", "Vehicle Registration", "Roadworthiness", "Insurance", "Vehicle Photo"], reason: "Vehicle registration document is expired." },
-  { id: "PRV-005", name: "Funke Adeyemi",       role: "provider", email: "funke@mail.com",    submittedAt: "3 days ago",  status: "resubmit", avatar: "FA", avatarColor: "bg-amber-500",   documents: ["Driver's License", "Passport", "Profile Photo", "Selfie", "Home Photo", "Vehicle Registration", "Roadworthiness", "Insurance", "Vehicle Photo"], reason: "Selfie photo is blurry. Please resubmit a clear image." },
+  { id: "PRV-005", name: "Funke Adeyemi",       role: "provider", email: "funke@mail.com",    submittedAt: "3 days ago",  status: "resubmission_required", avatar: "FA", avatarColor: "bg-amber-500",   documents: ["Driver's License", "Passport", "Profile Photo", "Selfie", "Home Photo", "Vehicle Registration", "Roadworthiness", "Insurance", "Vehicle Photo"], reason: "Selfie photo is blurry. Please resubmit a clear image." },
   { id: "CMP-006", name: "FastMove Nigeria Ltd",role: "company",  email: "ops@fastmove.ng",   submittedAt: "4 days ago",  status: "approved", avatar: "FM", avatarColor: "bg-blue-500",    documents: ["CAC Certificate", "Company Logo", "Premises Photo", "Authorized Signature"] },
 ];
 
@@ -402,7 +402,7 @@ export default function AdminDashboardView() {
                     <div>
                       <h2 className="text-2xl font-black tracking-tight">Verification Queue</h2>
                       <p className="text-xs font-bold opacity-80 uppercase tracking-widest mt-1">
-                        {queue.filter(a => a.status === "pending").length} pending · {queue.filter(a => a.status === "resubmit").length} resubmitted
+                        {queue.filter(a => a.status === "pending").length} pending · {queue.filter(a => a.status === "resubmission_required").length} resubmitted
                       </p>
                     </div>
                     <div className="flex gap-3">
@@ -419,7 +419,7 @@ export default function AdminDashboardView() {
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                     {([
                       { label: "Pending",   status: "pending",   color: "amber" },
-                      { label: "Resubmit",  status: "resubmit",  color: "orange" },
+                      { label: "Resubmit",  status: "resubmission_required",  color: "orange" },
                       { label: "Approved",  status: "approved",  color: "emerald" },
                       { label: "Rejected",  status: "rejected",  color: "rose" },
                       { label: "Suspended", status: "suspended", color: "slate" },
@@ -557,7 +557,7 @@ export default function AdminDashboardView() {
                                 <XCircle size={16} /> Reject
                               </button>
                               <button
-                                onClick={() => handleVerificationAction(selectedApplicant.id, "resubmit", actionReason)}
+                                onClick={() => handleVerificationAction(selectedApplicant.id, "resubmission_required", actionReason)}
                                 className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-amber-500 text-white font-black text-sm hover:bg-amber-600 transition-colors"
                               >
                                 <RefreshCw size={16} /> Request Resubmit
@@ -749,7 +749,7 @@ function VerifStatusBadge({ status }: { status: VerificationStatus }) {
     approved:  { label: "Approved",  cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400" },
     rejected:  { label: "Rejected",  cls: "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400" },
     suspended: { label: "Suspended", cls: "bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300" },
-    resubmit:  { label: "Resubmit",  cls: "bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400" },
+    resubmission_required: { label: "Resubmit", cls: "bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400" },
   };
   const { label, cls } = map[status];
   return (

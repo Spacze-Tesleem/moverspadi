@@ -47,7 +47,7 @@ export default function PendingApprovalView({ approvedDashboard }: Props) {
 
   const isRejected   = verificationStatus === "rejected";
   const isSuspended  = verificationStatus === "suspended";
-  const isResubmit   = verificationStatus === "resubmit";
+  const isResubmit   = verificationStatus === "resubmission_required";
   const roleLabel    = ROLE_LABELS[role ?? ""] ?? "Account";
 
   const checklist = [
@@ -211,7 +211,7 @@ function StatusBadge({ status }: { status: VerificationStatus }) {
     pending:   { styles: "bg-blue-100 text-blue-700 border-blue-200",     dot: "bg-blue-500",   label: "Pending Review" },
     rejected:  { styles: "bg-red-100 text-red-600 border-red-200",        dot: "bg-red-500",    label: "Not Approved" },
     suspended: { styles: "bg-orange-100 text-orange-700 border-orange-200", dot: "bg-orange-500", label: "Suspended" },
-    resubmit:  { styles: "bg-amber-100 text-amber-700 border-amber-200",  dot: "bg-amber-500",  label: "Resubmit Documents" },
+    resubmission_required: { styles: "bg-amber-100 text-amber-700 border-amber-200", dot: "bg-amber-500", label: "Resubmit Documents" },
   };
   const { styles, dot, label } = map[status];
   return (

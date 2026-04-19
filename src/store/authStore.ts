@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { User, UserRole, VerificationStatus } from "@/src/types/auth/types";
+import { clearSession } from "@/src/lib/sessionClient";
 
 interface AuthState {
   user: User | null;
@@ -38,18 +39,25 @@ export const useAuthStore = create<AuthState>()(
       _hydrated: false,
 
       login: (user, role, token, verificationStatus) =>
-        set({
+        set((state) => ({
           user,
           role,
           token,
           isAuthenticated: true,
-          // Supply-side roles start pending until admin approves
+          // Priority order:
+          // 1. Backend-provided status (most authoritative)
+          // 2. Existing status in store (returning user logging in again)
+          // 3. Derived default: customers/admins are always approved;
+          //    supply-side roles start pending until admin approves
           verificationStatus:
             verificationStatus ??
+            state.verificationStatus ??
             (role === "customer" || role === "admin" ? "approved" : "pending"),
-        }),
+        })),
 
-      logout: () =>
+      logout: () => {
+        // Clear the httpOnly session cookie server-side before wiping local state.
+        clearSession().catch(() => { /* best-effort — local state is cleared regardless */ });
         set({
           user: null,
           role: null,
@@ -57,7 +65,8 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: false,
           profileComplete: false,
           verificationStatus: "approved",
-        }),
+        });
+      },
 
       setProfileComplete: (value) => set({ profileComplete: value }),
 
@@ -68,6 +77,15 @@ export const useAuthStore = create<AuthState>()(
     {
       name: "moverspadi-auth",
       storage: createJSONStorage(() => localStorage),
+      // Exclude the token from localStorage — it lives in the httpOnly cookie only.
+      // User identity (name, role, etc.) is still persisted for UI hydration.
+      partialize: (state) => ({
+        user: state.user,
+        role: state.role,
+        isAuthenticated: state.isAuthenticated,
+        profileComplete: state.profileComplete,
+        verificationStatus: state.verificationStatus,
+      }),
       onRehydrateStorage: () => (state) => {
         state?.setHydrated();
       },

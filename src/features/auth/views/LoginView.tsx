@@ -42,13 +42,19 @@ const ROLE_DATA: Record<Role, {
   },
 };
 
-const DEV_CREDENTIALS: Record<Role, { id: string; password: string; name: string }> = {
-  customer: { id: "customer@demo.com",  password: "demo1234", name: "Demo Customer" },
-  mover:    { id: "mover@demo.com",     password: "demo1234", name: "Demo Mover" },
-  provider: { id: "provider@demo.com",  password: "demo1234", name: "Demo Provider" },
-  company:  { id: "COMPANY-001",        password: "demo1234", name: "Demo Company" },
-  admin:    { id: "ADMIN-001",          password: "demo1234", name: "Demo Admin" },
-};
+// Dev-only credentials — only defined in non-production builds.
+// Next.js replaces process.env.NODE_ENV at build time, so this entire
+// block is dead code in production bundles and will be tree-shaken out.
+const DEV_CREDENTIALS: Record<Role, { id: string; password: string; name: string }> | null =
+  process.env.NODE_ENV !== "production"
+    ? {
+        customer: { id: "customer@demo.com", password: "demo1234", name: "Demo Customer" },
+        mover:    { id: "mover@demo.com",    password: "demo1234", name: "Demo Mover" },
+        provider: { id: "provider@demo.com", password: "demo1234", name: "Demo Provider" },
+        company:  { id: "COMPANY-001",       password: "demo1234", name: "Demo Company" },
+        admin:    { id: "ADMIN-001",         password: "demo1234", name: "Demo Admin" },
+      }
+    : null;
 
 const QUICK_ACCESS_ROLES: { role: Role; label: string; color: string; portal: string }[] = [
   { role: "customer", label: "Customer",  color: "bg-blue-500",   portal: "/customer" },
@@ -118,7 +124,7 @@ function LoginPageInner() {
       router.push(
         `/auth/otp?role=${role}&mode=login` +
         `&email=${encodeURIComponent(enteredId)}` +
-        `&name=${encodeURIComponent(DEV_CREDENTIALS[role]?.name ?? "User")}`
+        `&name=${encodeURIComponent(DEV_CREDENTIALS?.[role]?.name ?? "User")}`
       );
     } catch (err: unknown) {
       // ── DEV FALLBACK ──────────────────────────────────────────────────────
@@ -132,9 +138,13 @@ function LoginPageInner() {
         message.startsWith("API 5");
 
       if (noBackend) {
-        const creds = DEV_CREDENTIALS[role];
-        if (enteredId !== creds.id || enteredPw !== creds.password) {
-          setError(`Dev mode — use: ${creds.id} / ${creds.password}`);
+        const creds = DEV_CREDENTIALS?.[role];
+        if (!creds || enteredId !== creds.id || enteredPw !== creds.password) {
+          setError(
+            creds
+              ? `Dev mode — use: ${creds.id} / ${creds.password}`
+              : "Invalid credentials. Please try again."
+          );
         } else {
           router.push(
             `/auth/otp?role=${role}&mode=login` +
@@ -177,14 +187,14 @@ function LoginPageInner() {
   };
 
   const handleQuickAccess = (entry: typeof QUICK_ACCESS_ROLES[number]) => {
+    // Quick Access is only reachable in non-production (panel is not rendered otherwise).
+    if (!DEV_CREDENTIALS) return;
     setQuickLoading(entry.role);
     const creds = DEV_CREDENTIALS[entry.role] ?? DEV_CREDENTIALS.customer;
     login(
       { name: `Demo ${entry.label}`, email: creds.id },
       entry.role,
       "dev-token",
-      // Customers and admins are immediately approved; supply-side roles start approved
-      // in quick-access dev mode so the full dashboard is visible for testing
       "approved"
     );
     setProfileComplete(true);
@@ -330,7 +340,8 @@ function LoginPageInner() {
             </motion.form>
           </AnimatePresence>
 
-          {/* ── Quick Access Panel ─────────────────────────────────────────── */}
+          {/* ── Quick Access Panel — dev/staging only ──────────────────────── */}
+          {process.env.NODE_ENV !== "production" && (
           <div className="mt-8">
             <button
               type="button"
@@ -377,6 +388,7 @@ function LoginPageInner() {
               )}
             </AnimatePresence>
           </div>
+          )}
 
           <p className="mt-6 text-center text-sm text-slate-500 font-medium">
             Don&apos;t have an account?{" "}

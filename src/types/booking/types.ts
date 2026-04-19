@@ -1,14 +1,64 @@
 // Core booking domain types — no framework dependencies
 
-export type ServiceType = "ride" | "dispatch" | "haulage" | "tow" | "";
+/**
+ * Service types (backend: service_types table)
+ * dispatch  — parcel/package delivery
+ * haulage   — heavy cargo / truck
+ * tow       — vehicle recovery
+ * transport — car or bus passenger transport
+ */
+export type ServiceType = "dispatch" | "haulage" | "tow" | "transport" | "";
 
+/**
+ * Service request status (backend: service_requests.status)
+ *
+ * pending    — created, awaiting mover match
+ * matched    — mover found, not yet accepted
+ * accepted   — mover accepted the job
+ * in_progress — job underway
+ * completed  — job finished and confirmed
+ * cancelled  — cancelled by customer or system
+ * failed     — could not be completed
+ */
 export type BookingStatus =
-  | "idle"
-  | "searching"
+  | "idle"          // local UI only — no active booking
+  | "pending"
   | "matched"
-  | "in-progress"
+  | "accepted"
+  | "in_progress"
   | "completed"
-  | "cancelled";
+  | "cancelled"
+  | "failed";
+
+/**
+ * Payment status (backend: transactions.status)
+ */
+export type PaymentStatus =
+  | "pending"
+  | "successful"
+  | "failed"
+  | "refunded"
+  | "reversed";
+
+/**
+ * Payout status (backend: payouts.status)
+ */
+export type PayoutStatus =
+  | "pending"
+  | "processing"
+  | "successful"
+  | "failed";
+
+/**
+ * Vehicle types (backend: vehicles.vehicle_type)
+ */
+export type VehicleType =
+  | "motorcycle"
+  | "van"
+  | "truck"
+  | "tow_truck"
+  | "private_car"
+  | "bus";
 
 export interface Coordinates {
   lat: number;
@@ -28,7 +78,7 @@ export interface BookingFormData {
   pickupCoords: Coordinates | null;
   dropoff: string;
   dropoffCoords: Coordinates | null;
-  vehicleType: string;
+  vehicleType: VehicleType | "";
   vehicleDescription: string;
   passengers: string;
   items: BookingItem[];
@@ -54,15 +104,9 @@ export interface ServiceDefinition {
 
 export const SERVICE_TYPES: ServiceDefinition[] = [
   {
-    id: "ride",
-    label: "Ride",
-    description: "Car or bus transport",
-    color: "#1CA7A6",
-  },
-  {
     id: "dispatch",
     label: "Dispatch",
-    description: "Package delivery",
+    description: "Package & parcel delivery",
     color: "#F59E0B",
   },
   {
@@ -77,4 +121,31 @@ export const SERVICE_TYPES: ServiceDefinition[] = [
     description: "Vehicle recovery",
     color: "#EF4444",
   },
+  {
+    id: "transport",
+    label: "Transport",
+    description: "Car or bus passenger transport",
+    color: "#1CA7A6",
+  },
 ];
+
+/** Vehicle types available per service */
+export const VEHICLE_TYPES_BY_SERVICE: Record<
+  Exclude<ServiceType, "">,
+  VehicleType[]
+> = {
+  dispatch:  ["motorcycle", "van"],
+  haulage:   ["van", "truck"],
+  tow:       ["tow_truck"],
+  transport: ["private_car", "bus"],
+};
+
+/** Human-readable labels for vehicle types */
+export const VEHICLE_TYPE_LABELS: Record<VehicleType, string> = {
+  motorcycle: "Motorcycle",
+  van:        "Van",
+  truck:      "Truck",
+  tow_truck:  "Tow Truck",
+  private_car: "Private Car",
+  bus:        "Bus",
+};

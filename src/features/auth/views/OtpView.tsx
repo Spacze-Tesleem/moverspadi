@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ShieldCheck, ArrowRight, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
 import { useAuthStore } from "@/src/store/authStore";
 import { authApi, isNetworkError, warmupBackend } from "@/src/services/api/auth";
+import { persistSession } from "@/src/lib/sessionClient";
 import type { AuthSession } from "@/src/types/auth/types";
 import type { UserRole } from "@/src/types/auth/types";
 
@@ -85,11 +86,19 @@ function OtpPageInner() {
   type SupplyRole = typeof SUPPLY_ROLES[number];
   const isSupplyRole = (r: string): r is SupplyRole => SUPPLY_ROLES.includes(r as SupplyRole);
 
+  // Dev-only bypass: only active outside production builds.
+  // Next.js replaces process.env.NODE_ENV at build time so this is
+  // dead code in production bundles and will be tree-shaken out.
   const devLogin = () => {
+    if (process.env.NODE_ENV === "production") throw new Error("Invalid OTP");
     if (otp === "000000") throw new Error("Invalid OTP");
-    login({ name, email }, role, "dev-token");
-    const needsOnboarding = mode === "signup" && isSupplyRole(role);
-    needsOnboarding ? setProfileComplete(false) : setProfileComplete(true);
+    // Customers and admins are active immediately per spec.
+    // Supply-side roles start pending until admin approves.
+    const devVerificationStatus =
+      role === "customer" || role === "admin" ? "approved" : "pending";
+    login({ name, email }, role, "dev-token", devVerificationStatus);
+    const isSupplySignup = mode === "signup" && isSupplyRole(role);
+    isSupplySignup ? setProfileComplete(false) : setProfileComplete(true);
   };
 
   const handleVerify = async () => {
@@ -104,30 +113,38 @@ function OtpPageInner() {
           const session: AuthSession = mode === "login"
             ? await authApi.verifyLoginOtp({ email, otp, role })
             : await authApi.verifyOtp({ email, otp, role });
+          // Store token in httpOnly cookie — never in localStorage.
+          await persistSession(session.token);
           login(session.user, session.role as typeof role, session.token, session.verificationStatus);
           const needsOnboarding = mode === "signup" && isSupplyRole(session.role);
           needsOnboarding ? setProfileComplete(false) : setProfileComplete(true);
         } catch (apiErr) {
-          if (isNetworkError(apiErr)) {
+          if (isNetworkError(apiErr) && process.env.NODE_ENV !== "production") {
             devLogin();
           } else {
             throw apiErr;
           }
         }
-      } else {
+      } else if (process.env.NODE_ENV !== "production") {
         await new Promise((r) => setTimeout(r, 1200));
         devLogin();
+      } else {
+        // Production with no API URL configured — fail closed
+        throw new Error("Service unavailable. Please try again later.");
       }
 
       setSuccess(true);
       await new Promise((r) => setTimeout(r, 800));
 
-      const needsOnboarding = mode === "signup" && isSupplyRole(role);
-      if (needsOnboarding) {
-        // Each supply-side role has its own onboarding route
+      // Routing rules per spec:
+      // - Customer signup/login → active immediately → dashboard
+      // - Admin login → dashboard
+      // - Supply-side signup → onboarding wizard (documents not yet submitted)
+      // - Supply-side login → dashboard (PendingApprovalView handles gating)
+      const isSupplySignup = mode === "signup" && isSupplyRole(role);
+      if (isSupplySignup) {
         router.push(`/${role}/onboarding`);
       } else {
-        // provider portal lives at /provider, not /mover
         router.push(`/${role}`);
       }
     } catch {

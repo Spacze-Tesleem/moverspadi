@@ -64,7 +64,7 @@ export function MoverDashboardInner() {
     setMoverInfo,
   } = useBookingStore();
 
-  const hasPendingRequest = onlineStatus === "online" && customerStatus === "searching" && !!customerPickup && !activeTrip;
+  const hasPendingRequest = onlineStatus === "online" && customerStatus === "pending" && !!customerPickup && !activeTrip;
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
@@ -319,7 +319,7 @@ export function MoverDashboardInner() {
                        </div>
 
                        <div className="grid grid-cols-2 gap-4">
-                          <button onClick={() => setBookingStatus("searching")} className="py-4 rounded-2xl bg-slate-100 dark:bg-white/5 font-black text-sm transition-all hover:bg-rose-500/10 hover:text-rose-500">Decline</button>
+                          <button onClick={() => setBookingStatus("cancelled")} className="py-4 rounded-2xl bg-slate-100 dark:bg-white/5 font-black text-sm transition-all hover:bg-rose-500/10 hover:text-rose-500">Decline</button>
                           <button onClick={handleAccept} className="py-4 rounded-2xl bg-blue-600 text-white font-black text-sm shadow-xl shadow-blue-500/30 hover:scale-[1.02] transition-transform">Accept Trip</button>
                        </div>
                     </div>

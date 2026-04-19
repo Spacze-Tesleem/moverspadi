@@ -14,11 +14,13 @@ export const bookingApi = {
     apiClient.delete<void>(`/bookings/${id}`, { token }),
 
   getPriceEstimate: (serviceType: string): number => {
+    // Base fares in NGN — real pricing comes from the backend quote endpoint.
+    // These are UI-only estimates shown before payment confirmation.
     const priceMap: Record<string, number> = {
-      ride: 3500,
-      dispatch: 5000,
-      haulage: 45000,
-      tow: 15000,
+      dispatch:  5000,
+      haulage:   45000,
+      tow:       15000,
+      transport: 3500,
     };
     return priceMap[serviceType] ?? 5000;
   },

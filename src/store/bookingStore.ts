@@ -27,7 +27,7 @@ interface BookingState extends ActiveBooking {
 }
 
 const initialState: ActiveBooking & { moverInfo: MoverInfo | null } = {
-  service: "dispatch",
+  service: "",
   pickup: "",
   dropoff: "",
   price: 0,
@@ -44,7 +44,7 @@ export const useBookingStore = create<BookingState>()(
       setDropoff: (dropoff) => set({ dropoff }),
       setStatus: (status) => set({ status }),
       setMoverInfo: (moverInfo) => set({ moverInfo }),
-      confirmBooking: (price) => set({ price, status: "searching", moverInfo: null }),
+      confirmBooking: (price) => set({ price, status: "pending", moverInfo: null }),
       resetBooking: () => set(initialState),
     }),
     {
