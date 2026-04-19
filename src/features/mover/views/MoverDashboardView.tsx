@@ -160,7 +160,7 @@ export function MoverDashboardInner() {
   ];
 
   return (
-    <div className="flex h-screen bg-slate-950 text-slate-100 font-sans overflow-hidden">
+    <div className="customer-dashboard-skin flex h-screen bg-slate-50 text-slate-800 font-sans overflow-hidden">
       {isMobileMenuOpen && (
         <div onClick={() => setMobileMenuOpen(false)} className="fixed inset-0 bg-black/80 z-40 lg:hidden backdrop-blur-sm" />
       )}
