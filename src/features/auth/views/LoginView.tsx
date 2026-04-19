@@ -223,8 +223,8 @@ function LoginPageInner() {
 
   const handleDemoLogin = async (account: typeof DEMO_ACCOUNTS[number]) => {
     setDemoLoading(account.role);
-    setError(null);
-    // Always bypass OTP — one-click straight into the portal.
+    // Set the session cookie so the proxy lets the request through,
+    // then update Zustand state and navigate — no backend calls made.
     await persistSession("demo-token");
     login(
       { name: account.name, email: account.id },
