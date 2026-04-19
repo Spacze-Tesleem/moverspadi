@@ -100,14 +100,18 @@ export const authApi = {
 
   login: (payload: LoginPayload) =>
     apiClient.post<void>("/auth/login", {
-      email: payload.email,
-      password: payload.password,
+      ...(payload.email     && { email:     payload.email }),
+      ...(payload.password  && { password:  payload.password }),
+      ...(payload.companyId && { companyId: payload.companyId }),
+      ...(payload.accessKey && { accessKey: payload.accessKey }),
+      role: payload.role,
     }),
 
   verifyLoginOtp: (payload: VerifyLoginOtpPayload) =>
     apiClient.post<AuthSession>("/auth/verify-login-otp", {
       email: payload.email,
-      otp_code: payload.otp,
+      otp: payload.otp,
+      role: payload.role,
     }),
 
   forgotPassword: (payload: ForgotPasswordPayload) =>
