@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const BACKEND_URL = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ["*.replit.dev", "*.riker.replit.dev"],
+  allowedDevOrigins: ["*.replit.dev", "*.riker.replit.dev", "*.picard.replit.dev"],
 
   async rewrites() {
     if (!BACKEND_URL) return [];

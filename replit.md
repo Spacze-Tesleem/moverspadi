@@ -80,5 +80,5 @@ npm run start  # → http://localhost:5000 (production)
 ## Replit Configuration
 
 - Dev server binds to `0.0.0.0:5000` for Replit preview iframe
-- `next.config.ts` sets `allowedDevOrigins: ["*"]`
+- `next.config.ts` allows Replit preview development origins, including `*.replit.dev`, `*.riker.replit.dev`, and `*.picard.replit.dev`
 - Workflow: **Start application** → `npm run dev`
