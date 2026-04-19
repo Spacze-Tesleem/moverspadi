@@ -24,18 +24,14 @@ export function isNetworkError(err: unknown): boolean {
 }
 
 /**
- * Fire-and-forget ping that wakes the Render free-tier instance so
+ * Fire-and-forget GET that wakes the Render free-tier instance so
  * it is ready by the time the user submits a form.
- * Uses the same /backend rewrite as all other API calls so it stays
- * same-origin and avoids CORS. A POST with an empty body to /auth/login
- * returns 400 (missing fields) which is enough to wake the instance.
+ * Uses a GET so it triggers no backend business logic — the 404
+ * response is enough to wake the instance.
  */
 export function warmupBackend(): void {
-  fetch("/backend/auth/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: "{}",
-  }).catch(() => { /* intentionally silent */ });
+  fetch("/backend/ping", { method: "GET" })
+    .catch(() => { /* intentionally silent */ });
 }
 
 // ── Payload types ─────────────────────────────────────────────────────────────

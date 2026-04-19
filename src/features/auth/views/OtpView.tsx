@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShieldCheck, ArrowRight, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
 import { useAuthStore } from "@/src/store/authStore";
-import { authApi, isNetworkError, warmupBackend } from "@/src/services/api/auth";
+import { authApi, isNetworkError } from "@/src/services/api/auth";
 import { persistSession } from "@/src/lib/sessionClient";
 import type { AuthSession } from "@/src/types/auth/types";
 import type { UserRole } from "@/src/types/auth/types";
@@ -44,7 +44,7 @@ function OtpPageInner() {
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  useEffect(() => { warmupBackend(); }, []);
+
 
   useEffect(() => {
     if (countdown <= 0) { setCanResend(true); return; }
