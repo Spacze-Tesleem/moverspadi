@@ -146,7 +146,8 @@ function LoginPageInner() {
 
       // Backend returns 403 when the account exists but email isn't verified yet.
       // Redirect to OTP so the user can complete verification.
-      if (message.includes("403") && message.toLowerCase().includes("verify")) {
+      // Match on status code only — don't rely on the body text.
+      if (message.includes("403")) {
         sessionStorage.setItem("otp_email", enteredId);
         sessionStorage.setItem("otp_name", "User");
         sessionStorage.setItem("otp_password", enteredPw);
