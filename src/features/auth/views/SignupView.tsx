@@ -7,7 +7,7 @@ import {
   User, Mail, Phone, Lock, ChevronRight,
   ShieldCheck, Loader2, AlertCircle,
 } from "lucide-react";
-import { authApi, isNetworkError, warmupBackend } from "@/src/services/api/auth";
+import { authApi, isNetworkError } from "@/src/services/api/auth";
 
 type Role = "customer" | "mover" | "provider" | "company";
 
@@ -24,7 +24,7 @@ function SignupPageInner() {
   const searchParams = useSearchParams();
   const role = (searchParams.get("role") as Role) || "customer";
 
-  useEffect(() => { warmupBackend(); }, []);
+
 
   const [formData, setFormData] = useState({
     fullName: "",

@@ -23,16 +23,7 @@ export function isNetworkError(err: unknown): boolean {
   return true;
 }
 
-/**
- * Fire-and-forget GET that wakes the Render free-tier instance so
- * it is ready by the time the user submits a form.
- * Uses a GET so it triggers no backend business logic — the 404
- * response is enough to wake the instance.
- */
-export function warmupBackend(): void {
-  fetch("/backend/ping", { method: "GET" })
-    .catch(() => { /* intentionally silent */ });
-}
+
 
 // ── Payload types ─────────────────────────────────────────────────────────────
 

@@ -8,7 +8,7 @@ import {
   Sparkles, ArrowRight, Truck, AlertCircle, ChevronLeft,
   Zap, ChevronDown, PlayCircle,
 } from "lucide-react";
-import { authApi, isNetworkError, warmupBackend, type ForgotPasswordPayload } from "@/src/services/api/auth";
+import { authApi, isNetworkError, type ForgotPasswordPayload } from "@/src/services/api/auth";
 import { useAuthStore } from "@/src/store/authStore";
 import { persistSession } from "@/src/lib/sessionClient";
 import { useEffect } from "react";
@@ -115,7 +115,7 @@ function LoginPageInner() {
   const [forgotStatus, setForgotStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [forgotError, setForgotError] = useState<string | null>(null);
 
-  useEffect(() => { warmupBackend(); }, []);
+
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
