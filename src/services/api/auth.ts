@@ -85,21 +85,21 @@ export const authApi = {
       code: payload.otp,
     }),
 
+  verifyLoginOtp: (payload: VerifyLoginOtpPayload) =>
+    apiClient.post<AuthSession>("/auth/verify-login-otp", {
+      email: payload.email,
+      code: payload.otp,
+    }),
+
   login: (payload: LoginPayload) =>
     apiClient.post<void>("/auth/login", {
-      ...(payload.email     && { email:     payload.email }),
-      ...(payload.password  && { password:  payload.password }),
+      ...(payload.email && { email: payload.email }),
+      ...(payload.password && { password: payload.password }),
       ...(payload.companyId && { companyId: payload.companyId }),
       ...(payload.accessKey && { accessKey: payload.accessKey }),
       role: payload.role,
     }),
 
-  verifyLoginOtp: (payload: VerifyLoginOtpPayload) =>
-    apiClient.post<AuthSession>("/auth/verify-login-otp", {
-      email: payload.email,
-      otp: payload.otp,
-      role: payload.role,
-    }),
 
   forgotPassword: (payload: ForgotPasswordPayload) =>
     apiClient.post<void>("/auth/forgot-password", payload),
