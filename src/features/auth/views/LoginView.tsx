@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { authApi, isNetworkError } from "@/src/services/api/auth";
 import { useAuthStore } from "@/src/store/authStore";
+import { persistSession } from "@/src/lib/sessionClient";
 
 type Role = "customer" | "mover" | "provider" | "company" | "admin";
 
@@ -128,25 +129,27 @@ function LoginPageInner() {
     setIsSubmitting(true);
 
     try {
-      // ── REAL API ──────────────────────────────────────────────────────────
-      // POST /auth/login — backend sends OTP; verified in OtpView.
-      // ─────────────────────────────────────────────────────────────────────
       await authApi.login(
         isCompanyOrAdmin
           ? { companyId: enteredId, accessKey: enteredPw, role }
           : { email: enteredId, password: enteredPw, role }
       );
 
-      sessionStorage.setItem("otp_email", enteredId);
-      sessionStorage.setItem("otp_name", "User");
-      sessionStorage.setItem("otp_password", enteredPw);
-      router.push(`/auth/otp?role=${role}&mode=login`);
+      // Credentials accepted — create a session and go straight to dashboard.
+      await persistSession("login-session");
+      login(
+        { name: "User", email: enteredId },
+        role,
+        "login-session",
+        role === "customer" || role === "admin" ? "approved" : "pending"
+      );
+      setProfileComplete(role !== "mover" && role !== "provider" && role !== "company");
+      router.push(`/${role}`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "";
 
-      // Backend returns 403 when the account exists but email isn't verified yet.
-      // Redirect to OTP so the user can complete verification.
-      // Match on status code only — don't rely on the body text.
+      // 403 — account exists but email not verified yet (signup incomplete).
+      // Send to OTP so the user can complete email verification.
       if (message.includes("403")) {
         sessionStorage.setItem("otp_email", enteredId);
         sessionStorage.setItem("otp_name", "User");
@@ -155,24 +158,22 @@ function LoginPageInner() {
         return;
       }
 
-      // ── DEV FALLBACK ──────────────────────────────────────────────────────
-      // When the backend is unreachable, validate against DEV_CREDENTIALS and
-      // advance to OTP so the UI flow can be exercised without a live server.
-      // ─────────────────────────────────────────────────────────────────────
-      const noBackend =
-        !process.env.NEXT_PUBLIC_API_URL ||
-        isNetworkError(err);
-
+      // Dev fallback — backend unreachable, validate against DEV_CREDENTIALS.
+      const noBackend = !process.env.NEXT_PUBLIC_API_URL || isNetworkError(err);
       if (noBackend) {
         const creds = DEV_CREDENTIALS?.[role];
-        if (!creds || enteredId !== creds.id || enteredPw !== creds.password) {
-          // Never disclose credentials in the error message.
-          setError("Invalid credentials. Please try again.");
+        if (creds && enteredId === creds.id && enteredPw === creds.password) {
+          await persistSession("dev-session");
+          login(
+            { name: creds.name, email: enteredId },
+            role,
+            "dev-session",
+            role === "customer" || role === "admin" ? "approved" : "pending"
+          );
+          setProfileComplete(role !== "mover" && role !== "provider" && role !== "company");
+          router.push(`/${role}`);
         } else {
-          sessionStorage.setItem("otp_email", enteredId);
-          sessionStorage.setItem("otp_name", creds.name);
-          sessionStorage.setItem("otp_password", enteredPw);
-          router.push(`/auth/otp?role=${role}&mode=login`);
+          setError("Invalid credentials. Please try again.");
         }
       } else {
         setError(message || "Invalid credentials. Please try again.");
