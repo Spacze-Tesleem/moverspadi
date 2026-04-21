@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 
 export default function CTA() {
@@ -41,13 +42,14 @@ export default function CTA() {
         <div className="flex flex-col sm:flex-row justify-center gap-4 mb-6">
           
           {/* Primary */}
-          <motion.button
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.97 }}
-            className="bg-green-600 hover:bg-green-500 text-white font-semibold px-8 py-3 rounded-lg shadow-md w-full sm:w-auto transition duration-300"
-          >
-            Get Started Free
-          </motion.button>
+          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} className="w-full sm:w-auto">
+            <Link
+              href="/auth/role?mode=signup"
+              className="block bg-green-600 hover:bg-green-500 text-white font-semibold px-8 py-3 rounded-lg shadow-md w-full sm:w-auto transition duration-300 text-center"
+            >
+              Get Started Free
+            </Link>
+          </motion.div>
         </div>
 
         {/* Trust Note */}
