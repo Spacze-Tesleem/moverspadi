@@ -87,9 +87,12 @@ export const authApi = {
 
   /** POST /auth/login — authenticates credentials and triggers a login OTP */
   login: (payload: LoginPayload) =>
-    apiClient.post<void>("/auth/login", {
-      email: payload.email,
-      password: payload.password,
+    apiClient.post<AuthSession | null>("/auth/login", {
+      ...(payload.email     && { email:     payload.email }),
+      ...(payload.password  && { password:  payload.password }),
+      ...(payload.companyId && { companyId: payload.companyId }),
+      ...(payload.accessKey && { accessKey: payload.accessKey }),
+      role: payload.role,
     }),
 
   /** POST /auth/verify-login-otp — confirms the OTP sent after login */

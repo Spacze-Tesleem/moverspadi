@@ -129,19 +129,28 @@ function LoginPageInner() {
     setIsSubmitting(true);
 
     try {
-      await authApi.login(
+      const session = await authApi.login(
         isCompanyOrAdmin
           ? { companyId: enteredId, accessKey: enteredPw, role }
           : { email: enteredId, password: enteredPw, role }
       );
 
+      // Derive the best available display name:
+      // 1. Name returned by the backend in the session response
+      // 2. Capitalised email prefix (e.g. "seiduadaeiza06" → "Seiduadaeiza06")
+      const displayName =
+        session?.user?.name ||
+        enteredId.split("@")[0].replace(/[._-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+      const token = session?.token || "login-session";
+
       // Credentials accepted — create a session and go straight to dashboard.
-      await persistSession("login-session");
+      await persistSession(token);
       login(
-        { name: "User", email: enteredId },
+        { name: displayName, email: session?.user?.email ?? enteredId },
         role,
-        "login-session",
-        role === "customer" || role === "admin" ? "approved" : "pending"
+        token,
+        session?.verificationStatus ?? (role === "customer" || role === "admin" ? "approved" : "pending")
       );
       setProfileComplete(role !== "mover" && role !== "provider" && role !== "company");
       router.push(`/${role}`);
