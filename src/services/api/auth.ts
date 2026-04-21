@@ -80,7 +80,7 @@ export const authApi = {
 
   /** POST /auth/verify-otp — confirms the OTP sent after signup */
   verifyOtp: (payload: VerifyOtpPayload) =>
-    apiClient.post<void>("/auth/verify-otp", {
+    apiClient.post<AuthSession>("/auth/verify-otp", {  // ← void → AuthSession
       email: payload.email,
       code: payload.otp,
     }),
