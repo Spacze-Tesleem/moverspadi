@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Menu, X, ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 const NAV_LINKS = [
@@ -14,6 +15,7 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
 
   // Close mobile menu on resize to prevent layout glitches
   useEffect(() => {
@@ -53,12 +55,12 @@ export default function Navbar() {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden items-center gap-4 md:flex">
-            <Link href="/auth/role?mode=login" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+            <button onClick={() => router.push("/auth/role?mode=login")} className="text-sm font-medium text-gray-600 hover:text-gray-900">
               Login
-            </Link>
-            <Link href="/auth/role?mode=signup" className="rounded-full bg-green-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-green-700 active:scale-95">
+            </button>
+            <button onClick={() => router.push("/auth/role?mode=signup")} className="rounded-full bg-green-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-green-700 active:scale-95">
               Sign up
-            </Link>
+            </button>
           </div>
 
           {/* Mobile menu button */}
@@ -94,12 +96,12 @@ export default function Navbar() {
             </Link>
           ))}
           <div className="mt-4 grid grid-cols-2 gap-4 px-3">
-            <Link href="/auth/role?mode=login" onClick={() => setIsOpen(false)} className="flex justify-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <button onClick={() => router.push("/auth/role?mode=login")} className="flex justify-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-50">
               Login
-            </Link>
-            <Link href="/auth/role?mode=signup" onClick={() => setIsOpen(false)} className="flex justify-center rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700">
+            </button>
+            <button onClick={() => router.push("/auth/role?mode=signup")} className="flex justify-center rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 cursor-pointer">
               Sign up
-            </Link>
+            </button>
           </div>
         </div>
       </div>
