@@ -26,7 +26,7 @@ const PROTECTED_PREFIXES = [
 // Redirect them to their dashboard instead.
 const AUTH_ROUTES = ["/auth/login", "/auth/signup", "/auth/role"];
 
-export function proxy(req: NextRequest) {
+export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const token = req.cookies.get(COOKIE_NAME)?.value;
   const isAuthenticated = typeof token === "string" && token.trim().length > 0;
