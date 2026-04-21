@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { 
   ArrowRight, 
   CheckCircle2, 
@@ -12,6 +13,8 @@ import {
 } from "lucide-react";
 
 export default function SaasHero() {
+  const router = useRouter();
+
   return (
     <div className="relative min-h-screen bg-white font-sans text-slate-900 overflow-hidden">
       
@@ -53,7 +56,7 @@ export default function SaasHero() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 mb-12">
-              <button className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-bold text-lg hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/20 flex items-center justify-center gap-2 group">
+              <button onClick={() => router.push("/auth/role?mode=signup")} className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-bold text-lg hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/20 flex items-center justify-center gap-2 group">
                 Get Started Free
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>

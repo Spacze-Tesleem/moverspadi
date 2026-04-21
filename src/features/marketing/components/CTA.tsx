@@ -1,8 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 export default function CTA() {
+  const router = useRouter();
+
   return (
     <section className="relative py-20 px-4 overflow-hidden bg-gradient-to-br from-green-600 via-green-500 to-emerald-500">
       
@@ -42,6 +45,7 @@ export default function CTA() {
           
           {/* Primary */}
           <motion.button
+            onClick={() => router.push("/auth/role?mode=signup")}
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.97 }}
             className="bg-green-600 hover:bg-green-500 text-white font-semibold px-8 py-3 rounded-lg shadow-md w-full sm:w-auto transition duration-300"
