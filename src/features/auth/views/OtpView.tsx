@@ -31,7 +31,7 @@ function OtpPageInner() {
   // URL params are kept as a fallback only — email/name must not travel in URLs
   // because they appear in server logs, browser history, and referrer headers.
   const email = (typeof window !== "undefined" && sessionStorage.getItem("otp_email")) || params.get("email") || "";
-  const name  = (typeof window !== "undefined" && sessionStorage.getItem("otp_name"))  || params.get("name")  || "User";
+  const name = (typeof window !== "undefined" && sessionStorage.getItem("otp_name")) || params.get("name") || "User";
 
   const OTP_LENGTH = 6;
   const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(""));
@@ -114,14 +114,20 @@ function OtpPageInner() {
       if (process.env.NEXT_PUBLIC_API_URL) {
         try {
           // Signup and login OTPs are verified by different backend endpoints
-          const session: AuthSession = mode === "login"
-            ? await authApi.verifyLoginOtp({ email, otp, role })
-            : await authApi.verifyOtp({ email, otp, role });
-          // Store token in httpOnly cookie — never in localStorage.
-          await persistSession(session.token);
-          login(session.user, session.role as typeof role, session.token, session.verificationStatus);
-          const needsOnboarding = mode === "signup" && isSupplyRole(session.role);
-          needsOnboarding ? setProfileComplete(false) : setProfileComplete(true);
+          if (mode === "login") {
+            const session: AuthSession = await authApi.verifyLoginOtp({ email, otp, role });
+            await persistSession(session.token);
+            login(session.user, session.role as typeof role, session.token, session.verificationStatus);
+            const needsOnboarding = isSupplyRole(session.role);
+            needsOnboarding ? setProfileComplete(false) : setProfileComplete(true);
+          } else {
+            // Signup OTP just verifies the email — no token returned
+            await authApi.verifyOtp({ email, otp, role });
+            setSuccess(true);
+            await new Promise((r) => setTimeout(r, 800));
+            router.push(`/auth/login?role=${role}&verified=true`);
+            return;
+          }
         } catch (apiErr) {
           if (isNetworkError(apiErr) && process.env.NODE_ENV !== "production") {
             devLogin();
@@ -184,8 +190,8 @@ function OtpPageInner() {
         await authApi.login({ email, password, role });
       } else {
         // Replay the original signup call using credentials stored in sessionStorage.
-        const phone           = sessionStorage.getItem("otp_phone") ?? "";
-        const password        = sessionStorage.getItem("otp_password") ?? "";
+        const phone = sessionStorage.getItem("otp_phone") ?? "";
+        const password = sessionStorage.getItem("otp_password") ?? "";
         const confirmPassword = sessionStorage.getItem("otp_confirmPassword") ?? "";
         await authApi.signup({
           fullName: name,
