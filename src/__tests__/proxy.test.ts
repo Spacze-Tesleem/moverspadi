@@ -1,10 +1,10 @@
 /**
- * Tests for proxy.ts — server-side route protection.
+ * Tests for middleware.ts — server-side route protection.
  *
  * Verifies that:
  *  - Protected portal routes redirect to /auth/login when the session cookie is absent
  *  - Protected routes are served normally when the session cookie is present
- *  - Auth routes redirect authenticated users away to /
+ *  - Auth routes are always accessible regardless of cookie (stale cookie must not block login)
  *  - Public routes (marketing, API) are always served without a cookie
  *  - The ?next= parameter is preserved on login redirects
  */
@@ -82,31 +82,25 @@ describe("protected routes with a valid session cookie", () => {
   }
 });
 
-// ── Auth routes — authenticated user ─────────────────────────────────────────
+// ── Auth routes — always accessible ──────────────────────────────────────────
+// A cookie alone is not a reliable signal of a valid session (it may be
+// stale/expired). Auth routes must always be reachable so users can log in
+// again. The client-side store is the authoritative source for auth state.
 
-describe("auth routes with an existing session cookie", () => {
+describe("auth routes are always accessible", () => {
   const authPaths = ["/auth/login", "/auth/signup", "/auth/role"];
 
   for (const path of authPaths) {
-    it(`redirects authenticated user away from ${path} → /`, () => {
-      const req = makeRequest(path, "valid-jwt-token");
+    it(`serves ${path} without a session cookie`, () => {
+      const req = makeRequest(path);
       const res = middleware(req);
 
-      expect(res.status).toBe(307);
-      const location = res.headers.get("location") ?? "";
-      expect(location).toMatch(/\/$/); // ends with /
+      expect(res.headers.get("location")).toBeNull();
+      expect(res.status).toBe(200);
     });
-  }
-});
 
-// ── Auth routes — unauthenticated user ───────────────────────────────────────
-
-describe("auth routes without a session cookie", () => {
-  const authPaths = ["/auth/login", "/auth/signup", "/auth/role"];
-
-  for (const path of authPaths) {
-    it(`serves ${path} to unauthenticated users`, () => {
-      const req = makeRequest(path);
+    it(`serves ${path} even with a session cookie present`, () => {
+      const req = makeRequest(path, "possibly-stale-token");
       const res = middleware(req);
 
       expect(res.headers.get("location")).toBeNull();

@@ -13,7 +13,7 @@ import type { UserRole } from "@/src/domain/auth/types";
  */
 export function useRequireAuth(requiredRole: UserRole | UserRole[]) {
   const router = useRouter();
-  const { isAuthenticated, role, _hydrated } = useAuthStore();
+  const { isAuthenticated, role, _hydrated, logout } = useAuthStore();
 
   const allowedRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
   const authorized = _hydrated && isAuthenticated && !!role && allowedRoles.includes(role);
@@ -21,6 +21,9 @@ export function useRequireAuth(requiredRole: UserRole | UserRole[]) {
   useEffect(() => {
     if (!_hydrated) return;
     if (!isAuthenticated || !role || !allowedRoles.includes(role)) {
+      // Clear any stale cookie so the middleware doesn't block auth routes
+      // on the next visit, then redirect to login.
+      logout();
       router.replace("/auth/login");
     }
   }, [_hydrated, isAuthenticated, role, router]);

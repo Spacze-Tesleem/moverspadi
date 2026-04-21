@@ -22,10 +22,6 @@ const PROTECTED_PREFIXES = [
   "/company",
 ];
 
-// Routes that authenticated users should not revisit (e.g. login page).
-// Redirect them to their dashboard instead.
-const AUTH_ROUTES = ["/auth/login", "/auth/signup", "/auth/role"];
-
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const token = req.cookies.get(COOKIE_NAME)?.value;
@@ -35,26 +31,16 @@ export function middleware(req: NextRequest) {
     pathname === prefix || pathname.startsWith(`${prefix}/`)
   );
 
-  const isAuthRoute = AUTH_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(`${route}/`)
-  );
-
   // Unauthenticated request to a protected route → redirect to login.
+  // Auth routes (/auth/*) are always accessible — a cookie alone is not a
+  // reliable signal of a valid session (it may be stale/expired). The
+  // client-side store is the authoritative source for auth state.
   if (isProtected && !isAuthenticated) {
     const loginUrl = req.nextUrl.clone();
     loginUrl.pathname = "/auth/login";
     // Preserve the intended destination so the login page can redirect back.
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
-  }
-
-  // Authenticated user hitting an auth route → redirect to home.
-  // The client-side store handles role-based routing from there.
-  if (isAuthRoute && isAuthenticated) {
-    const homeUrl = req.nextUrl.clone();
-    homeUrl.pathname = "/";
-    homeUrl.search = "";
-    return NextResponse.redirect(homeUrl);
   }
 
   return NextResponse.next();
