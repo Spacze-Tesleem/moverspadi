@@ -66,7 +66,7 @@ src/
 
 ```bash
 pnpm install          # install dependencies
-pnpm dev              # start dev server on :3000
+pnpm dev              # start dev server on :5000
 pnpm build            # production build
 pnpm lint             # ESLint (Next.js core-web-vitals + TypeScript rules)
 ```
@@ -128,12 +128,8 @@ pnpm lint             # ESLint (Next.js core-web-vitals + TypeScript rules)
 
 ## What Does Not Exist Yet
 
-- No test suite (no Jest, Vitest, Playwright, or Cypress configured).
 - No error boundary components.
 - No loading skeleton components.
 - No API mock / MSW setup.
 - No CI/CD pipeline (no `.github/workflows/`).
-- `NEXT_PUBLIC_API_URL` is not documented in a `.env.example`.
-- `axios` is listed as a dependency but unused — the project uses `fetch`-based `apiClient`.
-- `pigeon-maps` is listed as a dependency but appears unused (project uses Leaflet).
-- `@react-google-maps/api` is listed as a dependency but appears unused (project uses Nominatim/Leaflet).
+- `axios`, `pigeon-maps`, and `@react-google-maps/api` are listed as dependencies but unused — the project uses `fetch`-based `apiClient` and Leaflet.

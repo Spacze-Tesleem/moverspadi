@@ -1,4 +1,4 @@
-import MoverOnboardingView from "@/src/features/mover/views/MoverOnboardingView";
+import MoverOnboardingView from "@/src/modules/mover/views/MoverOnboardingView";
 
 export default function MoverOnboardingPage() {
   return <MoverOnboardingView />;

@@ -15,7 +15,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { isNetworkError } from "../services/api/auth";
+import { isNetworkError } from "../infrastructure/api/auth";
 
 // ---------------------------------------------------------------------------
 // Helpers — inline the logic under test so we can unit-test it without

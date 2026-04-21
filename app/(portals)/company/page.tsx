@@ -1,4 +1,4 @@
-import CompanyDashboardView from "@/src/features/company/views/CompanyDashboardView";
+import CompanyDashboardView from "@/src/modules/company/views/CompanyDashboardView";
 
 export default function CompanyPage() {
   return <CompanyDashboardView />;

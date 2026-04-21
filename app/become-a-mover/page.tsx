@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import Navbar from "@/src/features/marketing/components/Navbar";
-import Footer from "@/src/features/marketing/components/Footer";
+import Navbar from "@/src/modules/marketing/components/Navbar";
+import Footer from "@/src/modules/marketing/components/Footer";
 import {
   Truck, ShieldCheck, Wallet, Clock, Star,
   ChevronRight, CheckCircle2, Zap,

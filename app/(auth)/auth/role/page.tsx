@@ -1,4 +1,4 @@
-import RoleView from "@/src/features/auth/views/RoleView";
+import RoleView from "@/src/modules/auth/views/RoleView";
 
 export default function RolePage() {
   return <RoleView />;

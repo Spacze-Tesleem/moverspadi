@@ -1,4 +1,4 @@
-import CompanyOnboardingView from "@/src/features/company/views/CompanyOnboardingView";
+import CompanyOnboardingView from "@/src/modules/company/views/CompanyOnboardingView";
 
 export default function CompanyOnboardingPage() {
   return <CompanyOnboardingView />;

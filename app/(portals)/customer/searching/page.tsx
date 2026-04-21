@@ -1,4 +1,4 @@
-import SearchingView from "@/src/features/customer/tracking/views/SearchingView";
+import SearchingView from "@/src/modules/customer/tracking/views/SearchingView";
 
 export default function SearchingPage() {
   return <SearchingView />;

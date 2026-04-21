@@ -1,6 +1,6 @@
 "use client";
 
-import { useRequireAuth } from "@/src/hooks/useAuth";
+import { useRequireAuth } from "@/src/application/hooks/useAuth";
 
 export default function CustomerLayout({ children }: { children: React.ReactNode }) {
   const { authorized } = useRequireAuth("customer");

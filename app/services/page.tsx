@@ -1,7 +1,7 @@
-import Navbar from "@/src/features/marketing/components/Navbar";
-import Services from "@/src/features/marketing/components/Services";
-import Footer from "@/src/features/marketing/components/Footer";
-import CTA from "@/src/features/marketing/components/CTA";
+import Navbar from "@/src/modules/marketing/components/Navbar";
+import Services from "@/src/modules/marketing/components/Services";
+import Footer from "@/src/modules/marketing/components/Footer";
+import CTA from "@/src/modules/marketing/components/CTA";
 
 export const metadata = { title: "Services – MoversPadi" };
 
