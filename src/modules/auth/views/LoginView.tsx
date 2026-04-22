@@ -107,6 +107,7 @@ function LoginPageInner() {
   const [error, setError] = useState<string | null>(null);
   const [quickOpen, setQuickOpen] = useState(false);
   const [quickLoading, setQuickLoading] = useState<string | null>(null);
+  const [demoLoading, setDemoLoading] = useState<string | null>(null);
   const [forgotOpen, setForgotOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotStatus, setForgotStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
@@ -233,17 +234,23 @@ function LoginPageInner() {
     router.push(entry.portal);
   };
 
-  const handleDemoLogin = (account: typeof DEMO_ACCOUNTS[number]) => {
-    // Offline demo session — no backend call, no real token.
-    // Grants immediate access so reviewers can explore the UI without
-    // needing live backend credentials. Admin is excluded from this panel.
+  const handleDemoLogin = async (account: typeof DEMO_ACCOUNTS[number]) => {
+    setDemoLoading(account.role);
+    // Offline demo session — no backend call, no real credentials needed.
+    // A synthetic cookie is set so the middleware allows access to portal routes.
+    const demoToken = `demo-${account.role}-session`;
+    try {
+      await persistSession(demoToken);
+    } catch {
+      // If cookie write fails, proceed anyway — worst case middleware redirects to login.
+    }
     login(
       { name: account.name, email: `demo-${account.role}@moverspadi.local` },
       account.role,
-      "", // no token — no httpOnly cookie is set
-      account.role === "customer" ? "approved" : "pending"
+      demoToken,
+      "approved", // demo accounts always get full dashboard access
     );
-    setProfileComplete(account.role === "customer");
+    setProfileComplete(true); // skip onboarding for demo
     router.push(`/${account.role}`);
   };
 
@@ -398,19 +405,24 @@ function LoginPageInner() {
             <div className="grid grid-cols-3 gap-2">
               {DEMO_ACCOUNTS.map((account) => {
                 const Icon = account.icon;
+                const isLoading = demoLoading === account.role;
                 return (
                   <button
                     key={account.role}
                     type="button"
+                    disabled={demoLoading !== null}
                     onClick={() => handleDemoLogin(account)}
-                    className="flex items-center gap-2.5 px-3.5 py-3 rounded-2xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50 active:scale-[0.97] transition-all text-left"
+                    className="flex items-center gap-2.5 px-3.5 py-3 rounded-2xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50 active:scale-[0.97] transition-all text-left disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     <div className={`w-7 h-7 ${account.color} rounded-xl flex items-center justify-center shrink-0`}>
-                      <Icon className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+                      {isLoading
+                        ? <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                        : <Icon className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+                      }
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-black text-slate-700 leading-none mb-0.5">{account.label}</p>
-                      <p className="text-[10px] text-slate-400 font-medium">Demo</p>
+                      <p className="text-[10px] text-slate-400 font-medium">{isLoading ? "Loading..." : "Demo"}</p>
                     </div>
                   </button>
                 );
