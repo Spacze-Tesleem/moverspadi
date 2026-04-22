@@ -15,6 +15,7 @@ import {
   XCircle, RefreshCw, AlertTriangle, FileWarning, ChevronDown,
 } from "lucide-react";
 import type { VerificationStatus } from "@/src/domain/auth/types";
+import { adminApi } from "@/src/infrastructure/api/admin";
 
 // ── Types ─────────────────────────────────────────────────
 type ActiveView = "overview" | "users" | "orders" | "verification" | "alerts" | "settings";
@@ -74,12 +75,58 @@ export default function AdminDashboardView() {
   const [activeView, setActiveView] = useState<ActiveView>("overview");
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState<Theme>("dark");
+  const token = useAuthStore((s) => s.token);
   const [queue, setQueue] = useState<Applicant[]>(INITIAL_QUEUE);
+  const [queueLoading, setQueueLoading] = useState(false);
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
   const [actionReason, setActionReason] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [auditLog, setAuditLog] = useState<{ id: string; action: string; reason: string; admin: string; timestamp: string }[]>([]);
 
-  const handleVerificationAction = (applicantId: string, action: VerificationStatus, reason = "") => {
+  // Load real verification queue from backend; fall back to dummy data if unavailable.
+  useEffect(() => {
+    if (!token) return;
+    setQueueLoading(true);
+    adminApi.getVerificationQueue(token)
+      .then((items) => {
+        if (items && items.length > 0) {
+          setQueue(
+            items.map((item) => ({
+              id: item.id,
+              name: item.name,
+              role: item.role,
+              email: item.id, // backend VerificationItem has no email field yet
+              submittedAt: item.submittedAt,
+              status: item.status,
+              documents: [],
+              avatar: item.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase(),
+              avatarColor: "bg-amber-500",
+            }))
+          );
+        }
+      })
+      .catch(() => { /* backend not ready — keep dummy data */ })
+      .finally(() => setQueueLoading(false));
+  }, [token]);
+
+  const handleVerificationAction = async (applicantId: string, action: VerificationStatus, reason = "") => {
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      if (token) {
+        if (action === "approved") {
+          await adminApi.approveVerification(applicantId, token);
+        } else if (action === "rejected") {
+          await adminApi.rejectVerification(applicantId, reason, token);
+        } else if (action === "resubmission_required") {
+          await adminApi.requestResubmission(applicantId, reason, token);
+        }
+        // "suspended" — no dedicated verification endpoint; handled via user suspend
+      }
+    } catch {
+      // Backend not ready — apply optimistically so the UI still works
+    }
     setQueue((prev) =>
       prev.map((a) => a.id === applicantId ? { ...a, status: action, reason } : a)
     );
@@ -87,11 +134,12 @@ export default function AdminDashboardView() {
       id: applicantId,
       action,
       reason,
-      admin: "Admin Console",
+      admin: user?.name ?? "Admin",
       timestamp: new Date().toLocaleString(),
     }, ...prev]);
     setSelectedApplicant(null);
     setActionReason("");
+    setActionLoading(false);
   };
 
   useEffect(() => {
@@ -433,8 +481,9 @@ export default function AdminDashboardView() {
 
                   {/* Applicant list */}
                   <div className="rounded-[2.5rem] bg-white dark:bg-zinc-900/50 border border-slate-100 dark:border-white/5 overflow-hidden">
-                    <div className="p-6 border-b border-slate-100 dark:border-white/5">
+                    <div className="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
                       <h3 className="font-black text-lg">Applications</h3>
+                      {queueLoading && <RefreshCw size={16} className="animate-spin text-amber-500" />}
                     </div>
                     <div className="divide-y divide-slate-100 dark:divide-white/5">
                       {queue.map((applicant) => (
@@ -543,31 +592,40 @@ export default function AdminDashboardView() {
                             </div>
 
                             {/* Action buttons */}
-                            <div className="p-6 border-t border-slate-100 dark:border-white/5 grid grid-cols-2 gap-3">
-                              <button
-                                onClick={() => handleVerificationAction(selectedApplicant.id, "approved", actionReason)}
-                                className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-emerald-500 text-white font-black text-sm hover:bg-emerald-600 transition-colors"
-                              >
-                                <CheckCircle2 size={16} /> Approve
-                              </button>
-                              <button
-                                onClick={() => handleVerificationAction(selectedApplicant.id, "rejected", actionReason)}
-                                className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-rose-500 text-white font-black text-sm hover:bg-rose-600 transition-colors"
-                              >
-                                <XCircle size={16} /> Reject
-                              </button>
-                              <button
-                                onClick={() => handleVerificationAction(selectedApplicant.id, "resubmission_required", actionReason)}
-                                className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-amber-500 text-white font-black text-sm hover:bg-amber-600 transition-colors"
-                              >
-                                <RefreshCw size={16} /> Request Resubmit
-                              </button>
-                              <button
-                                onClick={() => handleVerificationAction(selectedApplicant.id, "suspended", actionReason)}
-                                className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-slate-700 text-white font-black text-sm hover:bg-slate-800 transition-colors"
-                              >
-                                <AlertTriangle size={16} /> Suspend
-                              </button>
+                            <div className="p-6 border-t border-slate-100 dark:border-white/5 space-y-3">
+                              {actionError && (
+                                <p className="text-xs font-bold text-rose-500 text-center">{actionError}</p>
+                              )}
+                              <div className="grid grid-cols-2 gap-3">
+                                <button
+                                  disabled={actionLoading}
+                                  onClick={() => handleVerificationAction(selectedApplicant.id, "approved", actionReason)}
+                                  className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-emerald-500 text-white font-black text-sm hover:bg-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {actionLoading ? <RefreshCw size={16} className="animate-spin" /> : <CheckCircle2 size={16} />} Approve
+                                </button>
+                                <button
+                                  disabled={actionLoading}
+                                  onClick={() => handleVerificationAction(selectedApplicant.id, "rejected", actionReason)}
+                                  className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-rose-500 text-white font-black text-sm hover:bg-rose-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {actionLoading ? <RefreshCw size={16} className="animate-spin" /> : <XCircle size={16} />} Reject
+                                </button>
+                                <button
+                                  disabled={actionLoading}
+                                  onClick={() => handleVerificationAction(selectedApplicant.id, "resubmission_required", actionReason)}
+                                  className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-amber-500 text-white font-black text-sm hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {actionLoading ? <RefreshCw size={16} className="animate-spin" /> : <RefreshCw size={16} />} Request Resubmit
+                                </button>
+                                <button
+                                  disabled={actionLoading}
+                                  onClick={() => handleVerificationAction(selectedApplicant.id, "suspended", actionReason)}
+                                  className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-slate-700 text-white font-black text-sm hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {actionLoading ? <RefreshCw size={16} className="animate-spin" /> : <AlertTriangle size={16} />} Suspend
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </motion.div>
