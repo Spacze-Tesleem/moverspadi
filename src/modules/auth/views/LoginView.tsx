@@ -12,7 +12,7 @@ import { authApi, isNetworkError } from "@/src/infrastructure/api/auth";
 import { useAuthStore } from "@/src/application/store/authStore";
 import { persistSession } from "@/src/lib/sessionClient";
 
-type Role = "customer" | "mover" | "provider" | "company" | "admin";
+type Role = "customer" | "mover" | "company" | "admin";
 
 const ROLE_DATA: Record<Role, {
   label: string;
@@ -27,10 +27,6 @@ const ROLE_DATA: Record<Role, {
   mover: {
     label: "Independent Mover", icon: Truck, tagline: "Earn on the go.",
     description: "Access high-quality leads, manage your schedule, and grow your independent moving business.",
-  },
-  provider: {
-    label: "Transport Provider", icon: Truck, tagline: "Transport at scale.",
-    description: "Offer private car hire or bus services, manage vehicle compliance, and grow your transport business.",
   },
   company: {
     label: "Logistics Company", icon: Building2, tagline: "Scale operations.",
@@ -50,25 +46,22 @@ const DEV_CREDENTIALS: Record<Role, { id: string; password: string; name: string
     ? {
         customer: { id: "customer@demo.com", password: "demo1234", name: "Demo Customer" },
         mover:    { id: "mover@demo.com",    password: "demo1234", name: "Demo Mover" },
-        provider: { id: "provider@demo.com", password: "demo1234", name: "Demo Provider" },
         company:  { id: "COMPANY-001",       password: "demo1234", name: "Demo Company" },
         admin:    { id: "ADMIN-001",         password: "demo1234", name: "Demo Admin" },
       }
     : null;
 
 const QUICK_ACCESS_ROLES: { role: Role; label: string; color: string; portal: string }[] = [
-  { role: "customer", label: "Customer",  color: "bg-blue-500",   portal: "/customer" },
-  { role: "mover",    label: "Mover",     color: "bg-blue-600", portal: "/mover" },
-  { role: "provider", label: "Provider",  color: "bg-blue-500",   portal: "/provider" },
-  { role: "company",  label: "Company",   color: "bg-blue-500", portal: "/company" },
-  { role: "admin",    label: "Admin",     color: "bg-slate-700",  portal: "/admin" },
+  { role: "customer", label: "Customer", color: "bg-blue-500",   portal: "/customer" },
+  { role: "mover",    label: "Mover",    color: "bg-blue-600",   portal: "/mover" },
+  { role: "company",  label: "Company",  color: "bg-blue-500",   portal: "/company" },
+  { role: "admin",    label: "Admin",    color: "bg-slate-700",  portal: "/admin" },
 ];
 
 // Demo accounts — always visible so reviewers can try the app.
-// Uses a fully offline session — no backend call, no credentials needed.
-// Admin is intentionally excluded from this panel; admin access requires direct login.
+// Uses an offline session — no backend call, no credentials needed.
 type DemoAccount = {
-  role: Exclude<Role, "admin">;
+  role: Role;
   label: string;
   name: string;
   color: string;
@@ -76,9 +69,10 @@ type DemoAccount = {
 };
 
 const DEMO_ACCOUNTS: DemoAccount[] = [
-  { role: "customer", label: "Customer", name: "Demo Customer", color: "bg-blue-500",    icon: User      },
-  { role: "mover",    label: "Mover",    name: "Demo Mover",    color: "bg-violet-500", icon: Truck     },
-  { role: "company",  label: "Company",  name: "Demo Company",  color: "bg-emerald-500",icon: Building2 },
+  { role: "customer", label: "Customer", name: "Demo Customer", color: "bg-blue-500",    icon: User       },
+  { role: "mover",    label: "Mover",    name: "Demo Mover",    color: "bg-violet-500",  icon: Truck      },
+  { role: "company",  label: "Company",  name: "Demo Company",  color: "bg-emerald-500", icon: Building2  },
+  { role: "admin",    label: "Admin",    name: "Demo Admin",    color: "bg-slate-700",   icon: ShieldCheck},
 ];
 
 export default function LoginView() {
@@ -153,7 +147,7 @@ function LoginPageInner() {
         token,
         session?.verificationStatus ?? (role === "customer" || role === "admin" ? "approved" : "pending")
       );
-      setProfileComplete(role !== "mover" && role !== "provider" && role !== "company");
+      setProfileComplete(role !== "mover" && role !== "company");
       router.push(`/${role}`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "";
@@ -180,7 +174,7 @@ function LoginPageInner() {
             "dev-session",
             role === "customer" || role === "admin" ? "approved" : "pending"
           );
-          setProfileComplete(role !== "mover" && role !== "provider" && role !== "company");
+          setProfileComplete(role !== "mover" && role !== "company");
           router.push(`/${role}`);
         } else {
           setError("Invalid credentials. Please try again.");

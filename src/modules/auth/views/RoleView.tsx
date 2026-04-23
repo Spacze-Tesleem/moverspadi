@@ -13,7 +13,7 @@ export default function RoleView() {
   );
 }
 
-type MoverSubType = "mover" | "provider" | "company";
+type MoverSubType = "mover" | "company";
 
 const TOP_ROLES = [
   {
@@ -45,12 +45,6 @@ const MOVER_SUBTYPES: { role: MoverSubType; label: string; description: string; 
     label: "Independent Mover",
     description: "Individual courier or driver operating solo",
     color: "green",
-  },
-  {
-    role: "provider",
-    label: "Transport Provider",
-    description: "Heavy-duty or specialised transport services",
-    color: "blue",
   },
   {
     role: "company",

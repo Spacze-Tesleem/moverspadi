@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { authApi, isNetworkError } from "@/src/infrastructure/api/auth";
 
-type Role = "customer" | "mover" | "provider" | "company";
+type Role = "customer" | "mover" | "company";
 
 export default function SignupView() {
   return (
@@ -37,9 +37,8 @@ function SignupPageInner() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const roleLabel =
-    role === "company"   ? "Logistics Company" :
-    role === "mover"     ? "Independent Mover" :
-    role === "provider"  ? "Transport Provider" :
+    role === "company" ? "Logistics Company" :
+    role === "mover"   ? "Independent Mover" :
     "Customer";
 
   const validate = () => {
@@ -134,7 +133,7 @@ function SignupPageInner() {
           <p className="text-slate-500 font-medium">
             Signing up as a{" "}
             <span className="font-bold text-slate-700">{roleLabel}</span>
-            {(role === "mover" || role === "provider" || role === "company") && (
+            {(role === "mover" || role === "company") && (
               <> — complete your profile after verification</>
             )}
           </p>

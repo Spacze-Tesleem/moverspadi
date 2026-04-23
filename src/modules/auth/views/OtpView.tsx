@@ -86,7 +86,7 @@ function OtpPageInner() {
   const otp = digits.join("");
   const isFilled = otp.length === OTP_LENGTH;
 
-  const SUPPLY_ROLES = ["mover", "provider", "company"] as const;
+  const SUPPLY_ROLES = ["mover", "company"] as const;
   type SupplyRole = typeof SUPPLY_ROLES[number];
   const isSupplyRole = (r: string): r is SupplyRole => SUPPLY_ROLES.includes(r as SupplyRole);
 

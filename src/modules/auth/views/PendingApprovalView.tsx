@@ -7,9 +7,8 @@ import { useRouter } from "next/navigation";
 import type { VerificationStatus } from "@/src/domain/auth/types";
 
 const ROLE_LABELS: Record<string, string> = {
-  mover:    "Independent Mover",
-  provider: "Transport Provider",
-  company:  "Logistics Company",
+  mover:   "Independent Mover",
+  company: "Logistics Company",
 };
 
 const CHECKLIST = [
@@ -20,7 +19,7 @@ const CHECKLIST = [
   "Bank account for payouts",
 ];
 
-const PROVIDER_EXTRA = [
+const MOVER_EXTRA = [
   "Vehicle registration, roadworthiness & insurance",
   "Vehicle capacity & service type",
 ];
@@ -52,7 +51,7 @@ export default function PendingApprovalView({ approvedDashboard }: Props) {
 
   const checklist = [
     ...CHECKLIST,
-    ...(role === "provider" ? PROVIDER_EXTRA : []),
+    ...(role === "mover" ? MOVER_EXTRA : []),
     ...(role === "company" ? COMPANY_EXTRA : []),
   ];
 
