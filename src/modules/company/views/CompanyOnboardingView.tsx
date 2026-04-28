@@ -252,7 +252,7 @@ export default function CompanyOnboardingView() {
                   <div>
                     <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 mb-3">Vehicle Categories</p>
                     <div className="grid grid-cols-2 gap-2">
-                      {["Motorcycle", "Tricycle (Keke)", "Car", "Van / Bus", "Truck", "Pickup"].map((cat) => {
+                      {["Motorcycle", "Van", "Truck", "Tow Truck", "Private Car", "Bus"].map((cat) => {
                         const selected = formData.vehicleCategories.includes(cat);
                         return (
                           <button

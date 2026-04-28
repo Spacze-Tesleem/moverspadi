@@ -26,10 +26,10 @@ import ProfileView  from "@/src/modules/customer/profile/views/ProfileView";
 // ── Mock data ─────────────────────────────────────────────────────────────────
 
 const SERVICES = [
-  { id: "dispatch", label: "Dispatch", icon: Bike,   desc: "Lightweight delivery",  color: "text-green-600", bg: "bg-green-50",   bgDark: "bg-green-500/10", border: "border-green-100", borderDark: "border-green-500/20", route: "/customer/book?type=dispatch" },
-  { id: "ride",     label: "Ride",     icon: Car,    desc: "Passenger transport",   color: "text-blue-500",   bg: "bg-blue-50",     bgDark: "bg-blue-500/10",   border: "border-blue-100",   borderDark: "border-blue-500/20",   route: "/customer/book?type=ride" },
-  { id: "haulage",  label: "Haulage",  icon: Truck,  desc: "Heavy logistics",       color: "text-blue-600", bg: "bg-blue-50",   bgDark: "bg-blue-500/10", border: "border-blue-100", borderDark: "border-blue-500/20", route: "/customer/book?type=haulage" },
-  { id: "tow",      label: "Towing",   icon: Wrench, desc: "Vehicle recovery",      color: "text-slate-500",   bg: "bg-slate-50",     bgDark: "bg-slate-500/10",   border: "border-slate-200",   borderDark: "border-slate-200",   route: "/customer/book?type=tow" },
+  { id: "dispatch",  label: "Dispatch",  icon: Bike,   desc: "Lightweight delivery",  color: "text-green-600",  bg: "bg-green-50",   bgDark: "bg-green-500/10",  border: "border-green-100",  borderDark: "border-green-500/20",  route: "/customer/book?type=dispatch" },
+  { id: "transport", label: "Transport", icon: Car,    desc: "Passenger transport",   color: "text-blue-500",   bg: "bg-blue-50",    bgDark: "bg-blue-500/10",   border: "border-blue-100",   borderDark: "border-blue-500/20",   route: "/customer/book?type=transport" },
+  { id: "haulage",   label: "Haulage",   icon: Truck,  desc: "Heavy logistics",       color: "text-blue-600",   bg: "bg-blue-50",    bgDark: "bg-blue-500/10",   border: "border-blue-100",   borderDark: "border-blue-500/20",   route: "/customer/book?type=haulage" },
+  { id: "tow",       label: "Towing",    icon: Wrench, desc: "Vehicle recovery",      color: "text-slate-500",  bg: "bg-slate-50",   bgDark: "bg-slate-500/10",  border: "border-slate-200",  borderDark: "border-slate-200",     route: "/customer/book?type=tow" },
 ];
 
 const TRANSACTIONS = [

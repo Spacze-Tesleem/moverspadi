@@ -152,7 +152,7 @@ export default function AdminDashboardView() {
     { id: "overview",      label: "Overview",          icon: LayoutGrid,    color: "emerald" },
     { id: "users",         label: "User Management",   icon: Users,         color: "violet" },
     { id: "orders",        label: "Logistics Engine",  icon: Truck,         color: "cyan" },
-    { id: "verification",  label: "Verification Queue",icon: ClipboardList, color: "amber", badge: INITIAL_QUEUE.filter(a => a.status === "pending").length },
+    { id: "verification",  label: "Verification Queue",icon: ClipboardList, color: "amber", badge: queue.filter(a => a.status === "pending").length },
     { id: "alerts",        label: "System Alerts",     icon: Bell,          color: "rose", badge: 3 },
     { id: "settings",      label: "Configuration",     icon: Settings,      color: "slate" },
   ];
@@ -206,7 +206,7 @@ export default function AdminDashboardView() {
                      <p className="text-xs font-bold">Admin Console</p>
                      <p className="text-[10px] opacity-60">Super User Privilege</p>
                    </div>
-                   <button onClick={() => logout()} className="mt-2 flex items-center gap-2 text-[10px] font-black uppercase tracking-tighter text-rose-400 hover:text-rose-300">
+                   <button onClick={() => { logout(); router.push("/auth/login"); }} className="mt-2 flex items-center gap-2 text-[10px] font-black uppercase tracking-tighter text-rose-400 hover:text-rose-300">
                      <LogOut size={14} /> End Session
                    </button>
                 </div>

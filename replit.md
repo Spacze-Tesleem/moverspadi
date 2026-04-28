@@ -83,3 +83,15 @@ npm run start  # → http://localhost:5000 (production)
 - Dev server binds to `0.0.0.0:5000` for Replit preview iframe
 - `next.config.ts` allows Replit preview development origins, including `*.replit.dev`, `*.riker.replit.dev`, and `*.picard.replit.dev`
 - Workflow: **Start application** → `npm run dev`
+
+## Audit Fixes Applied (vs. Build Pack)
+
+1. **Customer dashboard service list**: Changed `id: "ride"` → `id: "transport"`, label "Ride" → "Transport", route `?type=ride` → `?type=transport` — now matches the four canonical services: Dispatch, Transport, Haulage, Tow.
+2. **Vehicle type options** (MoverOnboarding, ProviderOnboarding, CompanyOnboarding): Replaced non-spec types (`tricycle`, `car`, `van/bus`, `pickup`) with the spec-defined set: `motorcycle`, `van`, `truck`, `tow_truck`, `private_car`, `bus`.
+3. **Guarantor fields** (MoverOnboarding & ProviderOnboarding): Added `guarantorAddress` and `guarantorOccupation` to the FormData type and Step 3 Address form as required by the DB schema.
+4. **Role selection flow** (`RoleView`): Added `provider` (Transport Provider) as a third mover sub-type alongside Independent Mover and Logistics Company. `MoverSubType` is now `"mover" | "provider" | "company"`.
+5. **PendingApprovalView**: Added `provider: "Transport Provider"` to `ROLE_LABELS` so pending-approval messaging is correct for transport provider accounts.
+6. **Admin verification badge**: Changed from hardcoded `INITIAL_QUEUE.filter(...)` to live `queue.filter(...)` so the badge reflects real-time state changes.
+7. **Admin logout redirect**: `logout()` now also calls `router.push("/auth/login")` so the admin is properly redirected after ending a session.
+8. **Company dashboard branding**: Corrected "LogisPadi" → "MoversPadi" in the sidebar header.
+9. **`UserProfile` domain type**: Added missing DB schema fields — `city`, `state`, `country`, `profilePicture`, `meansOfIdType`, `meansOfIdNumber`, `selfieImage`, `socialMediaLinks`.

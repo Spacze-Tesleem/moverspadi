@@ -7,8 +7,9 @@ import { useRouter } from "next/navigation";
 import type { VerificationStatus } from "@/src/domain/auth/types";
 
 const ROLE_LABELS: Record<string, string> = {
-  mover:   "Independent Mover",
-  company: "Logistics Company",
+  mover:    "Independent Mover",
+  provider: "Transport Provider",
+  company:  "Logistics Company",
 };
 
 const CHECKLIST = [

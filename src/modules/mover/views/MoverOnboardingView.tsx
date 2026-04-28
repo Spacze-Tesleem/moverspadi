@@ -24,6 +24,7 @@ type FormData = {
   gender: string; dob: string; emergencyContact: string;
   address: string; nextOfKinName: string; nextOfKinPhone: string;
   nextOfKinRelationship: string; guarantorName: string; guarantorPhone: string;
+  guarantorAddress: string; guarantorOccupation: string;
   vehicleType: string; plateNumber: string; vehicleBrand: string;
   vehicleModel: string; vehicleColor: string; yearsOfExperience: string;
   coverageArea: string; bankName: string; accountName: string;
@@ -46,7 +47,8 @@ export default function MoverOnboardingView() {
   const [formData, setFormData] = useState<FormData>({
     gender: "", dob: "", emergencyContact: "", address: "",
     nextOfKinName: "", nextOfKinPhone: "", nextOfKinRelationship: "",
-    guarantorName: "", guarantorPhone: "", vehicleType: "", plateNumber: "",
+    guarantorName: "", guarantorPhone: "", guarantorAddress: "", guarantorOccupation: "",
+    vehicleType: "", plateNumber: "",
     vehicleBrand: "", vehicleModel: "", vehicleColor: "", yearsOfExperience: "",
     coverageArea: "", bankName: "", accountName: "", accountNumber: "",
     facebookUrl: "", instagramUrl: "", twitterUrl: "",
@@ -221,10 +223,12 @@ function Step3Address({ formData, update, files, setFile }: { formData: FormData
         <Field icon={Users} placeholder="e.g. Sister" value={formData.nextOfKinRelationship} onChange={update("nextOfKinRelationship")} label="Relationship" />
       </div>
       <Divider label="Guarantor" />
+      <Field icon={Users} placeholder="Full name" value={formData.guarantorName} onChange={update("guarantorName")} label="Full Name" />
       <div className="grid grid-cols-2 gap-3">
-        <Field icon={Users} placeholder="Full name" value={formData.guarantorName} onChange={update("guarantorName")} label="Full Name" />
         <Field icon={Phone} placeholder="+234 800 000 0000" value={formData.guarantorPhone} onChange={update("guarantorPhone")} type="tel" label="Phone" />
+        <Field icon={AlertCircle} placeholder="e.g. Accountant" value={formData.guarantorOccupation} onChange={update("guarantorOccupation")} label="Occupation" />
       </div>
+      <Field icon={Home} placeholder="Guarantor residential address" value={formData.guarantorAddress} onChange={update("guarantorAddress")} label="Address" />
     </div>
   );
 }
@@ -239,11 +243,11 @@ function Step4Vehicle({ formData, update, files, setFile }: { formData: FormData
           className="w-full px-4 py-3.5 bg-slate-50 border-2 border-transparent rounded-2xl outline-none font-semibold text-sm text-slate-700 focus:bg-white focus:border-green-500/20 focus:ring-4 focus:ring-green-500/5 transition-all">
           <option value="">Select type</option>
           <option value="motorcycle">Motorcycle</option>
-          <option value="tricycle">Tricycle (Keke)</option>
-          <option value="car">Car</option>
-          <option value="van">Van / Bus</option>
+          <option value="van">Van</option>
           <option value="truck">Truck</option>
-          <option value="pickup">Pickup</option>
+          <option value="tow_truck">Tow Truck</option>
+          <option value="private_car">Private Car</option>
+          <option value="bus">Bus</option>
         </select>
       </div>
       <Field icon={Hash} placeholder="e.g. LAG-123-AA" value={formData.plateNumber} onChange={update("plateNumber")} label="Plate Number" />

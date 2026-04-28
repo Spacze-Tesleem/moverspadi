@@ -90,7 +90,7 @@ function CompanyDashboardInner() {
                 <Building2 className="text-white" size={24} />
               </div>
               <div>
-                <h2 className="font-black tracking-tighter text-xl">Logis<span className="text-indigo-500">Padi</span></h2>
+                <h2 className="font-black tracking-tighter text-xl">Movers<span className="text-indigo-500">Padi</span></h2>
                 <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Enterprise</p>
               </div>
             </div>

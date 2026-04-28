@@ -8,7 +8,19 @@ export interface UserProfile {
   gender?: string;
   dateOfBirth?: string;
   address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
   avatarUrl?: string;
+  profilePicture?: string;
+  meansOfIdType?: string;
+  meansOfIdNumber?: string;
+  selfieImage?: string;
+  socialMediaLinks?: {
+    facebook?: string;
+    instagram?: string;
+    twitter?: string;
+  };
 }
 
 export interface NextOfKin {
