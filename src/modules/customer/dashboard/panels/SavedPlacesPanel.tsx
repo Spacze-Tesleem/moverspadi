@@ -1,21 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { MapPin, Home, Briefcase, Star, Plus, Trash2, Edit2 } from "lucide-react";
+import { MapPin, Home, Briefcase, Star, Plus, Trash2, Edit2, Check, X } from "lucide-react";
 
 const INITIAL_PLACES = [
-  { id: "1", label: "Home",   address: "14 Bode Thomas St, Surulere, Lagos",    icon: Home,      color: "text-blue-500",   bg: "bg-blue-50",   bgDark: "bg-blue-500/10" },
-  { id: "2", label: "Office", address: "Plot 1234, Adeola Odeku St, Victoria Island", icon: Briefcase, color: "text-blue-500", bg: "bg-blue-50", bgDark: "bg-blue-500/10" },
-  { id: "3", label: "Gym",    address: "Ikoyi Club, Ikoyi, Lagos",              icon: Star,      color: "text-blue-500",  bg: "bg-blue-50",  bgDark: "bg-blue-500/10" },
+  { id: "1", label: "Home",   address: "14 Bode Thomas St, Surulere, Lagos",        icon: Home,      color: "text-blue-500", bg: "bg-blue-50",  bgDark: "bg-blue-500/10" },
+  { id: "2", label: "Office", address: "Plot 1234, Adeola Odeku St, Victoria Island", icon: Briefcase, color: "text-blue-500", bg: "bg-blue-50",  bgDark: "bg-blue-500/10" },
+  { id: "3", label: "Gym",    address: "Ikoyi Club, Ikoyi, Lagos",                   icon: Star,      color: "text-blue-500", bg: "bg-blue-50",  bgDark: "bg-blue-500/10" },
 ];
 
 interface Props { isDark: boolean }
 
 export default function SavedPlacesPanel({ isDark: D }: Props) {
-  const [places, setPlaces] = useState(INITIAL_PLACES);
-  const [adding, setAdding] = useState(false);
-  const [newLabel, setNewLabel] = useState("");
+  const [places, setPlaces]     = useState(INITIAL_PLACES);
+  const [adding, setAdding]     = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [newLabel, setNewLabel]   = useState("");
   const [newAddress, setNewAddress] = useState("");
+  const [editLabel, setEditLabel]   = useState("");
+  const [editAddress, setEditAddress] = useState("");
 
   const handleAdd = () => {
     if (!newLabel.trim() || !newAddress.trim()) return;
@@ -31,6 +34,22 @@ export default function SavedPlacesPanel({ isDark: D }: Props) {
     setNewLabel(""); setNewAddress(""); setAdding(false);
   };
 
+  const startEdit = (place: typeof places[0]) => {
+    setEditingId(place.id);
+    setEditLabel(place.label);
+    setEditAddress(place.address);
+  };
+
+  const saveEdit = () => {
+    if (!editLabel.trim() || !editAddress.trim()) return;
+    setPlaces((prev) =>
+      prev.map((p) =>
+        p.id === editingId ? { ...p, label: editLabel, address: editAddress } : p
+      )
+    );
+    setEditingId(null);
+  };
+
   const inputCls = `w-full px-4 py-3 rounded-xl border text-sm font-semibold outline-none transition-all ${
     D
       ? "bg-white/5 border-white/10 text-zinc-200 placeholder:text-zinc-600 focus:border-blue-500"
@@ -40,9 +59,9 @@ export default function SavedPlacesPanel({ isDark: D }: Props) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className={`text-sm font-bold ${D ? "text-zinc-400" : "text-slate-500"}`}>{places.length} saved locations</p>
+        <p className={`text-sm font-bold ${D ? "text-zinc-400" : "text-slate-500"}`}>{places.length} saved location{places.length !== 1 ? "s" : ""}</p>
         <button
-          onClick={() => setAdding(true)}
+          onClick={() => { setAdding(true); setEditingId(null); }}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm shadow-blue-200"
         >
           <Plus className="w-3.5 h-3.5" /> Add Place
@@ -63,25 +82,64 @@ export default function SavedPlacesPanel({ isDark: D }: Props) {
 
       <div className="space-y-3">
         {places.map((place) => (
-          <div key={place.id} className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${D ? "bg-white/5 border-white/5 hover:bg-white/10" : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm"}`}>
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${D ? place.bgDark : place.bg}`}>
-              <place.icon className={`w-5 h-5 ${place.color}`} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>{place.label}</p>
-              <p className={`text-xs truncate mt-0.5 ${D ? "text-zinc-500" : "text-slate-400"}`}>{place.address}</p>
-            </div>
-            <div className="flex items-center gap-1 shrink-0">
-              <button className={`p-2 rounded-lg transition-colors ${D ? "text-zinc-600 hover:text-zinc-300 hover:bg-white/5" : "text-slate-300 hover:text-slate-600 hover:bg-slate-100"}`}>
-                <Edit2 className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => setPlaces(places.filter((p) => p.id !== place.id))}
-                className={`p-2 rounded-lg transition-colors ${D ? "text-zinc-600 hover:text-red-400 hover:bg-red-500/5" : "text-slate-300 hover:text-red-500 hover:bg-red-50"}`}
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            </div>
+          <div key={place.id} className={`rounded-2xl border transition-all ${D ? "bg-white/5 border-white/5" : "bg-white border-slate-200"}`}>
+            {editingId === place.id ? (
+              /* ── Inline edit form ── */
+              <div className="p-4 space-y-3">
+                <p className={`text-xs font-bold uppercase tracking-wider ${D ? "text-zinc-500" : "text-slate-400"}`}>Edit Place</p>
+                <input
+                  className={inputCls}
+                  placeholder="Label"
+                  value={editLabel}
+                  onChange={(e) => setEditLabel(e.target.value)}
+                />
+                <input
+                  className={inputCls}
+                  placeholder="Full address"
+                  value={editAddress}
+                  onChange={(e) => setEditAddress(e.target.value)}
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setEditingId(null)}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold border transition-all flex items-center justify-center gap-1.5 ${D ? "border-white/10 text-zinc-400 hover:bg-white/5" : "border-slate-200 text-slate-500 hover:bg-slate-50"}`}
+                  >
+                    <X className="w-3.5 h-3.5" /> Cancel
+                  </button>
+                  <button
+                    onClick={saveEdit}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <Check className="w-3.5 h-3.5" /> Save
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* ── Normal row ── */
+              <div className={`flex items-center gap-4 p-4 hover:shadow-sm transition-all ${D ? "hover:bg-white/10" : "hover:border-slate-300"}`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${D ? place.bgDark : place.bg}`}>
+                  <place.icon className={`w-5 h-5 ${place.color}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>{place.label}</p>
+                  <p className={`text-xs truncate mt-0.5 ${D ? "text-zinc-500" : "text-slate-400"}`}>{place.address}</p>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    onClick={() => startEdit(place)}
+                    className={`p-2 rounded-lg transition-colors ${D ? "text-zinc-600 hover:text-zinc-300 hover:bg-white/5" : "text-slate-300 hover:text-slate-600 hover:bg-slate-100"}`}
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => setPlaces(places.filter((p) => p.id !== place.id))}
+                    className={`p-2 rounded-lg transition-colors ${D ? "text-zinc-600 hover:text-red-400 hover:bg-red-500/5" : "text-slate-300 hover:text-red-500 hover:bg-red-50"}`}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
