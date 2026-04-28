@@ -206,12 +206,12 @@ function CompanyDashboardInner() {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
-          <div className="max-w-6xl mx-auto px-4 lg:px-6 py-5 lg:py-6">
+          <div className="max-w-6xl mx-auto px-4 lg:px-6 py-3 lg:py-4">
             <AnimatePresence mode="wait">
 
               {/* OVERVIEW */}
               {activeView === "overview" && (
-                <motion.div key="ov" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-5">
+                <motion.div key="ov" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
                   <div>
                     <h2 className={`text-xl lg:text-2xl font-black ${D ? "text-white" : "text-slate-900"}`}>Operations Overview</h2>
                     <p className={`text-sm mt-0.5 ${D ? "text-zinc-500" : "text-slate-500"}`}>Live operational snapshot for your fleet.</p>
@@ -219,7 +219,7 @@ function CompanyDashboardInner() {
 
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
                     {STATS.map((s, i) => (
-                      <div key={i} className={`rounded-2xl p-5 border transition-all hover:shadow-sm ${D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                      <div key={i} className={`rounded-2xl p-4 border transition-all hover:shadow-sm ${D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300"}`}>
                         <div className={`p-2 rounded-xl w-fit mb-3 ${D ? "bg-white/5" : "bg-slate-100"}`}>
                           <s.icon size={16} className={`text-${s.color}`} />
                         </div>
@@ -232,16 +232,16 @@ function CompanyDashboardInner() {
                     ))}
                   </div>
 
-                  <div className="grid lg:grid-cols-3 gap-4 lg:gap-5 pb-6">
+                  <div className="grid lg:grid-cols-3 gap-3 pb-4">
                     {/* Active Deployments */}
                     <div className={`lg:col-span-2 rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
-                      <div className={`px-5 py-4 border-b flex items-center justify-between ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                      <div className={`px-4 py-3 border-b flex items-center justify-between ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
                         <h3 className={`text-sm font-bold ${D ? "text-zinc-300" : "text-slate-700"}`}>Active Deployments</h3>
                         <button onClick={() => handleTabChange("fleet")} className="text-[11px] font-bold text-blue-500 hover:underline">Manage Fleet</button>
                       </div>
                       <div className={`divide-y ${D ? "bg-[#0e0e0e] divide-white/5" : "bg-white divide-slate-100"}`}>
                         {FLEET.filter(v => v.status === "active").map((v, i) => (
-                          <div key={i} className={`flex items-center gap-4 px-5 py-4 transition-all hover:shadow-sm ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
+                          <div key={i} className={`flex items-center gap-4 px-4 py-3 transition-all hover:shadow-sm ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
                             <div className={`p-2.5 rounded-xl shrink-0 ${D ? "bg-white/5" : "bg-slate-100"}`}>
                               <Truck size={18} className={D ? "text-zinc-400" : "text-slate-500"} />
                             </div>
@@ -287,7 +287,7 @@ function CompanyDashboardInner() {
               {/* FLEET HUB */}
               {activeView === "fleet" && (
                 <motion.div key="fl" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
-                  <div className={`rounded-2xl border p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-200"}`}>
+                  <div className={`rounded-2xl border p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-200"}`}>
                     <div>
                       <h2 className={`text-xl font-black ${D ? "text-white" : "text-slate-900"}`}>Fleet Repository</h2>
                       <p className={`text-xs font-semibold mt-0.5 ${D ? "text-zinc-500" : "text-slate-400"}`}>5 Vehicles · 3 Operational</p>
@@ -302,9 +302,9 @@ function CompanyDashboardInner() {
                     </div>
                   </div>
 
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
                     {FLEET.map((v, i) => (
-                      <div key={i} className={`rounded-2xl border p-5 transition-all hover:shadow-sm ${D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                      <div key={i} className={`rounded-2xl border p-4 transition-all hover:shadow-sm ${D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300"}`}>
                         <div className="flex items-start justify-between mb-4">
                           <div className={`p-3 rounded-xl ${D ? "bg-white/5" : "bg-slate-100"}`}>
                             <Truck size={20} className={D ? "text-zinc-400" : "text-slate-500"} />
@@ -337,7 +337,7 @@ function CompanyDashboardInner() {
                 <motion.div key="ord" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
                   <h2 className={`text-xl font-black ${D ? "text-white" : "text-slate-900"}`}>Shipments</h2>
                   <div className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
-                    <div className={`px-5 py-4 border-b flex items-center justify-between ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                    <div className={`px-4 py-3 border-b flex items-center justify-between ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
                       <h3 className={`text-sm font-bold ${D ? "text-zinc-300" : "text-slate-700"}`}>Recent Orders</h3>
                     </div>
                     <div className={`divide-y ${D ? "bg-[#0e0e0e] divide-white/5" : "bg-white divide-slate-100"}`}>
@@ -346,7 +346,7 @@ function CompanyDashboardInner() {
                         { id: "ORD-5520", client: "Shoprite NG",    pickup: "Ikeja Mall",  dropoff: "Lekki Store",  value: "₦62k",  status: "completed",  driver: "Emeka O." },
                         { id: "ORD-5519", client: "GTBank HQ",      pickup: "VI",          dropoff: "Abuja",        value: "₦210k", status: "pending",    driver: "—" },
                       ].map((order, i) => (
-                        <div key={i} className={`flex items-center gap-4 px-5 py-4 transition-all ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
+                        <div key={i} className={`flex items-center gap-4 px-4 py-3 transition-all ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
                           <div className={`p-2.5 rounded-xl shrink-0 ${D ? "bg-white/5" : "bg-slate-100"}`}>
                             <Package size={16} className={D ? "text-zinc-400" : "text-slate-500"} />
                           </div>

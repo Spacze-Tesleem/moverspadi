@@ -302,12 +302,12 @@ function AdminDashboardInner() {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
-          <div className="max-w-6xl mx-auto px-4 lg:px-6 py-5 lg:py-6">
+          <div className="max-w-6xl mx-auto px-4 lg:px-6 py-3 lg:py-4">
             <AnimatePresence mode="wait">
 
               {/* ── OVERVIEW ── */}
               {activeView === "overview" && (
-                <motion.div key="ov" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-5">
+                <motion.div key="ov" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
                   <div>
                     <h2 className={`text-xl lg:text-2xl font-black ${D ? "text-white" : "text-slate-900"}`}>Platform Overview</h2>
                     <p className={`text-sm mt-0.5 ${D ? "text-zinc-500" : "text-slate-500"}`}>Real-time operational metrics across MoversPadi.</p>
@@ -315,7 +315,7 @@ function AdminDashboardInner() {
 
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
                     {PLATFORM_STATS.map((stat, i) => (
-                      <div key={i} className={`rounded-2xl p-5 border transition-all hover:shadow-sm ${D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                      <div key={i} className={`rounded-2xl p-4 border transition-all hover:shadow-sm ${D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300"}`}>
                         <div className={`p-2 rounded-xl w-fit mb-3 ${D ? "bg-white/5" : "bg-slate-100"}`}>
                           <stat.icon size={16} className={`text-${stat.color}`} />
                         </div>
@@ -328,10 +328,10 @@ function AdminDashboardInner() {
                     ))}
                   </div>
 
-                  <div className="grid lg:grid-cols-3 gap-4 lg:gap-5 pb-6">
+                  <div className="grid lg:grid-cols-3 gap-3 pb-4">
                     {/* Recent Dispatch */}
                     <div className={`lg:col-span-2 rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
-                      <div className={`px-5 py-4 border-b flex items-center justify-between ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                      <div className={`px-4 py-3 border-b flex items-center justify-between ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
                         <div>
                           <h3 className={`text-sm font-bold ${D ? "text-zinc-300" : "text-slate-700"}`}>Recent Dispatch</h3>
                           <p className={`text-[11px] ${D ? "text-zinc-600" : "text-slate-400"}`}>Live fleet tracking</p>
@@ -342,7 +342,7 @@ function AdminDashboardInner() {
                       </div>
                       <div className={`divide-y ${D ? "bg-[#0e0e0e] divide-white/5" : "bg-white divide-slate-100"}`}>
                         {[1, 2, 3].map((_, i) => (
-                          <div key={i} className={`flex items-center gap-4 px-5 py-4 transition-all ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
+                          <div key={i} className={`flex items-center gap-4 px-4 py-3 transition-all ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
                             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white shrink-0">
                               <Truck size={18} />
                             </div>
@@ -395,12 +395,12 @@ function AdminDashboardInner() {
                   </div>
 
                   <div className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
-                    <div className={`px-5 py-4 border-b ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                    <div className={`px-4 py-3 border-b ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
                       <p className={`text-xs font-semibold ${D ? "text-zinc-500" : "text-slate-400"}`}>Manage 12,481 accounts</p>
                     </div>
                     <div className={`divide-y ${D ? "bg-[#0e0e0e] divide-white/5" : "bg-white divide-slate-100"}`}>
                       {RECENT_USERS.map((u, i) => (
-                        <div key={i} className={`flex items-center gap-4 px-5 py-4 transition-all ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
+                        <div key={i} className={`flex items-center gap-4 px-4 py-3 transition-all ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
                           <div className={`w-10 h-10 rounded-xl ${u.color} flex items-center justify-center text-white text-sm font-black shrink-0`}>{u.avatar}</div>
                           <div className="flex-1 min-w-0">
                             <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>{u.name}</p>
@@ -452,7 +452,7 @@ function AdminDashboardInner() {
                   </div>
 
                   <div className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
-                    <div className={`px-5 py-4 border-b flex items-center justify-between ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                    <div className={`px-4 py-3 border-b flex items-center justify-between ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
                       <h3 className={`text-sm font-bold ${D ? "text-zinc-300" : "text-slate-700"}`}>Recent Orders</h3>
                       <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs ${D ? "bg-white/5 text-zinc-400" : "bg-slate-50 text-slate-400 border border-slate-100"}`}>
                         <Search size={12} /><input type="text" placeholder="Search orders..." className="bg-transparent outline-none w-24 font-medium" />
@@ -466,7 +466,7 @@ function AdminDashboardInner() {
                         { id: "ORD-4818", from: "Oshodi",   to: "Ikorodu",  mover: "FastMove NG",  amount: "₦18,200", status: "Delivered",  statusColor: "green" },
                         { id: "ORD-4817", from: "Gbagada",  to: "Apapa",    mover: "Tunde & Sons", amount: "₦27,500", status: "Cancelled",  statusColor: "rose"  },
                       ].map((order, i) => (
-                        <div key={i} className={`flex items-center gap-4 px-5 py-4 transition-all ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
+                        <div key={i} className={`flex items-center gap-4 px-4 py-3 transition-all ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
                           <div className={`p-2.5 rounded-xl shrink-0 ${D ? "bg-white/5" : "bg-slate-100"}`}>
                             <Package size={15} className={D ? "text-zinc-400" : "text-slate-500"} />
                           </div>
@@ -523,13 +523,13 @@ function AdminDashboardInner() {
                   </div>
 
                   <div className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
-                    <div className={`px-5 py-4 border-b flex items-center justify-between ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                    <div className={`px-4 py-3 border-b flex items-center justify-between ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
                       <h3 className={`text-sm font-bold ${D ? "text-zinc-300" : "text-slate-700"}`}>Applications</h3>
                       {queueLoading && <RefreshCw size={14} className="animate-spin text-amber-500" />}
                     </div>
                     <div className={`divide-y ${D ? "bg-[#0e0e0e] divide-white/5" : "bg-white divide-slate-100"}`}>
                       {queue.map((applicant) => (
-                        <div key={applicant.id} className={`flex items-center gap-4 px-5 py-4 transition-all ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
+                        <div key={applicant.id} className={`flex items-center gap-4 px-4 py-3 transition-all ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
                           <div className={`w-10 h-10 rounded-xl ${applicant.avatarColor} flex items-center justify-center text-white text-sm font-black shrink-0`}>{applicant.avatar}</div>
                           <div className="flex-1 min-w-0">
                             <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>{applicant.name}</p>
@@ -554,7 +554,7 @@ function AdminDashboardInner() {
                   {/* Audit log */}
                   {auditLog.length > 0 && (
                     <div className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
-                      <div className={`px-5 py-4 border-b ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                      <div className={`px-4 py-3 border-b ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
                         <h3 className={`text-sm font-bold ${D ? "text-zinc-300" : "text-slate-700"}`}>Audit Log</h3>
                       </div>
                       <div className={`divide-y ${D ? "bg-[#0e0e0e] divide-white/5" : "bg-white divide-slate-100"}`}>
@@ -593,7 +593,7 @@ function AdminDashboardInner() {
                     </button>
                   </div>
 
-                  <div className="space-y-3 pb-6">
+                  <div className="space-y-3 pb-4">
                     {[
                       { icon: AlertCircle,  color: "rose",    title: "Payment Gateway Timeout",     desc: "Paystack webhook failed to respond for 3 consecutive transactions.",        time: "2 mins ago"  },
                       { icon: ShieldCheck,  color: "amber",   title: "Unverified Mover Account",    desc: "Mover ID MVR-2291 has completed 4 orders without document verification.",   time: "18 mins ago" },
@@ -626,7 +626,7 @@ function AdminDashboardInner() {
 
               {/* ── SETTINGS ── */}
               {activeView === "settings" && (
-                <motion.div key="st" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4 pb-6">
+                <motion.div key="st" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4 pb-4">
                   <h2 className={`text-xl font-black ${D ? "text-white" : "text-slate-900"}`}>Configuration</h2>
                   <p className={`text-sm -mt-2 ${D ? "text-zinc-500" : "text-slate-400"}`}>Platform-wide settings and controls</p>
 
@@ -660,7 +660,7 @@ function AdminDashboardInner() {
                     },
                   ].map((section, si) => (
                     <div key={si} className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
-                      <div className={`flex items-center gap-3 px-5 py-4 border-b ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                      <div className={`flex items-center gap-3 px-4 py-3 border-b ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
                         <div className={`p-2 rounded-lg ${D ? "bg-white/5" : "bg-slate-100"}`}>
                           <section.icon size={15} className={D ? "text-zinc-400" : "text-slate-500"} />
                         </div>

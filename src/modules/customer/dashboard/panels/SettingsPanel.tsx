@@ -55,7 +55,7 @@ export default function SettingsPanel({ isDark: D }: Props) {
     setPrefs((p) => ({ ...p, [key]: !p[key] }));
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-3">
 
       {/* Appearance */}
       <div className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>

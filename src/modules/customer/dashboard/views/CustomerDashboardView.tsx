@@ -202,7 +202,7 @@ function DashboardInner() {
 
           {/* HOME */}
           {activeTab === "home" && (
-            <div className="max-w-6xl mx-auto px-4 lg:px-6 py-5 lg:py-6 space-y-6">
+            <div className="max-w-6xl mx-auto px-4 lg:px-6 py-3 lg:py-4 space-y-4">
               <div>
                 <h1 className={`text-xl lg:text-2xl font-black ${D ? "text-white" : "text-slate-900"}`}>
                   Good {getGreeting()}, {firstName} 👋
@@ -213,7 +213,7 @@ function DashboardInner() {
               {/* Stats */}
               <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 lg:gap-4">
                 {/* Balance */}
-                <div className={`rounded-2xl p-5 flex flex-col justify-between border transition-all hover:shadow-sm ${D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                <div className={`rounded-2xl p-4 flex flex-col justify-between border transition-all hover:shadow-sm ${D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300"}`}>
                   <div className="flex justify-between items-start">
                     <div className={`p-2 rounded-xl ${D ? "bg-white/5" : "bg-slate-100"}`}>
                       <CreditCard size={16} className={D ? "text-zinc-400" : "text-slate-500"} />
@@ -235,7 +235,7 @@ function DashboardInner() {
                 </div>
 
                 {/* Active orders */}
-                <div className={`rounded-2xl p-5 flex flex-col justify-between border transition-all hover:shadow-sm ${D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                <div className={`rounded-2xl p-4 flex flex-col justify-between border transition-all hover:shadow-sm ${D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300"}`}>
                   <div className="flex justify-between items-start">
                     <div className={`p-2 rounded-xl ${D ? "bg-white/5" : "bg-slate-100"}`}>
                       <Package size={16} className={D ? "text-zinc-400" : "text-slate-500"} />
@@ -256,7 +256,7 @@ function DashboardInner() {
                 </div>
 
                 {/* Promo */}
-                <div className="bg-gradient-to-br from-green-600 to-blue-600 rounded-2xl p-5 text-white relative overflow-hidden flex flex-col justify-between">
+                <div className="bg-gradient-to-br from-green-600 to-blue-600 rounded-2xl p-4 text-white relative overflow-hidden flex flex-col justify-between">
                   <div className="relative z-10">
                     <p className="text-green-200 text-xs font-bold uppercase tracking-wider mb-1">Upgrade</p>
                     <h3 className="font-black text-lg leading-tight mb-2">Priority Fleet</h3>
@@ -295,9 +295,9 @@ function DashboardInner() {
               </section>
 
               {/* Transactions + Status */}
-              <section className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 pb-6">
+              <section className="grid grid-cols-1 lg:grid-cols-3 gap-3 pb-4">
                 <div className={`lg:col-span-2 rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
-                  <div className={`px-5 py-4 border-b flex items-center justify-between ${D ? "border-white/5" : "border-slate-100"}`}>
+                  <div className={`px-4 py-3 border-b flex items-center justify-between ${D ? "border-white/5" : "border-slate-100"}`}>
                     <h3 className={`text-sm font-bold ${D ? "text-zinc-300" : "text-slate-700"}`}>Recent Transactions</h3>
                     <button onClick={() => handleTabChange("wallet")} className={`text-xs font-semibold flex items-center gap-1 ${D ? "text-blue-400 hover:text-blue-300" : "text-blue-500 hover:text-blue-700"}`}>
                       View all <ChevronRight size={12} />
@@ -305,7 +305,7 @@ function DashboardInner() {
                   </div>
                   <div className={`divide-y ${D ? "divide-white/5" : "divide-slate-100"}`}>
                     {TRANSACTIONS.map((trx) => (
-                      <div key={trx.id} className={`px-5 py-4 flex items-center justify-between transition-colors ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
+                      <div key={trx.id} className={`px-4 py-3 flex items-center justify-between transition-colors ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
                         <div className="flex items-center gap-3">
                           <div className={`w-9 h-9 rounded-full flex items-center justify-center border shrink-0 ${
                             trx.status === "processing"
@@ -327,8 +327,8 @@ function DashboardInner() {
                   </div>
                 </div>
 
-                <div className={`rounded-2xl border p-5 ${D ? "border-white/5" : "border-slate-200"}`}>
-                  <h3 className={`text-sm font-bold mb-5 ${D ? "text-zinc-300" : "text-slate-700"}`}>System Status</h3>
+                <div className={`rounded-2xl border p-4 ${D ? "border-white/5" : "border-slate-200"}`}>
+                  <h3 className={`text-sm font-bold mb-3 ${D ? "text-zinc-300" : "text-slate-700"}`}>System Status</h3>
                   <div className="space-y-4 relative">
                     <div className={`absolute left-[7px] top-2 bottom-2 w-px ${D ? "bg-white/5" : "bg-slate-100"}`} />
                     {SYSTEM_STATUS.map((item, i) => (
@@ -361,40 +361,40 @@ function DashboardInner() {
 
           {/* WALLET */}
           {activeTab === "wallet" && (
-            <div className="max-w-2xl mx-auto px-4 lg:px-6 py-5 lg:py-6 pb-8">
-              <h1 className={`text-xl font-black mb-5 ${D ? "text-white" : "text-slate-900"}`}>Wallet</h1>
+            <div className="max-w-2xl mx-auto px-4 lg:px-6 py-3 lg:py-4 pb-8">
+              <h1 className={`text-xl font-black mb-3 ${D ? "text-white" : "text-slate-900"}`}>Wallet</h1>
               <WalletPanel isDark={D} />
             </div>
           )}
 
           {/* SAVED PLACES */}
           {activeTab === "saved" && (
-            <div className="max-w-2xl mx-auto px-4 lg:px-6 py-5 lg:py-6 pb-8">
-              <h1 className={`text-xl font-black mb-5 ${D ? "text-white" : "text-slate-900"}`}>Saved Places</h1>
+            <div className="max-w-2xl mx-auto px-4 lg:px-6 py-3 lg:py-4 pb-8">
+              <h1 className={`text-xl font-black mb-3 ${D ? "text-white" : "text-slate-900"}`}>Saved Places</h1>
               <SavedPlacesPanel isDark={D} />
             </div>
           )}
 
           {/* NOTIFICATIONS */}
           {activeTab === "notifications" && (
-            <div className="max-w-2xl mx-auto px-4 lg:px-6 py-5 lg:py-6 pb-8">
-              <h1 className={`text-xl font-black mb-5 ${D ? "text-white" : "text-slate-900"}`}>Notifications</h1>
+            <div className="max-w-2xl mx-auto px-4 lg:px-6 py-3 lg:py-4 pb-8">
+              <h1 className={`text-xl font-black mb-3 ${D ? "text-white" : "text-slate-900"}`}>Notifications</h1>
               <NotificationsPanel isDark={D} />
             </div>
           )}
 
           {/* SUPPORT */}
           {activeTab === "support" && (
-            <div className="max-w-2xl mx-auto px-4 lg:px-6 py-5 lg:py-6 pb-8">
-              <h1 className={`text-xl font-black mb-5 ${D ? "text-white" : "text-slate-900"}`}>Support</h1>
+            <div className="max-w-2xl mx-auto px-4 lg:px-6 py-3 lg:py-4 pb-8">
+              <h1 className={`text-xl font-black mb-3 ${D ? "text-white" : "text-slate-900"}`}>Support</h1>
               <SupportPanel isDark={D} />
             </div>
           )}
 
           {/* SETTINGS */}
           {activeTab === "settings" && (
-            <div className="max-w-2xl mx-auto px-4 lg:px-6 py-5 lg:py-6 pb-8">
-              <h1 className={`text-xl font-black mb-5 ${D ? "text-white" : "text-slate-900"}`}>Settings</h1>
+            <div className="max-w-2xl mx-auto px-4 lg:px-6 py-3 lg:py-4 pb-8">
+              <h1 className={`text-xl font-black mb-3 ${D ? "text-white" : "text-slate-900"}`}>Settings</h1>
               <SettingsPanel isDark={D} />
             </div>
           )}

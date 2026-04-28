@@ -20,7 +20,7 @@ export default function WalletPanel({ isDark: D }: Props) {
   const balance = 21850;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-3">
       {/* Balance card */}
       <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-6 text-white relative overflow-hidden">
         <div className="absolute -right-8 -top-8 w-40 h-40 bg-white/10 rounded-full blur-2xl" />

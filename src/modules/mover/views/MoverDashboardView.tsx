@@ -296,12 +296,12 @@ export function MoverDashboardInner() {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
-          <div className="max-w-6xl mx-auto px-4 lg:px-6 py-5 lg:py-6">
+          <div className="max-w-6xl mx-auto px-4 lg:px-6 py-3 lg:py-4">
             <AnimatePresence mode="wait">
 
               {/* DASHBOARD */}
               {activeView === "dashboard" && (
-                <motion.div key="dash" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-5">
+                <motion.div key="dash" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
                   <div>
                     <h2 className={`text-xl lg:text-2xl font-black ${D ? "text-white" : "text-slate-900"}`}>
                       Good {getGreeting()}, {firstName} 👋
@@ -316,7 +316,7 @@ export function MoverDashboardInner() {
                       { label: "Avg Rating",        value: `${stats?.rating ?? 0} ★`,              icon: Star,         color: "amber-500" },
                       { label: "Total Trips",       value: String(stats?.tripsCompleted ?? 0),    icon: Package,      color: "violet-500" },
                     ].map((s, i) => (
-                      <div key={i} className={`rounded-2xl p-5 border transition-all hover:shadow-sm ${D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                      <div key={i} className={`rounded-2xl p-4 border transition-all hover:shadow-sm ${D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300"}`}>
                         <div className={`p-2 rounded-xl w-fit mb-3 ${D ? "bg-white/5" : "bg-slate-100"}`}>
                           <s.icon size={16} className={`text-${s.color}`} />
                         </div>
@@ -326,14 +326,14 @@ export function MoverDashboardInner() {
                     ))}
                   </div>
 
-                  <div className="grid lg:grid-cols-3 gap-4 lg:gap-5 pb-6">
+                  <div className="grid lg:grid-cols-3 gap-3 pb-4">
                     <div className={`lg:col-span-2 rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
-                      <div className={`px-5 py-4 border-b ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                      <div className={`px-4 py-3 border-b ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
                         <h3 className={`text-sm font-bold ${D ? "text-zinc-300" : "text-slate-700"}`}>Wallet Overview</h3>
                       </div>
                       <div className={`p-5 ${D ? "bg-[#0e0e0e]" : "bg-white"}`}>
                         <p className={`text-xs font-semibold uppercase tracking-wider mb-1 ${D ? "text-zinc-600" : "text-slate-400"}`}>Available Balance</p>
-                        <h2 className={`text-3xl lg:text-4xl font-black tracking-tight mb-5 ${D ? "text-white" : "text-slate-900"}`}>{formatNaira(wallet?.balance ?? 0)}</h2>
+                        <h2 className={`text-3xl lg:text-4xl font-black tracking-tight mb-3 ${D ? "text-white" : "text-slate-900"}`}>{formatNaira(wallet?.balance ?? 0)}</h2>
                         <div className="grid grid-cols-2 gap-3 mb-4">
                           {[
                             { label: "Pending",      value: formatNaira(wallet?.pendingPayout ?? 0) },
@@ -351,8 +351,8 @@ export function MoverDashboardInner() {
                       </div>
                     </div>
 
-                    <div className={`rounded-2xl border p-5 ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-200"}`}>
-                      <h3 className={`text-sm font-bold mb-5 ${D ? "text-zinc-300" : "text-slate-700"}`}>Weekly Trend</h3>
+                    <div className={`rounded-2xl border p-4 ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-200"}`}>
+                      <h3 className={`text-sm font-bold mb-3 ${D ? "text-zinc-300" : "text-slate-700"}`}>Weekly Trend</h3>
                       <div className="flex items-end justify-between h-28 gap-1.5">
                         {(earnings?.daily ?? [{ day: "M", amount: 0 }, { day: "T", amount: 0 }, { day: "W", amount: 0 }, { day: "T", amount: 0 }, { day: "F", amount: 0 }, { day: "S", amount: 0 }, { day: "S", amount: 0 }]).map((d, i) => (
                           <div key={i} className="flex-1 flex flex-col items-center gap-1.5 group">
@@ -419,7 +419,7 @@ export function MoverDashboardInner() {
               {activeView === "verification" && (
                 <motion.div key="verif" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
                   <h2 className={`text-xl font-black ${D ? "text-white" : "text-slate-900"}`}>Verification</h2>
-                  <div className={`rounded-2xl p-5 border flex items-start gap-4 ${D ? "bg-green-500/5 border-green-500/20" : "bg-green-50 border-green-100"}`}>
+                  <div className={`rounded-2xl p-4 border flex items-start gap-4 ${D ? "bg-green-500/5 border-green-500/20" : "bg-green-50 border-green-100"}`}>
                     <ShieldCheck size={20} className="text-green-600 shrink-0 mt-0.5" />
                     <div>
                       <p className="text-sm font-black text-green-700 dark:text-green-400">Compliance Shield</p>
