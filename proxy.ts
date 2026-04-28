@@ -22,7 +22,7 @@ const PROTECTED_PREFIXES = [
   "/company",
 ];
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const token = req.cookies.get(COOKIE_NAME)?.value;
   const isAuthenticated = typeof token === "string" && token.trim().length > 0;

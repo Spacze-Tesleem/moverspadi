@@ -31,7 +31,7 @@ const securityHeaders = [
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
       "style-src 'self' 'unsafe-inline'",
       `connect-src 'self' ${BACKEND_URL} https://nominatim.openstreetmap.org https://maps.googleapis.com`,
-      "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://maps.gstatic.com https://maps.googleapis.com https://images.unsplash.com",
+      "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://maps.gstatic.com https://maps.googleapis.com https://images.unsplash.com https://i.pravatar.cc",
       "font-src 'self'",
       "frame-ancestors 'self'",
     ].join("; "),
