@@ -62,6 +62,21 @@ function CompanyDashboardInner() {
   const [companyForm, setCompanyForm] = useState({ name: user?.name ?? "Zenith Logistics Ltd", email: user?.email ?? "", phone: "+234 800 000 0001", rc: "RC-1234567" });
   const toggleExpandedSetting = (label: string) => setExpandedSetting((p) => (p === label ? null : label));
 
+  const [vehicles, setVehicles] = useState(FLEET);
+  const [showAddVehicle, setShowAddVehicle] = useState(false);
+  const [vehicleForm, setVehicleForm] = useState({ plate: "", type: "Van", driver: "", status: "idle" });
+  const vehicleInputCls = `w-full px-4 py-2.5 rounded-xl border text-sm font-semibold outline-none transition-all ${D ? "bg-white/5 border-white/10 text-zinc-200 placeholder:text-zinc-600 focus:border-blue-500" : "bg-slate-50 border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-blue-400"}`;
+  const handleAddVehicle = () => {
+    if (!vehicleForm.plate || !vehicleForm.driver) return;
+    setVehicles((prev) => [...prev, { id: `VH-00${prev.length + 1}`, ...vehicleForm, route: "—", load: "0%" }]);
+    setVehicleForm({ plate: "", type: "Van", driver: "", status: "idle" });
+    setShowAddVehicle(false);
+  };
+
+  const [showUpdatePayment, setShowUpdatePayment] = useState(false);
+  const [paymentForm, setPaymentForm] = useState({ bank: "", account: "", name: "" });
+  const [paymentSaved, setPaymentSaved] = useState(false);
+
   const navItems: { id: ActiveView; label: string; icon: typeof LayoutGrid }[] = [
     { id: "overview",  label: "Operations", icon: LayoutGrid  },
     { id: "fleet",     label: "Fleet Hub",  icon: Truck       },
@@ -303,20 +318,57 @@ function CompanyDashboardInner() {
                   <div className={`rounded-2xl border p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-200"}`}>
                     <div>
                       <h2 className={`text-xl font-black ${D ? "text-white" : "text-slate-900"}`}>Fleet Repository</h2>
-                      <p className={`text-xs font-semibold mt-0.5 ${D ? "text-zinc-500" : "text-slate-400"}`}>5 Vehicles · 3 Operational</p>
+                      <p className={`text-xs font-semibold mt-0.5 ${D ? "text-zinc-500" : "text-slate-400"}`}>
+                        {vehicles.length} Vehicle{vehicles.length !== 1 ? "s" : ""} · {vehicles.filter((v) => v.status === "active").length} Operational
+                      </p>
                     </div>
                     <div className="flex gap-2">
                       <button className={`p-2.5 rounded-xl border transition-all ${D ? "border-white/10 text-zinc-400 hover:bg-white/5" : "border-slate-200 text-slate-500 hover:bg-slate-100"}`}>
                         <Filter size={16} />
                       </button>
-                      <button className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-sm shadow-blue-500/20 transition-all">
+                      <button
+                        onClick={() => setShowAddVehicle((p) => !p)}
+                        className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-sm shadow-blue-500/20 transition-all">
                         + Add Vehicle
                       </button>
                     </div>
                   </div>
 
+                  {/* Add Vehicle Form */}
+                  {showAddVehicle && (
+                    <div className={`rounded-2xl border p-5 space-y-4 ${D ? "bg-[#0e0e0e] border-white/10" : "bg-white border-slate-200"}`}>
+                      <p className={`text-sm font-black ${D ? "text-zinc-200" : "text-slate-800"}`}>New Vehicle</p>
+                      <div className="grid sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className={`text-[10px] font-bold uppercase tracking-wider ${D ? "text-zinc-500" : "text-slate-400"}`}>Plate Number</label>
+                          <input value={vehicleForm.plate} onChange={(e) => setVehicleForm((p) => ({ ...p, plate: e.target.value }))} placeholder="e.g. LND-001-AA" className={`mt-1 ${vehicleInputCls}`} />
+                        </div>
+                        <div>
+                          <label className={`text-[10px] font-bold uppercase tracking-wider ${D ? "text-zinc-500" : "text-slate-400"}`}>Vehicle Type</label>
+                          <select value={vehicleForm.type} onChange={(e) => setVehicleForm((p) => ({ ...p, type: e.target.value }))} className={`mt-1 ${vehicleInputCls}`}>
+                            {["Van", "Truck", "Bike", "Bus", "Pickup"].map((t) => <option key={t}>{t}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className={`text-[10px] font-bold uppercase tracking-wider ${D ? "text-zinc-500" : "text-slate-400"}`}>Assigned Driver</label>
+                          <input value={vehicleForm.driver} onChange={(e) => setVehicleForm((p) => ({ ...p, driver: e.target.value }))} placeholder="Driver full name" className={`mt-1 ${vehicleInputCls}`} />
+                        </div>
+                        <div>
+                          <label className={`text-[10px] font-bold uppercase tracking-wider ${D ? "text-zinc-500" : "text-slate-400"}`}>Initial Status</label>
+                          <select value={vehicleForm.status} onChange={(e) => setVehicleForm((p) => ({ ...p, status: e.target.value }))} className={`mt-1 ${vehicleInputCls}`}>
+                            {["active", "idle", "maintenance"].map((s) => <option key={s}>{s}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <button onClick={() => setShowAddVehicle(false)} className={`flex-1 py-2.5 rounded-xl text-sm font-bold border transition-all ${D ? "border-white/10 text-zinc-400 hover:bg-white/5" : "border-slate-200 text-slate-500 hover:bg-slate-50"}`}>Cancel</button>
+                        <button onClick={handleAddVehicle} className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all">Add to Fleet</button>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
-                    {FLEET.map((v, i) => (
+                    {vehicles.map((v, i) => (
                       <div key={i} className={`rounded-2xl border p-4 transition-all hover:shadow-sm ${D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300"}`}>
                         <div className="flex items-start justify-between mb-4">
                           <div className={`p-3 rounded-xl ${D ? "bg-white/5" : "bg-slate-100"}`}>
@@ -525,7 +577,31 @@ function CompanyDashboardInner() {
                             </div>
                           ))}
                         </div>
-                        <button className="w-full py-2.5 rounded-xl text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all">Update Payment Method</button>
+                        {showUpdatePayment ? (
+                          paymentSaved ? (
+                            <div className="py-4 text-center space-y-1">
+                              <CheckCircle2 className="w-7 h-7 mx-auto text-green-500" />
+                              <p className="text-sm font-bold text-green-600">Payment method updated!</p>
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              <div>
+                                <label className={`text-[10px] font-bold uppercase tracking-wider ${D ? "text-zinc-500" : "text-slate-400"}`}>Bank Name</label>
+                                <input value={paymentForm.bank} onChange={(e) => setPaymentForm((p) => ({ ...p, bank: e.target.value }))} placeholder="e.g. GTBank" className={`mt-1 w-full px-4 py-2.5 rounded-xl border text-sm font-semibold outline-none transition-all ${D ? "bg-white/5 border-white/10 text-zinc-200 placeholder:text-zinc-600 focus:border-blue-500" : "bg-slate-50 border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-blue-400"}`} />
+                              </div>
+                              <div>
+                                <label className={`text-[10px] font-bold uppercase tracking-wider ${D ? "text-zinc-500" : "text-slate-400"}`}>Account Number</label>
+                                <input value={paymentForm.account} onChange={(e) => setPaymentForm((p) => ({ ...p, account: e.target.value }))} placeholder="10-digit account number" className={`mt-1 w-full px-4 py-2.5 rounded-xl border text-sm font-semibold outline-none transition-all ${D ? "bg-white/5 border-white/10 text-zinc-200 placeholder:text-zinc-600 focus:border-blue-500" : "bg-slate-50 border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-blue-400"}`} />
+                              </div>
+                              <div className="flex gap-3">
+                                <button onClick={() => setShowUpdatePayment(false)} className={`flex-1 py-2.5 rounded-xl text-sm font-bold border transition-all ${D ? "border-white/10 text-zinc-400 hover:bg-white/5" : "border-slate-200 text-slate-500 hover:bg-slate-50"}`}>Cancel</button>
+                                <button onClick={() => { if (paymentForm.bank && paymentForm.account) setPaymentSaved(true); }} className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all">Save</button>
+                              </div>
+                            </div>
+                          )
+                        ) : (
+                          <button onClick={() => { setShowUpdatePayment(true); setPaymentSaved(false); }} className="w-full py-2.5 rounded-xl text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all">Update Payment Method</button>
+                        )}
                       </div>
                     )}
                   </div>

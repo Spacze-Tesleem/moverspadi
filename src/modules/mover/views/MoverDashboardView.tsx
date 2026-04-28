@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/src/application/store/authStore";
 import {
@@ -66,6 +66,13 @@ export function MoverDashboardInner() {
   const [withdrawAcct, setWithdrawAcct]   = useState("");
   const [withdrawAmt, setWithdrawAmt]     = useState("");
   const [withdrawDone, setWithdrawDone]   = useState(false);
+
+  const [docStatus, setDocStatus] = useState<Record<string, string>>({
+    "Driver License":       "Verified",
+    "Vehicle Registration": "Verified",
+    "Insurance":            "Pending",
+    "Roadworthiness":       "Action Required",
+  });
 
   const {
     status: customerStatus,
@@ -446,28 +453,45 @@ export function MoverDashboardInner() {
                     </div>
                   </div>
                   <div className="grid sm:grid-cols-2 gap-3">
-                    {[
-                      { label: "Driver License",       icon: FileText,    status: "Verified" },
-                      { label: "Vehicle Registration", icon: Car,         status: "Verified" },
-                      { label: "Insurance",            icon: ShieldCheck, status: "Pending" },
-                      { label: "Roadworthiness",       icon: BadgeCheck,  status: "Action Required" },
-                    ].map((doc, i) => (
-                      <div key={i} className={`rounded-2xl p-4 border flex items-center justify-between transition-all hover:shadow-sm ${D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300"}`}>
-                        <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-xl ${D ? "bg-white/5" : "bg-slate-100"}`}>
-                            <doc.icon size={16} className={D ? "text-zinc-400" : "text-slate-500"} />
+                    {([
+                      { label: "Driver License",       icon: FileText    },
+                      { label: "Vehicle Registration", icon: Car         },
+                      { label: "Insurance",            icon: ShieldCheck },
+                      { label: "Roadworthiness",       icon: BadgeCheck  },
+                    ] as { label: string; icon: React.ElementType }[]).map((doc, i) => {
+                      const status = docStatus[doc.label] ?? "Pending";
+                      const isVerified = status === "Verified";
+                      const isUnderReview = status === "Under Review";
+                      const statusColor = isVerified ? "text-green-500" : isUnderReview ? "text-blue-500" : "text-amber-500";
+                      return (
+                        <div key={i} className={`rounded-2xl p-4 border flex items-center justify-between transition-all hover:shadow-sm ${D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                          <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-xl ${D ? "bg-white/5" : "bg-slate-100"}`}>
+                              <doc.icon size={16} className={D ? "text-zinc-400" : "text-slate-500"} />
+                            </div>
+                            <div>
+                              <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>{doc.label}</p>
+                              <p className={`text-[10px] font-bold uppercase tracking-wider ${statusColor}`}>{status}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>{doc.label}</p>
-                            <p className={`text-[10px] font-bold uppercase tracking-wider ${doc.status === "Verified" ? "text-green-500" : "text-amber-500"}`}>{doc.status}</p>
-                          </div>
+                          <label className={`p-2 rounded-xl transition-all cursor-pointer ${D ? "hover:bg-white/5 text-zinc-500 hover:text-zinc-300" : "hover:bg-slate-100 text-slate-400 hover:text-slate-600"}`} title="Upload document">
+                            <Upload size={16} />
+                            <input
+                              type="file"
+                              accept=".pdf,.jpg,.jpeg,.png"
+                              className="hidden"
+                              onChange={() =>
+                                setDocStatus((prev) => ({ ...prev, [doc.label]: "Under Review" }))
+                              }
+                            />
+                          </label>
                         </div>
-                        <button className={`p-2 rounded-xl transition-all ${D ? "hover:bg-white/5 text-zinc-500" : "hover:bg-slate-100 text-slate-400"}`}>
-                          <Upload size={16} />
-                        </button>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
+                  <p className={`text-xs text-center ${D ? "text-zinc-600" : "text-slate-400"}`}>
+                    Accepted formats: PDF, JPG, PNG · Max 5 MB per document
+                  </p>
                 </motion.div>
               )}
 
