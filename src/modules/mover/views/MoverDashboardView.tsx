@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/src/application/store/authStore";
+import { useNotificationsStore } from "@/src/application/store/notificationsStore";
 import {
   moverApi,
   type MoverStats,
@@ -36,6 +37,7 @@ export default function MoverDashboardView() {
 export function MoverDashboardInner() {
   const router = useRouter();
   const { user, token, logout } = useAuthStore();
+  const pushNotification = useNotificationsStore((s) => s.pushNotification);
   const { isDark: D, toggleTheme } = useTheme();
 
   const [profile, setProfile]   = useState<UserProfile | null>(null);
@@ -480,9 +482,18 @@ export function MoverDashboardInner() {
                               type="file"
                               accept=".pdf,.jpg,.jpeg,.png"
                               className="hidden"
-                              onChange={() =>
-                                setDocStatus((prev) => ({ ...prev, [doc.label]: "Under Review" }))
-                              }
+                              onChange={(e) => {
+                                if (!e.target.files?.length) return;
+                                setDocStatus((prev) => ({ ...prev, [doc.label]: "Under Review" }));
+                                const moverName = user?.name ?? "A mover";
+                                pushNotification({
+                                  icon: "ShieldCheck",
+                                  color: "amber",
+                                  title: "New Verification Document Submitted",
+                                  desc: `${moverName} submitted a ${doc.label} for review. Please verify and approve.`,
+                                  time: "Just now",
+                                });
+                              }}
                             />
                           </label>
                         </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect, type ElementType } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/src/application/store/authStore";
+import { useNotificationsStore } from "@/src/application/store/notificationsStore";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutGrid, Users, Truck, Package, Bell,
@@ -101,14 +102,28 @@ function AdminDashboardInner() {
     setAdminConfig((p) => ({ ...p, [k]: !p[k] }));
 
   const [adminAlerts, setAdminAlerts] = useState([
-    { icon: "AlertCircle",  color: "rose",  title: "Payment Gateway Timeout",    desc: "Paystack webhook failed to respond for 3 consecutive transactions.",        time: "2 mins ago",  read: false },
-    { icon: "ShieldCheck",  color: "amber", title: "Unverified Mover Account",   desc: "Mover ID MVR-2291 has completed 4 orders without document verification.",   time: "18 mins ago", read: false },
-    { icon: "Activity",     color: "amber", title: "High System Load Detected",  desc: "CPU usage peaked at 94% over the last 15 minutes.",                         time: "34 mins ago", read: false },
-    { icon: "CheckCircle2", color: "green", title: "Database Backup Completed",  desc: "Nightly backup completed successfully. 2.4 GB stored to cold storage.",       time: "2 hrs ago",   read: true  },
-    { icon: "Zap",          color: "blue",  title: "New Company Registration",   desc: "Chukwuemeka Logistics Ltd submitted onboarding documents for review.",       time: "3 hrs ago",   read: true  },
+    { id: "sys-1", icon: "AlertCircle",  color: "rose",  title: "Payment Gateway Timeout",    desc: "Paystack webhook failed to respond for 3 consecutive transactions.",        time: "2 mins ago",  read: false },
+    { id: "sys-2", icon: "ShieldCheck",  color: "amber", title: "Unverified Mover Account",   desc: "Mover ID MVR-2291 has completed 4 orders without document verification.",   time: "18 mins ago", read: false },
+    { id: "sys-3", icon: "Activity",     color: "amber", title: "High System Load Detected",  desc: "CPU usage peaked at 94% over the last 15 minutes.",                         time: "34 mins ago", read: false },
+    { id: "sys-4", icon: "CheckCircle2", color: "green", title: "Database Backup Completed",  desc: "Nightly backup completed successfully. 2.4 GB stored to cold storage.",       time: "2 hrs ago",   read: true  },
+    { id: "sys-5", icon: "Zap",          color: "blue",  title: "New Company Registration",   desc: "Chukwuemeka Logistics Ltd submitted onboarding documents for review.",       time: "3 hrs ago",   read: true  },
   ]);
-  const markAllReadAlerts = () => setAdminAlerts((prev) => prev.map((a) => ({ ...a, read: true })));
-  const unreadCount = adminAlerts.filter((a) => !a.read).length;
+
+  const { notifications: storeNotifs, markAllRead: storeMarkAll, markRead: storeMarkRead } = useNotificationsStore();
+
+  const allAlerts = [...storeNotifs, ...adminAlerts];
+
+  const markAllReadAlerts = () => {
+    setAdminAlerts((prev) => prev.map((a) => ({ ...a, read: true })));
+    storeMarkAll();
+  };
+
+  const markOneRead = (id: string) => {
+    setAdminAlerts((prev) => prev.map((a) => a.id === id ? { ...a, read: true } : a));
+    storeMarkRead(id);
+  };
+
+  const unreadCount = allAlerts.filter((a) => !a.read).length;
 
   // Load real verification queue
   useEffect(() => {
@@ -158,7 +173,7 @@ function AdminDashboardInner() {
     { id: "users",        label: "User Management",    icon: Users,       badge: undefined        },
     { id: "orders",       label: "Logistics Engine",   icon: Truck,       badge: undefined        },
     { id: "verification", label: "Verification Queue", icon: ClipboardList, badge: pendingCount > 0 ? String(pendingCount) : undefined },
-    { id: "alerts",       label: "System Alerts",      icon: Bell,        badge: "3"              },
+    { id: "alerts",       label: "System Alerts",      icon: Bell,        badge: unreadCount > 0 ? String(unreadCount) : undefined },
     { id: "settings",     label: "Configuration",      icon: Settings,    badge: undefined        },
   ] as const;
 
@@ -670,18 +685,22 @@ function AdminDashboardInner() {
                   </div>
 
                   <div className="space-y-3 pb-4">
-                    {adminAlerts.map((alert, i) => {
+                    {allAlerts.map((alert, i) => {
                       const IconMap: Record<string, ElementType> = { AlertCircle, ShieldCheck, Activity, CheckCircle2, Zap };
                       const IconComp = IconMap[alert.icon] ?? AlertCircle;
+                      const isNew = !alert.read && "createdAt" in alert;
                       return (
-                      <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                        className={`flex gap-4 p-4 rounded-2xl border transition-all ${alert.read ? "opacity-50" : ""} ${D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                      <motion.div key={alert.id ?? i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
+                        className={`flex gap-4 p-4 rounded-2xl border transition-all ${alert.read ? "opacity-50" : ""} ${isNew ? (D ? "border-amber-500/30 bg-amber-500/5" : "border-amber-200 bg-amber-50/60") : (D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300")}`}>
                         <div className={`p-2.5 rounded-xl shrink-0 bg-${alert.color}-500/10`}>
                           <IconComp size={18} className={`text-${alert.color}-${D ? "400" : "600"}`} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-4">
-                            <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>{alert.title}</p>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>{alert.title}</p>
+                              {isNew && <span className="text-[9px] font-black uppercase tracking-wider text-amber-600 bg-amber-500/15 px-1.5 py-0.5 rounded-full animate-pulse">New</span>}
+                            </div>
                             <div className="flex items-center gap-2 shrink-0">
                               {alert.read && <span className="text-[9px] font-black uppercase tracking-wider text-green-500 bg-green-500/10 px-1.5 py-0.5 rounded-full">Read</span>}
                               <span className={`text-[10px] font-semibold whitespace-nowrap flex items-center gap-1 ${D ? "text-zinc-600" : "text-slate-400"}`}>
@@ -692,8 +711,9 @@ function AdminDashboardInner() {
                           <p className={`text-xs mt-0.5 leading-relaxed ${D ? "text-zinc-600" : "text-slate-500"}`}>{alert.desc}</p>
                         </div>
                         <button
-                          onClick={() => setAdminAlerts((prev) => prev.map((a, j) => j === i ? { ...a, read: true } : a))}
-                          className={`p-2 rounded-lg transition-all self-start shrink-0 ${D ? "text-zinc-600 hover:bg-white/5" : "text-slate-400 hover:bg-slate-100"}`}>
+                          onClick={() => markOneRead(alert.id ?? String(i))}
+                          disabled={alert.read}
+                          className={`p-2 rounded-lg transition-all self-start shrink-0 disabled:opacity-30 disabled:cursor-not-allowed ${D ? "text-zinc-600 hover:bg-white/5" : "text-slate-400 hover:bg-slate-100"}`}>
                           <MoreHorizontal size={15} />
                         </button>
                       </motion.div>
@@ -786,7 +806,7 @@ function AdminDashboardInner() {
             { id: "overview"     as ActiveView, icon: LayoutGrid,   label: "Home"   },
             { id: "users"        as ActiveView, icon: Users,        label: "Users"  },
             { id: "verification" as ActiveView, icon: ClipboardList, label: "Verify", badge: pendingCount > 0 ? pendingCount : undefined },
-            { id: "alerts"       as ActiveView, icon: Bell,         label: "Alerts", badge: 3 },
+            { id: "alerts"       as ActiveView, icon: Bell,         label: "Alerts", badge: unreadCount > 0 ? unreadCount : undefined },
             { id: "settings"     as ActiveView, icon: Settings,     label: "Config" },
           ] as { id: ActiveView; icon: React.ComponentType<{ size?: number; strokeWidth?: number }>; label: string; badge?: number }[]).map((item) => {
             const isActive = activeView === item.id;
