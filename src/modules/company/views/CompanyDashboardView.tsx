@@ -9,7 +9,8 @@ import {
   LogOut, Menu, X, ChevronRight, TrendingUp,
   Package, Clock, CheckCircle2, Building2, ShieldCheck,
   Star, ArrowUpRight, Filter, Zap, Sun, Moon,
-  PanelLeftClose, PanelLeftOpen,
+  PanelLeftClose, PanelLeftOpen, Phone, MapPin, UserPlus,
+  MoreHorizontal,
 } from "lucide-react";
 import PendingApprovalView from "@/src/modules/auth/views/PendingApprovalView";
 import { ThemeProvider, useTheme } from "@/src/context/ThemeContext";
@@ -21,6 +22,15 @@ const FLEET = [
   { id: "VH-003", driver: "Chidi Nwosu",     plate: "LND-119-CC", type: "Bike",  status: "idle",        route: "—",               load: "0%"  },
   { id: "VH-004", driver: "Fatima Bello",    plate: "LND-774-DD", type: "Van",   status: "maintenance", route: "—",               load: "0%"  },
   { id: "VH-005", driver: "Seun Alade",      plate: "LND-553-EE", type: "Truck", status: "active",      route: "VI → Surulere",   load: "91%" },
+];
+
+const PERSONNEL = [
+  { id: "DRV-001", name: "Emeka Obi",       role: "Van Driver",   phone: "0802 345 6789", plate: "LND-421-AA", trips: 87,  rating: 4.9, status: "active",      avatar: "EO", color: "bg-blue-500"   },
+  { id: "DRV-002", name: "Tunde Adeyemi",   role: "Truck Driver", phone: "0703 891 2345", plate: "LND-882-BB", trips: 124, rating: 4.7, status: "active",      avatar: "TA", color: "bg-green-600"  },
+  { id: "DRV-003", name: "Chidi Nwosu",     role: "Dispatch Rider",phone:"0901 234 5678", plate: "LND-119-CC", trips: 52,  rating: 4.8, status: "idle",        avatar: "CN", color: "bg-violet-500" },
+  { id: "DRV-004", name: "Fatima Bello",    role: "Van Driver",   phone: "0812 456 7890", plate: "LND-774-DD", trips: 38,  rating: 4.6, status: "on-leave",    avatar: "FB", color: "bg-amber-500"  },
+  { id: "DRV-005", name: "Seun Alade",      role: "Truck Driver", phone: "0705 678 9012", plate: "LND-553-EE", trips: 96,  rating: 4.9, status: "active",      avatar: "SA", color: "bg-rose-500"   },
+  { id: "DRV-006", name: "Blessing Okoro",  role: "Dispatch Rider",phone:"0803 012 3456", plate: "LND-667-FF", trips: 21,  rating: 4.5, status: "offline",     avatar: "BO", color: "bg-slate-500"  },
 ];
 
 const STATS = [
@@ -369,13 +379,78 @@ function CompanyDashboardInner() {
                 </motion.div>
               )}
 
-              {/* PERSONNEL */}
+              {/* ── PERSONNEL ── */}
               {activeView === "drivers" && (
-                <motion.div key="drv" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                  <h2 className={`text-xl font-black mb-4 ${D ? "text-white" : "text-slate-900"}`}>Personnel</h2>
-                  <div className={`rounded-2xl p-12 border flex flex-col items-center justify-center text-center ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-200"}`}>
-                    <Users size={40} className={`mb-3 ${D ? "text-zinc-700" : "text-slate-300"}`} />
-                    <p className={`text-sm font-bold ${D ? "text-zinc-500" : "text-slate-400"}`}>Driver management coming soon</p>
+                <motion.div key="drv" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4 pb-4">
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <div>
+                      <h2 className={`text-xl font-black ${D ? "text-white" : "text-slate-900"}`}>Personnel</h2>
+                      <p className={`text-sm mt-0.5 ${D ? "text-zinc-500" : "text-slate-400"}`}>{PERSONNEL.length} drivers on your roster</p>
+                    </div>
+                    <button className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-sm shadow-blue-500/20 transition-all shrink-0">
+                      <UserPlus size={14} /> Add Driver
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    {[
+                      { label: "Active",   value: PERSONNEL.filter(d => d.status === "active").length,   color: "green-600" },
+                      { label: "Idle",     value: PERSONNEL.filter(d => d.status === "idle").length,     color: "amber-500" },
+                      { label: "On Leave", value: PERSONNEL.filter(d => d.status === "on-leave").length, color: "violet-500"},
+                      { label: "Offline",  value: PERSONNEL.filter(d => d.status === "offline").length,  color: "slate-400" },
+                    ].map((s, i) => (
+                      <div key={i} className={`rounded-2xl p-4 border ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-200"}`}>
+                        <p className={`text-2xl font-black text-${s.color}`}>{s.value}</p>
+                        <p className={`text-[10px] font-bold uppercase tracking-wider mt-1 ${D ? "text-zinc-600" : "text-slate-400"}`}>{s.label}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
+                    <div className={`px-4 py-3 border-b ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                      <p className={`text-xs font-semibold ${D ? "text-zinc-500" : "text-slate-400"}`}>All Personnel</p>
+                    </div>
+                    <div className={`divide-y ${D ? "bg-[#0e0e0e] divide-white/5" : "bg-white divide-slate-100"}`}>
+                      {PERSONNEL.map((drv, i) => {
+                        const statusColor =
+                          drv.status === "active"   ? "bg-green-500/10 text-green-600" :
+                          drv.status === "idle"     ? "bg-amber-500/10 text-amber-600" :
+                          drv.status === "on-leave" ? "bg-violet-500/10 text-violet-600" :
+                                                      D ? "bg-white/5 text-zinc-500" : "bg-slate-100 text-slate-400";
+                        return (
+                          <motion.div key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
+                            className={`flex items-center gap-3 px-4 py-3 transition-all ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
+                            <div className={`w-10 h-10 rounded-xl ${drv.color} flex items-center justify-center text-white text-sm font-black shrink-0`}>
+                              {drv.avatar}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>{drv.name}</p>
+                                <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full ${statusColor}`}>{drv.status.replace("-", " ")}</span>
+                              </div>
+                              <div className={`flex items-center gap-3 mt-0.5 flex-wrap ${D ? "text-zinc-600" : "text-slate-400"}`}>
+                                <span className="text-[11px] font-semibold flex items-center gap-1"><Truck size={9} /> {drv.role}</span>
+                                <span className="text-[11px] font-semibold flex items-center gap-1"><MapPin size={9} /> {drv.plate}</span>
+                                <span className="text-[11px] font-semibold flex items-center gap-1"><Phone size={9} /> {drv.phone}</span>
+                              </div>
+                            </div>
+                            <div className="hidden sm:flex items-center gap-3 shrink-0">
+                              <div className="text-center">
+                                <p className={`text-sm font-black ${D ? "text-zinc-200" : "text-slate-700"}`}>{drv.trips}</p>
+                                <p className={`text-[9px] font-bold uppercase ${D ? "text-zinc-600" : "text-slate-400"}`}>Trips</p>
+                              </div>
+                              <div className="text-center">
+                                <p className="text-sm font-black text-amber-500">{drv.rating}★</p>
+                                <p className={`text-[9px] font-bold uppercase ${D ? "text-zinc-600" : "text-slate-400"}`}>Rating</p>
+                              </div>
+                            </div>
+                            <button className={`p-2 rounded-lg transition-all shrink-0 ${D ? "hover:bg-white/5 text-zinc-500" : "hover:bg-slate-100 text-slate-400"}`}>
+                              <MoreHorizontal size={15} />
+                            </button>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </motion.div>
               )}

@@ -19,6 +19,8 @@ import {
   Zap, Star, Upload, BadgeCheck, FileText, Car,
   Wallet, Navigation, TrendingUp, Package,
   Sun, Moon, PanelLeftClose, PanelLeftOpen, Settings,
+  CreditCard, ArrowDownLeft, ArrowUpRight, Phone, Mail,
+  Edit, Lock, Globe, BellRing, Calendar, History,
 } from "lucide-react";
 import PendingApprovalView from "@/src/modules/auth/views/PendingApprovalView";
 import { ThemeProvider, useTheme } from "@/src/context/ThemeContext";
@@ -452,14 +454,294 @@ export function MoverDashboardInner() {
                 </motion.div>
               )}
 
-              {/* EARNINGS / WALLET / PROFILE / SETTINGS — placeholder */}
-              {["earnings", "wallet", "profile", "settings"].includes(activeView) && (
-                <motion.div key={activeView} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                  <h2 className={`text-xl font-black mb-6 ${D ? "text-white" : "text-slate-900"}`}>{navItems.find(n => n.id === activeView)?.label}</h2>
-                  <div className={`rounded-2xl p-12 border flex flex-col items-center justify-center text-center ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-200"}`}>
-                    <Zap size={40} className={`mb-3 ${D ? "text-zinc-700" : "text-slate-300"}`} />
-                    <p className={`text-sm font-bold ${D ? "text-zinc-500" : "text-slate-400"}`}>Coming soon</p>
+              {/* ── EARNINGS ── */}
+              {activeView === "earnings" && (
+                <motion.div key="earnings" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4 pb-4">
+                  <div>
+                    <h2 className={`text-xl lg:text-2xl font-black ${D ? "text-white" : "text-slate-900"}`}>Earnings</h2>
+                    <p className={`text-sm mt-0.5 ${D ? "text-zinc-500" : "text-slate-500"}`}>Your income breakdown and payout history.</p>
                   </div>
+
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    {[
+                      { label: "Today",    value: formatNaira(stats?.earningsToday ?? 0),  icon: Zap,       color: "green-600"  },
+                      { label: "This Week", value: formatNaira(stats?.earningsWeek ?? 0),    icon: Calendar,  color: "blue-500"   },
+                      { label: "This Month",value: formatNaira(stats?.earningsMonth ?? 0),   icon: TrendingUp,color: "violet-500" },
+                      { label: "All Time",  value: formatNaira(wallet?.totalEarned ?? 0),    icon: Star,      color: "amber-500"  },
+                    ].map((s, i) => (
+                      <div key={i} className={`rounded-2xl p-4 border transition-all hover:shadow-sm ${D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                        <div className={`p-2 rounded-xl w-fit mb-3 ${D ? "bg-white/5" : "bg-slate-100"}`}>
+                          <s.icon size={15} className={`text-${s.color}`} />
+                        </div>
+                        <p className={`text-[10px] font-semibold uppercase tracking-wider mb-1 ${D ? "text-zinc-600" : "text-slate-400"}`}>{s.label}</p>
+                        <h3 className={`text-lg font-black ${D ? "text-white" : "text-slate-900"}`}>{s.value}</h3>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="grid lg:grid-cols-3 gap-3">
+                    <div className={`lg:col-span-2 rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
+                      <div className={`px-4 py-3 border-b flex items-center justify-between ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                        <h3 className={`text-sm font-bold ${D ? "text-zinc-300" : "text-slate-700"}`}>Weekly Trend</h3>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-500/10 text-green-600`}>+14% vs last week</span>
+                      </div>
+                      <div className={`p-4 ${D ? "bg-[#0e0e0e]" : "bg-white"}`}>
+                        <div className="flex items-end justify-between h-28 gap-1.5">
+                          {(earnings?.daily ?? [
+                            { day: "M", amount: 12000 }, { day: "T", amount: 18500 }, { day: "W", amount: 9000 },
+                            { day: "T", amount: 22000 }, { day: "F", amount: 31000 }, { day: "S", amount: 14500 }, { day: "S", amount: 8000 },
+                          ]).map((d, i) => (
+                            <div key={i} className="flex-1 flex flex-col items-center gap-1.5 group">
+                              <div className="w-full h-full flex items-end">
+                                <motion.div
+                                  initial={{ height: 0 }}
+                                  animate={{ height: `${Math.max(6, ((d.amount || 0) / 35000) * 100)}%` }}
+                                  transition={{ delay: i * 0.04, duration: 0.4 }}
+                                  className={`w-full rounded-t-md group-hover:bg-green-500 transition-colors duration-300 ${D ? "bg-blue-500/70" : "bg-blue-500"}`}
+                                />
+                              </div>
+                              <span className={`text-[9px] font-bold uppercase ${D ? "text-zinc-600" : "text-slate-400"}`}>{d.day}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
+                      <div className={`px-4 py-3 border-b ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                        <h3 className={`text-sm font-bold ${D ? "text-zinc-300" : "text-slate-700"}`}>Recent Payouts</h3>
+                      </div>
+                      <div className={`divide-y ${D ? "bg-[#0e0e0e] divide-white/5" : "bg-white divide-slate-100"}`}>
+                        {[
+                          { label: "Trip #T-8821", time: "Today 3:20 PM",    amount: "+₦8,500" },
+                          { label: "Trip #T-8820", time: "Today 11:05 AM",   amount: "+₦12,200" },
+                          { label: "Trip #T-8819", time: "Yesterday 4:45 PM",amount: "+₦6,750" },
+                          { label: "Trip #T-8818", time: "Yesterday 1:10 PM",amount: "+₦9,000" },
+                        ].map((p, i) => (
+                          <div key={i} className={`flex items-center justify-between px-4 py-3 ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
+                            <div>
+                              <p className={`text-sm font-semibold ${D ? "text-zinc-200" : "text-slate-700"}`}>{p.label}</p>
+                              <p className={`text-[11px] ${D ? "text-zinc-600" : "text-slate-400"}`}>{p.time}</p>
+                            </div>
+                            <span className="text-sm font-black text-green-600">{p.amount}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* ── WALLET ── */}
+              {activeView === "wallet" && (
+                <motion.div key="wallet" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4 pb-4 max-w-2xl">
+                  <div>
+                    <h2 className={`text-xl lg:text-2xl font-black ${D ? "text-white" : "text-slate-900"}`}>Wallet</h2>
+                    <p className={`text-sm mt-0.5 ${D ? "text-zinc-500" : "text-slate-500"}`}>Manage your earnings and withdrawals.</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-5 text-white relative overflow-hidden">
+                    <p className="text-blue-200 text-[10px] font-bold uppercase tracking-widest mb-1">Available Balance</p>
+                    <h2 className="text-3xl font-black tracking-tight mb-4">{formatNaira(wallet?.balance ?? 0)}</h2>
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                      {[
+                        { label: "Pending Payout", value: formatNaira(wallet?.pendingPayout ?? 0) },
+                        { label: "Total Earned",   value: formatNaira(wallet?.totalEarned ?? 0)   },
+                      ].map((item) => (
+                        <div key={item.label} className="p-3 bg-white/10 rounded-xl">
+                          <p className="text-[10px] font-bold text-blue-200 uppercase">{item.label}</p>
+                          <p className="text-base font-black mt-0.5">{item.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <button className="w-full py-2.5 bg-white text-blue-700 font-bold text-sm rounded-xl hover:bg-blue-50 transition-all">
+                      Withdraw to Bank
+                    </button>
+                    <div className="absolute -right-6 -top-6 w-28 h-28 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { label: "Add Bank Account", icon: CreditCard, color: "blue-500"  },
+                      { label: "Transaction History", icon: History, color: "violet-500" },
+                    ].map((item, i) => (
+                      <button key={i} className={`flex items-center gap-3 p-4 rounded-2xl border text-left transition-all hover:shadow-sm ${D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                        <div className={`p-2.5 rounded-xl ${D ? "bg-white/5" : "bg-slate-100"}`}>
+                          <item.icon size={16} className={`text-${item.color}`} />
+                        </div>
+                        <span className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
+                    <div className={`px-4 py-3 border-b ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                      <h3 className={`text-sm font-bold ${D ? "text-zinc-300" : "text-slate-700"}`}>Recent Transactions</h3>
+                    </div>
+                    <div className={`divide-y ${D ? "bg-[#0e0e0e] divide-white/5" : "bg-white divide-slate-100"}`}>
+                      {(wallet?.transactions ?? [
+                        { id: "TXN-001", type: "credit", amount: 4200,  description: "Trip T-4421 · Dispatch",          date: "Today, 2:14 PM"    },
+                        { id: "TXN-002", type: "credit", amount: 6800,  description: "Trip T-4420 · Transport",         date: "Yesterday, 5:40 PM"},
+                        { id: "TXN-003", type: "payout", amount: 25000, description: "Bank transfer · GTBank ****4521", date: "Mon, Apr 14"       },
+                        { id: "TXN-004", type: "credit", amount: 9100,  description: "Trip T-4419 · Haulage",          date: "Mon, Apr 14"       },
+                        { id: "TXN-005", type: "credit", amount: 11200, description: "Trip T-4417 · Haulage",          date: "Sat, Apr 12"       },
+                      ]).map((trx, i) => {
+                        const isCredit = trx.type === "credit";
+                        return (
+                          <div key={i} className={`flex items-center gap-3 px-4 py-3 transition-all ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isCredit ? D ? "bg-green-500/10" : "bg-green-50" : D ? "bg-white/5" : "bg-slate-100"}`}>
+                              {isCredit
+                                ? <ArrowDownLeft size={14} className="text-green-600" />
+                                : <ArrowUpRight size={14} className={D ? "text-zinc-400" : "text-slate-500"} />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className={`text-sm font-semibold truncate ${D ? "text-zinc-200" : "text-slate-800"}`}>{trx.description}</p>
+                              <p className={`text-[11px] ${D ? "text-zinc-600" : "text-slate-400"}`}>{trx.date}</p>
+                            </div>
+                            <span className={`text-sm font-black shrink-0 ${isCredit ? "text-green-600" : D ? "text-zinc-300" : "text-slate-700"}`}>
+                              {isCredit ? "+" : "-"}₦{trx.amount.toLocaleString()}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* ── PROFILE ── */}
+              {activeView === "profile" && (
+                <motion.div key="profile" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4 pb-4 max-w-2xl">
+                  <h2 className={`text-xl lg:text-2xl font-black ${D ? "text-white" : "text-slate-900"}`}>My Profile</h2>
+
+                  <div className={`rounded-2xl border p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-200"}`}>
+                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black shrink-0 ${D ? "bg-blue-500/20 text-blue-400" : "bg-blue-100 text-blue-600"}`}>
+                      {(user?.name ?? profile?.fullName ?? "M")[0].toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className={`text-lg font-black ${D ? "text-white" : "text-slate-900"}`}>{user?.name ?? profile?.fullName ?? "Mover"}</h3>
+                      <p className={`text-sm ${D ? "text-zinc-500" : "text-slate-400"}`}>{user?.email ?? ""}</p>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <span className="flex items-center gap-1 text-xs font-black text-amber-500">
+                          <Star size={12} fill="currentColor" /> {stats?.rating ?? "4.8"}
+                        </span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${onlineStatus === "online" ? "bg-green-500/10 text-green-600" : D ? "bg-white/5 text-zinc-500" : "bg-slate-100 text-slate-500"}`}>
+                          {onlineStatus === "online" ? "Online" : "Offline"}
+                        </span>
+                      </div>
+                    </div>
+                    <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm shadow-blue-500/20 shrink-0">
+                      <Edit size={13} /> Edit Profile
+                    </button>
+                  </div>
+
+                  <div className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
+                    <div className={`px-4 py-3 border-b ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                      <h3 className={`text-sm font-bold ${D ? "text-zinc-300" : "text-slate-700"}`}>Personal Information</h3>
+                    </div>
+                    <div className={`divide-y ${D ? "bg-[#0e0e0e] divide-white/5" : "bg-white divide-slate-100"}`}>
+                      {[
+                        { icon: User,  label: "Full Name", value: user?.name ?? profile?.fullName ?? "—" },
+                        { icon: Mail,  label: "Email",     value: user?.email ?? "—" },
+                        { icon: Phone, label: "Phone",     value: profile?.phone ?? "—" },
+                        { icon: Truck, label: "Vehicle",   value: "Toyota Hilux · LND-421" },
+                      ].map((row, i) => (
+                        <div key={i} className={`flex items-center gap-3 px-4 py-3 ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
+                          <div className={`p-2 rounded-lg shrink-0 ${D ? "bg-white/5" : "bg-slate-100"}`}>
+                            <row.icon size={14} className={D ? "text-zinc-500" : "text-slate-400"} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-[10px] font-bold uppercase tracking-wider ${D ? "text-zinc-600" : "text-slate-400"}`}>{row.label}</p>
+                            <p className={`text-sm font-semibold truncate ${D ? "text-zinc-200" : "text-slate-800"}`}>{row.value}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
+                    <div className={`px-4 py-3 border-b ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                      <h3 className={`text-sm font-bold ${D ? "text-zinc-300" : "text-slate-700"}`}>Performance</h3>
+                    </div>
+                    <div className={`p-4 grid grid-cols-3 gap-3 ${D ? "bg-[#0e0e0e]" : "bg-white"}`}>
+                      {[
+                        { label: "Trips",      value: String(stats?.tripsCompleted ?? 0), color: "blue-500"  },
+                        { label: "Rating",     value: `${stats?.rating ?? "4.8"} ★`,      color: "amber-500" },
+                        { label: "Acceptance", value: `${stats?.acceptanceRate ?? 0}%`,    color: "green-600" },
+                      ].map((s, i) => (
+                        <div key={i} className={`rounded-xl p-3 text-center ${D ? "bg-white/5" : "bg-slate-50"}`}>
+                          <p className={`text-lg font-black text-${s.color}`}>{s.value}</p>
+                          <p className={`text-[10px] font-bold uppercase tracking-wider mt-0.5 ${D ? "text-zinc-600" : "text-slate-400"}`}>{s.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* ── SETTINGS ── */}
+              {activeView === "settings" && (
+                <motion.div key="settings" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4 pb-4 max-w-2xl">
+                  <h2 className={`text-xl lg:text-2xl font-black ${D ? "text-white" : "text-slate-900"}`}>Settings</h2>
+
+                  {[
+                    {
+                      title: "Notifications", icon: BellRing,
+                      items: [
+                        { label: "New Job Alerts",      sub: "Get notified when a nearby trip request arrives", on: true  },
+                        { label: "Payout Confirmations",sub: "Receive alerts when earnings are transferred",    on: true  },
+                        { label: "App Updates",         sub: "Stay informed about platform improvements",       on: false },
+                      ],
+                    },
+                    {
+                      title: "Privacy & Security", icon: Lock,
+                      items: [
+                        { label: "Two-Factor Authentication", sub: "Add an extra layer of security to your account", on: false },
+                        { label: "Location Sharing",          sub: "Allow real-time GPS tracking during active trips", on: true  },
+                        { label: "Profile Visibility",        sub: "Let customers see your profile while matched",    on: true  },
+                      ],
+                    },
+                    {
+                      title: "Preferences", icon: Globe,
+                      items: [
+                        { label: "Dark Mode",           sub: "Toggle between light and dark interface",           on: D     },
+                        { label: "Offline by Default",  sub: "Start app in offline mode each session",            on: false },
+                        { label: "Sound Alerts",        sub: "Play a sound when new trip requests arrive",        on: true  },
+                      ],
+                    },
+                  ].map((section, si) => (
+                    <div key={si} className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
+                      <div className={`flex items-center gap-3 px-4 py-3 border-b ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                        <div className={`p-1.5 rounded-lg ${D ? "bg-white/5" : "bg-slate-100"}`}>
+                          <section.icon size={14} className={D ? "text-zinc-400" : "text-slate-500"} />
+                        </div>
+                        <h3 className={`text-sm font-bold ${D ? "text-zinc-300" : "text-slate-700"}`}>{section.title}</h3>
+                      </div>
+                      <div className={`divide-y ${D ? "bg-[#0e0e0e] divide-white/5" : "bg-white divide-slate-100"}`}>
+                        {section.items.map((item, ii) => (
+                          <div key={ii} className="flex items-center justify-between px-4 py-3">
+                            <div>
+                              <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>{item.label}</p>
+                              <p className={`text-xs mt-0.5 ${D ? "text-zinc-600" : "text-slate-400"}`}>{item.sub}</p>
+                            </div>
+                            <button
+                              onClick={item.label === "Dark Mode" ? toggleTheme : undefined}
+                              className={`relative w-10 h-5 rounded-full transition-colors duration-300 shrink-0 ml-4 ${item.on ? "bg-blue-500" : D ? "bg-white/10" : "bg-slate-200"}`}
+                            >
+                              <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300 ${item.on ? "translate-x-5" : "translate-x-0.5"}`} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+
+                  <button
+                    onClick={() => { logout(); router.push("/auth/login"); }}
+                    className={`w-full py-3 rounded-2xl border font-bold text-sm flex items-center justify-center gap-2 transition-all ${D ? "border-red-500/20 bg-red-500/5 text-red-400 hover:bg-red-500/10" : "border-red-100 bg-red-50 text-red-500 hover:bg-red-100"}`}
+                  >
+                    <LogOut size={15} /> Sign Out
+                  </button>
                 </motion.div>
               )}
 
