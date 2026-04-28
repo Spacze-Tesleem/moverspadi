@@ -6,22 +6,21 @@ import { useAuthStore } from "@/src/application/store/authStore";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutGrid, Users, Truck, Package, Bell,
-  Settings, LogOut, Menu, X, ChevronRight, TrendingUp,
-  TrendingDown, ShieldCheck, AlertCircle, CheckCircle2,
-  Search, Eye, Filter, Download, Calendar,
-  Clock, MapPin, Zap, BarChart3, UserPlus,
+  Settings, LogOut, Menu, X, ChevronRight,
+  ShieldCheck, AlertCircle, CheckCircle2,
+  Search, Eye, Filter, Download,
+  Clock, Zap, UserPlus,
   Moon, Sun, MoreHorizontal, Ban, CreditCard, Shield,
   ArrowUpRight, Activity, Wallet, Target, ClipboardList,
-  XCircle, RefreshCw, AlertTriangle, FileWarning, ChevronDown,
+  XCircle, RefreshCw, AlertTriangle, MapPin,
+  PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 import type { VerificationStatus } from "@/src/domain/auth/types";
 import { adminApi } from "@/src/infrastructure/api/admin";
+import { ThemeProvider, useTheme } from "@/src/context/ThemeContext";
 
 // ── Types ─────────────────────────────────────────────────
 type ActiveView = "overview" | "users" | "orders" | "verification" | "alerts" | "settings";
-type Theme = "light" | "dark" | "system";
-
-// ── Verification Queue Data ────────────────────────────────
 type ApplicantRole = "mover" | "provider" | "company";
 
 interface Applicant {
@@ -37,73 +36,74 @@ interface Applicant {
   reason?: string;
 }
 
+// ── Static Data ────────────────────────────────────────────
 const INITIAL_QUEUE: Applicant[] = [
-  { id: "MVR-001", name: "Chidi Okafor",       role: "mover",    email: "chidi@mail.com",    submittedAt: "2 hrs ago",   status: "pending",  avatar: "CO", avatarColor: "bg-cyan-500",    documents: ["Driver's License", "NIN", "Profile Photo", "Selfie", "Home Photo", "Vehicle Registration", "Roadworthiness", "Insurance", "Vehicle Photo"] },
-  { id: "PRV-002", name: "Amaka Eze",           role: "provider", email: "amaka@mail.com",    submittedAt: "5 hrs ago",   status: "pending",  avatar: "AE", avatarColor: "bg-violet-500",  documents: ["Driver's License", "Passport", "Profile Photo", "Selfie", "Home Photo", "Vehicle Registration", "Roadworthiness", "Insurance", "Vehicle Photo"] },
-  { id: "CMP-003", name: "Zenith Logistics Ltd",role: "company",  email: "info@zenith.ng",    submittedAt: "1 day ago",   status: "pending",  avatar: "ZL", avatarColor: "bg-emerald-500", documents: ["CAC Certificate", "Company Logo", "Premises Photo", "Authorized Signature"] },
-  { id: "MVR-004", name: "Emeka Nwosu",         role: "mover",    email: "emeka@mail.com",    submittedAt: "2 days ago",  status: "rejected", avatar: "EN", avatarColor: "bg-rose-500",    documents: ["Driver's License", "NIN", "Profile Photo", "Selfie", "Home Photo", "Vehicle Registration", "Roadworthiness", "Insurance", "Vehicle Photo"], reason: "Vehicle registration document is expired." },
-  { id: "PRV-005", name: "Funke Adeyemi",       role: "provider", email: "funke@mail.com",    submittedAt: "3 days ago",  status: "resubmission_required", avatar: "FA", avatarColor: "bg-amber-500",   documents: ["Driver's License", "Passport", "Profile Photo", "Selfie", "Home Photo", "Vehicle Registration", "Roadworthiness", "Insurance", "Vehicle Photo"], reason: "Selfie photo is blurry. Please resubmit a clear image." },
-  { id: "CMP-006", name: "FastMove Nigeria Ltd",role: "company",  email: "ops@fastmove.ng",   submittedAt: "4 days ago",  status: "approved", avatar: "FM", avatarColor: "bg-blue-500",    documents: ["CAC Certificate", "Company Logo", "Premises Photo", "Authorized Signature"] },
+  { id: "MVR-001", name: "Chidi Okafor",        role: "mover",    email: "chidi@mail.com",  submittedAt: "2 hrs ago",  status: "pending",               avatar: "CO", avatarColor: "bg-cyan-500",    documents: ["Driver's License", "NIN", "Profile Photo", "Selfie", "Home Photo", "Vehicle Registration", "Roadworthiness", "Insurance", "Vehicle Photo"] },
+  { id: "PRV-002", name: "Amaka Eze",            role: "provider", email: "amaka@mail.com",  submittedAt: "5 hrs ago",  status: "pending",               avatar: "AE", avatarColor: "bg-violet-500",  documents: ["Driver's License", "Passport", "Profile Photo", "Selfie", "Home Photo", "Vehicle Registration", "Roadworthiness", "Insurance", "Vehicle Photo"] },
+  { id: "CMP-003", name: "Zenith Logistics Ltd", role: "company",  email: "info@zenith.ng",  submittedAt: "1 day ago",  status: "pending",               avatar: "ZL", avatarColor: "bg-emerald-500", documents: ["CAC Certificate", "Company Logo", "Premises Photo", "Authorized Signature"] },
+  { id: "MVR-004", name: "Emeka Nwosu",          role: "mover",    email: "emeka@mail.com",  submittedAt: "2 days ago", status: "rejected",              avatar: "EN", avatarColor: "bg-rose-500",    documents: ["Driver's License", "NIN", "Profile Photo", "Selfie", "Home Photo", "Vehicle Registration", "Roadworthiness", "Insurance", "Vehicle Photo"], reason: "Vehicle registration document is expired." },
+  { id: "PRV-005", name: "Funke Adeyemi",        role: "provider", email: "funke@mail.com",  submittedAt: "3 days ago", status: "resubmission_required", avatar: "FA", avatarColor: "bg-amber-500",   documents: ["Driver's License", "Passport", "Profile Photo", "Selfie", "Home Photo", "Vehicle Registration", "Roadworthiness", "Insurance", "Vehicle Photo"], reason: "Selfie photo is blurry. Please resubmit a clear image." },
+  { id: "CMP-006", name: "FastMove Nigeria Ltd", role: "company",  email: "ops@fastmove.ng", submittedAt: "4 days ago", status: "approved",              avatar: "FM", avatarColor: "bg-blue-500",    documents: ["CAC Certificate", "Company Logo", "Premises Photo", "Authorized Signature"] },
 ];
 
-// ── Data with Color Metadata ──────────────────────────────
 const PLATFORM_STATS = [
-  { label: "Total Revenue", value: "₦28.4M", change: "+12.5%", up: true, icon: Wallet, color: "emerald", gradient: "from-emerald-500/20 to-teal-500/20" },
-  { label: "Active Users", value: "12,481", change: "+8.2%", up: true, icon: Users, color: "violet", gradient: "from-violet-500/20 to-purple-500/20" },
-  { label: "Total Orders", value: "3,892", change: "+9.2%", up: true, icon: Package, color: "cyan", gradient: "from-cyan-500/20 to-blue-500/20" },
-  { label: "System Load", value: "94%", change: "-2.1%", up: false, icon: Activity, color: "rose", gradient: "from-rose-500/20 to-orange-500/20" },
+  { label: "Total Revenue", value: "₦28.4M", change: "+12.5%", up: true,  icon: Wallet,   color: "green-600"  },
+  { label: "Active Users",  value: "12,481", change: "+8.2%",  up: true,  icon: Users,    color: "violet-500" },
+  { label: "Total Orders",  value: "3,892",  change: "+9.2%",  up: true,  icon: Package,  color: "blue-500"   },
+  { label: "System Load",   value: "94%",    change: "-2.1%",  up: false, icon: Activity, color: "rose-500"   },
 ];
 
 const RECENT_USERS = [
-  { id: "USR-001", name: "Adaeze Okonkwo", role: "customer", email: "adaeze@mail.com", status: "active", avatar: "AO", color: "bg-violet-500" },
-  { id: "USR-002", name: "Babatunde Ojo", role: "mover", email: "baba@mail.com", status: "active", avatar: "BO", color: "bg-cyan-500" },
-  { id: "USR-003", name: "Chukwuemeka Ltd", role: "company", email: "info@chukwu.ng", status: "pending", avatar: "CL", color: "bg-amber-500" },
+  { id: "USR-001", name: "Adaeze Okonkwo",  role: "customer", email: "adaeze@mail.com", status: "active",  avatar: "AO", color: "bg-violet-500" },
+  { id: "USR-002", name: "Babatunde Ojo",   role: "mover",    email: "baba@mail.com",   status: "active",  avatar: "BO", color: "bg-cyan-500"   },
+  { id: "USR-003", name: "Chukwuemeka Ltd", role: "company",  email: "info@chukwu.ng",  status: "pending", avatar: "CL", color: "bg-amber-500"  },
 ];
 
-// ── Beautiful Background Blobs ────────────────────────────
-const DecorativeBlobs = () => (
-  <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-    <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-emerald-500/10 blur-[120px] animate-pulse" />
-    <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-violet-500/10 blur-[120px]" />
-    <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] rounded-full bg-cyan-500/10 blur-[120px] animate-bounce" style={{ animationDuration: '10s' }} />
-  </div>
-);
-
+// ── Main export ────────────────────────────────────────────
 export default function AdminDashboardView() {
+  return (
+    <ThemeProvider>
+      <AdminDashboardInner />
+    </ThemeProvider>
+  );
+}
+
+function AdminDashboardInner() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
-  const [activeView, setActiveView] = useState<ActiveView>("overview");
-  const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [theme, setTheme] = useState<Theme>("dark");
+  const { isDark: D, toggleTheme } = useTheme();
   const token = useAuthStore((s) => s.token);
-  const [queue, setQueue] = useState<Applicant[]>(INITIAL_QUEUE);
-  const [queueLoading, setQueueLoading] = useState(false);
-  const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
-  const [actionReason, setActionReason] = useState("");
-  const [actionLoading, setActionLoading] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
-  const [auditLog, setAuditLog] = useState<{ id: string; action: string; reason: string; admin: string; timestamp: string }[]>([]);
 
-  // Load real verification queue from backend; fall back to dummy data if unavailable.
+  const [activeView, setActiveView]           = useState<ActiveView>("overview");
+  const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isSidebarOpen, setSidebarOpen]       = useState(true);
+
+  const [queue, setQueue]                     = useState<Applicant[]>(INITIAL_QUEUE);
+  const [queueLoading, setQueueLoading]       = useState(false);
+  const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
+  const [actionReason, setActionReason]       = useState("");
+  const [actionLoading, setActionLoading]     = useState(false);
+  const [actionError, setActionError]         = useState<string | null>(null);
+  const [auditLog, setAuditLog]               = useState<{ id: string; action: string; reason: string; admin: string; timestamp: string }[]>([]);
+
+  // Load real verification queue
   useEffect(() => {
     if (!token) return;
     setQueueLoading(true);
     adminApi.getVerificationQueue(token)
       .then((items) => {
         if (items && items.length > 0) {
-          setQueue(
-            items.map((item) => ({
-              id: item.id,
-              name: item.name,
-              role: item.role,
-              email: item.id, // backend VerificationItem has no email field yet
-              submittedAt: item.submittedAt,
-              status: item.status,
-              documents: [],
-              avatar: item.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase(),
-              avatarColor: "bg-amber-500",
-            }))
-          );
+          setQueue(items.map((item) => ({
+            id: item.id,
+            name: item.name,
+            role: item.role,
+            email: item.id,
+            submittedAt: item.submittedAt,
+            status: item.status,
+            documents: [],
+            avatar: item.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase(),
+            avatarColor: "bg-amber-500",
+          })));
         }
       })
       .catch(() => { /* backend not ready — keep dummy data */ })
@@ -115,324 +115,362 @@ export default function AdminDashboardView() {
     setActionError(null);
     try {
       if (token) {
-        if (action === "approved") {
-          await adminApi.approveVerification(applicantId, token);
-        } else if (action === "rejected") {
-          await adminApi.rejectVerification(applicantId, reason, token);
-        } else if (action === "resubmission_required") {
-          await adminApi.requestResubmission(applicantId, reason, token);
-        }
-        // "suspended" — no dedicated verification endpoint; handled via user suspend
+        if (action === "approved")              await adminApi.approveVerification(applicantId, token);
+        else if (action === "rejected")         await adminApi.rejectVerification(applicantId, reason, token);
+        else if (action === "resubmission_required") await adminApi.requestResubmission(applicantId, reason, token);
       }
-    } catch {
-      // Backend not ready — apply optimistically so the UI still works
-    }
-    setQueue((prev) =>
-      prev.map((a) => a.id === applicantId ? { ...a, status: action, reason } : a)
-    );
-    setAuditLog((prev) => [{
-      id: applicantId,
-      action,
-      reason,
-      admin: user?.name ?? "Admin",
-      timestamp: new Date().toLocaleString(),
-    }, ...prev]);
+    } catch { /* optimistic update fallback */ }
+    setQueue((prev) => prev.map((a) => a.id === applicantId ? { ...a, status: action, reason } : a));
+    setAuditLog((prev) => [{ id: applicantId, action, reason, admin: user?.name ?? "Admin", timestamp: new Date().toLocaleString() }, ...prev]);
     setSelectedApplicant(null);
     setActionReason("");
     setActionLoading(false);
   };
 
-  useEffect(() => {
-    const root = window.document.documentElement;
-    const isDark = theme === "system" ? window.matchMedia("(prefers-color-scheme: dark)").matches : theme === "dark";
-    root.classList.toggle("dark", isDark);
-  }, [theme]);
+  const pendingCount = queue.filter(a => a.status === "pending").length;
 
   const navItems = [
-    { id: "overview",      label: "Overview",          icon: LayoutGrid,    color: "emerald" },
-    { id: "users",         label: "User Management",   icon: Users,         color: "violet" },
-    { id: "orders",        label: "Logistics Engine",  icon: Truck,         color: "cyan" },
-    { id: "verification",  label: "Verification Queue",icon: ClipboardList, color: "amber", badge: queue.filter(a => a.status === "pending").length },
-    { id: "alerts",        label: "System Alerts",     icon: Bell,          color: "rose", badge: 3 },
-    { id: "settings",      label: "Configuration",     icon: Settings,      color: "slate" },
-  ];
+    { id: "overview",     label: "Overview",           icon: LayoutGrid,  badge: undefined        },
+    { id: "users",        label: "User Management",    icon: Users,       badge: undefined        },
+    { id: "orders",       label: "Logistics Engine",   icon: Truck,       badge: undefined        },
+    { id: "verification", label: "Verification Queue", icon: ClipboardList, badge: pendingCount > 0 ? String(pendingCount) : undefined },
+    { id: "alerts",       label: "System Alerts",      icon: Bell,        badge: "3"              },
+    { id: "settings",     label: "Configuration",      icon: Settings,    badge: undefined        },
+  ] as const;
+
+  const handleTabChange = (id: ActiveView) => {
+    setActiveView(id);
+    setMobileMenuOpen(false);
+  };
 
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505] text-slate-900 dark:text-slate-100 transition-colors duration-500 font-sans selection:bg-emerald-500/30">
-      <DecorativeBlobs />
+    <div className={`flex h-screen font-sans overflow-hidden transition-colors duration-200 ${D ? "bg-[#080808] text-zinc-100" : "bg-[#f5f7fb] text-slate-800"}`}>
 
-      <div className="flex h-screen overflow-hidden relative z-10">
-        
-        {/* ── Sidebar: Floating Glass Design ── */}
-        <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-72 p-6 transition-transform duration-500 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
-          <div className="h-full bg-white/70 dark:bg-zinc-900/70 backdrop-blur-2xl border border-white/20 dark:border-white/5 rounded-[2.5rem] flex flex-col shadow-2xl shadow-black/5">
-            <div className="p-8 flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/40">
-                <ShieldCheck className="text-white" size={24} />
-              </div>
-              <div>
-                <h2 className="font-black tracking-tight text-lg bg-gradient-to-r from-slate-900 to-slate-500 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">MoversPadi</h2>
-                <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Enterprise Suite</p>
-              </div>
+      {isMobileMenuOpen && (
+        <div onClick={() => setMobileMenuOpen(false)} className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm" />
+      )}
+
+      {/* ── Sidebar ── */}
+      <aside className={`
+        fixed lg:static inset-y-0 left-0 z-50 flex flex-col transition-all duration-300 ease-in-out
+        ${isMobileMenuOpen ? "translate-x-0 w-64" : "-translate-x-full lg:translate-x-0"}
+        ${isSidebarOpen ? "lg:w-64" : "lg:w-[72px]"}
+        shadow-xl lg:shadow-none
+      `}>
+        <div className={`lg:hidden flex items-center justify-end px-4 py-3 border-b ${D ? "bg-[#0a0a0a] border-white/5" : "bg-white border-slate-100"}`}>
+          <button onClick={() => setMobileMenuOpen(false)} className={`p-2 rounded-lg ${D ? "text-zinc-500 hover:text-zinc-200" : "text-slate-400 hover:text-slate-700"}`}>
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className={`flex-1 flex flex-col border-r overflow-hidden transition-colors duration-200 ${D ? "bg-[#0a0a0a] border-white/5" : "bg-white border-slate-100"}`}>
+
+          {/* Logo */}
+          <div className={`px-4 py-4 flex items-center gap-3 border-b ${D ? "border-white/5" : "border-slate-100"}`}>
+            <div className="w-8 h-8 bg-gradient-to-tr from-blue-600 to-green-500 rounded-lg flex items-center justify-center shrink-0">
+              <ShieldCheck className="text-white w-4 h-4" />
             </div>
+            {isSidebarOpen && (
+              <span className={`text-base font-black tracking-tight ${D ? "text-white" : "text-slate-900"}`}>
+                Movers<span className="text-green-500">Padi</span>
+              </span>
+            )}
+          </div>
 
-            <nav className="flex-1 px-4 space-y-2">
-              {navItems.map((item) => (
+          {/* Nav */}
+          <nav className="flex-1 py-3 overflow-y-auto">
+            {navItems.map((item) => {
+              const isActive = activeView === item.id;
+              return (
                 <button
                   key={item.id}
-                  onClick={() => { setActiveView(item.id as ActiveView); setMobileMenuOpen(false); }}
-                  className={`w-full flex items-center gap-3 px-5 py-4 rounded-[1.5rem] transition-all duration-300 text-sm font-bold group relative ${
-                    activeView === item.id 
-                      ? "bg-white dark:bg-zinc-800 shadow-xl text-slate-900 dark:text-white" 
-                      : "text-slate-500 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-white/5"
+                  onClick={() => handleTabChange(item.id)}
+                  title={!isSidebarOpen ? item.label : undefined}
+                  className={`w-full flex items-center gap-3 px-4 py-3 transition-all group relative ${
+                    isActive
+                      ? D ? "bg-white/5 border-l-2 border-blue-500 text-blue-400"
+                           : "bg-blue-50 border-l-2 border-blue-500 text-blue-600"
+                      : D ? "text-zinc-500 hover:bg-white/5 hover:text-zinc-200"
+                           : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
                   }`}
                 >
-                  <item.icon size={20} className={activeView === item.id ? `text-${item.color}-500` : "group-hover:scale-110 transition-transform"} />
-                  {item.label}
-                  {item.badge && <span className="ml-auto bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full ring-4 ring-rose-500/20">{item.badge}</span>}
-                  
-                  {activeView === item.id && (
-                    <motion.div layoutId="navGlow" className={`absolute inset-0 bg-${item.color}-500/5 rounded-[1.5rem] blur-md`} />
+                  <item.icon className={`w-5 h-5 shrink-0 ${isActive ? "text-blue-500" : D ? "text-zinc-500 group-hover:text-zinc-300" : "text-slate-400 group-hover:text-slate-600"}`} />
+                  {isSidebarOpen && (
+                    <>
+                      <span className="text-sm font-semibold truncate flex-1 text-left">{item.label}</span>
+                      {item.badge && (
+                        <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black shrink-0">{item.badge}</span>
+                      )}
+                    </>
                   )}
                 </button>
-              ))}
-            </nav>
+              );
+            })}
+          </nav>
 
-            <div className="p-6">
-              <div className="p-6 rounded-[2rem] bg-gradient-to-br from-slate-900 to-slate-800 text-white relative overflow-hidden group cursor-pointer">
-                <div className="relative z-10 flex flex-col gap-3">
-                   <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center font-bold">AD</div>
-                   <div>
-                     <p className="text-xs font-bold">Admin Console</p>
-                     <p className="text-[10px] opacity-60">Super User Privilege</p>
-                   </div>
-                   <button onClick={() => { logout(); router.push("/auth/login"); }} className="mt-2 flex items-center gap-2 text-[10px] font-black uppercase tracking-tighter text-rose-400 hover:text-rose-300">
-                     <LogOut size={14} /> End Session
-                   </button>
+          {/* Bottom */}
+          <div className={`border-t p-3 space-y-1 ${D ? "border-white/5" : "border-slate-100"}`}>
+            <button
+              onClick={toggleTheme}
+              title={!isSidebarOpen ? (D ? "Light mode" : "Dark mode") : undefined}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-semibold ${D ? "text-zinc-400 hover:bg-white/5 hover:text-zinc-200" : "text-slate-500 hover:bg-slate-100 hover:text-slate-800"}`}
+            >
+              {D ? <Sun className="w-4 h-4 shrink-0 text-blue-400" /> : <Moon className="w-4 h-4 shrink-0 text-slate-400" />}
+              {isSidebarOpen && <span>{D ? "Light Mode" : "Dark Mode"}</span>}
+            </button>
+
+            {isSidebarOpen && (
+              <div className={`flex items-center gap-3 px-3 py-2 rounded-xl ${D ? "bg-white/5" : "bg-slate-50"}`}>
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${D ? "bg-blue-500/20" : "bg-blue-100"}`}>
+                  <span className={`text-xs font-black ${D ? "text-blue-400" : "text-blue-600"}`}>
+                    {(user?.name ?? "A")[0].toUpperCase()}
+                  </span>
                 </div>
-                <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-emerald-500/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
+                <div className="min-w-0">
+                  <p className={`text-xs font-bold truncate ${D ? "text-zinc-200" : "text-slate-800"}`}>{user?.name ?? "Admin"}</p>
+                  <p className={`text-[10px] truncate ${D ? "text-zinc-500" : "text-slate-400"}`}>Super User Privilege</p>
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={() => { logout(); router.push("/auth/login"); }}
+              title={!isSidebarOpen ? "Sign out" : undefined}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm ${D ? "text-zinc-500 hover:text-red-500 hover:bg-red-500/5" : "text-slate-500 hover:text-red-500 hover:bg-red-50"}`}
+            >
+              <LogOut className="w-4 h-4 shrink-0" />
+              {isSidebarOpen && <span className="font-semibold">Sign out</span>}
+            </button>
+          </div>
+        </div>
+
+        {/* Desktop collapse toggle */}
+        <div className={`hidden lg:flex border-t border-r p-3 justify-end ${D ? "bg-[#0a0a0a] border-white/5" : "bg-white border-slate-100"}`}>
+          <button
+            onClick={() => setSidebarOpen(!isSidebarOpen)}
+            className={`p-2 rounded-lg transition-colors ${D ? "text-zinc-500 hover:text-zinc-200 hover:bg-white/5" : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"}`}
+          >
+            {isSidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
+          </button>
+        </div>
+      </aside>
+
+      {/* ── Main ── */}
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+        {/* Header */}
+        <header className={`h-14 lg:h-16 border-b flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30 shrink-0 transition-colors duration-200 ${D ? "bg-[#0a0a0a] border-white/5" : "bg-white border-slate-200"}`}>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setMobileMenuOpen(true)} className={`lg:hidden p-2 rounded-lg transition-colors ${D ? "text-zinc-500 hover:text-zinc-200 hover:bg-white/5" : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"}`}>
+              <Menu size={20} />
+            </button>
+            <div>
+              <h1 className={`text-sm lg:text-base font-black ${D ? "text-white" : "text-slate-900"}`}>
+                {navItems.find(n => n.id === activeView)?.label ?? activeView}
+              </h1>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                <p className={`text-[10px] font-semibold ${D ? "text-zinc-500" : "text-slate-400"}`}>Admin Console · Lagos, NG</p>
               </div>
             </div>
           </div>
-        </aside>
 
-        {/* ── Main Canvas ── */}
-        <main className="flex-1 flex flex-col min-w-0 overflow-hidden lg:p-6">
-          <header className="h-24 flex items-center justify-between px-8">
-            <div className="flex items-center gap-6">
-              <button onClick={() => setMobileMenuOpen(true)} className="lg:hidden p-3 bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-white/20"><Menu size={20} /></button>
-              <div>
-                <h1 className="text-3xl font-black capitalize tracking-tighter text-slate-900 dark:text-white">{activeView}</h1>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Real-time Node: Lagos, NG</p>
-                </div>
-              </div>
+          <div className="flex items-center gap-2">
+            <div className={`hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs ${D ? "bg-white/5 border-white/10 text-zinc-400" : "bg-slate-50 border-slate-200 text-slate-400"}`}>
+              <Search size={13} />
+              <input type="text" placeholder="Global Search..." className="bg-transparent outline-none w-28 font-medium" />
             </div>
-            
-            <div className="flex items-center gap-4">
-              <div className="hidden md:flex items-center gap-2 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20 dark:border-white/5 shadow-sm">
-                <Search size={16} className="text-slate-400" />
-                <input type="text" placeholder="Global Search..." className="bg-transparent border-none text-xs font-bold focus:ring-0 w-32 outline-none" />
-              </div>
+            <button onClick={toggleTheme} className={`p-2 rounded-lg transition-all ${D ? "text-blue-400 hover:bg-white/5" : "text-slate-500 hover:bg-slate-100"}`}>
+              {D ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+            <button className={`p-2 rounded-lg relative transition-all ${D ? "text-zinc-500 hover:text-zinc-200 hover:bg-white/5" : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"}`}>
+              <Bell size={18} />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full" />
+            </button>
+          </div>
+        </header>
 
-              <div className="flex p-1.5 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/5">
-                {(["light", "dark"] as Theme[]).map((t) => (
-                  <button 
-                    key={t}
-                    onClick={() => setTheme(t)}
-                    className={`p-2 rounded-xl transition-all ${theme === t ? "bg-white dark:bg-zinc-800 shadow-md text-emerald-500" : "text-slate-400"}`}
-                  >
-                    {t === "light" ? <Sun size={18} /> : <Moon size={18} />}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </header>
-
-          <div className="flex-1 overflow-y-auto px-8 pb-12">
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-5xl mx-auto px-4 lg:px-6 py-5 lg:py-6">
             <AnimatePresence mode="wait">
-              
-              {/* ── VIEW: OVERVIEW (Multi-Colored Dashboard) ── */}
+
+              {/* ── OVERVIEW ── */}
               {activeView === "overview" && (
-                <motion.div key="ov" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-8">
-                  
-                  {/* KPI Cards with Glows */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                <motion.div key="ov" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-5">
+                  <div>
+                    <h2 className={`text-xl lg:text-2xl font-black ${D ? "text-white" : "text-slate-900"}`}>Platform Overview</h2>
+                    <p className={`text-sm mt-0.5 ${D ? "text-zinc-500" : "text-slate-500"}`}>Real-time operational metrics across MoversPadi.</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
                     {PLATFORM_STATS.map((stat, i) => (
-                      <motion.div
-                        key={i}
-                        whileHover={{ y: -5 }}
-                        className="p-8 rounded-[2.5rem] bg-white dark:bg-zinc-900/50 backdrop-blur-xl border border-slate-100 dark:border-white/5 shadow-sm relative overflow-hidden group"
-                      >
-                        <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-                        <div className="relative z-10">
-                          <div className="flex justify-between items-start mb-6">
-                            <div className={`p-4 rounded-2xl bg-${stat.color}-500/10 text-${stat.color}-500`}><stat.icon size={24} /></div>
-                            <div className={`px-3 py-1 rounded-full text-[10px] font-black ${stat.up ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"}`}>{stat.change}</div>
-                          </div>
-                          <h3 className="text-3xl font-black tracking-tighter mb-1">{stat.value}</h3>
-                          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tighter">{stat.label}</p>
+                      <div key={i} className={`rounded-2xl p-5 border transition-all hover:shadow-sm ${D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                        <div className={`p-2 rounded-xl w-fit mb-3 ${D ? "bg-white/5" : "bg-slate-100"}`}>
+                          <stat.icon size={16} className={`text-${stat.color}`} />
                         </div>
-                      </motion.div>
+                        <div className={`text-[10px] font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5 ${D ? "text-zinc-600" : "text-slate-400"}`}>
+                          {stat.label}
+                          <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full ${stat.up ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-500"}`}>{stat.change}</span>
+                        </div>
+                        <h3 className={`text-xl font-black ${D ? "text-white" : "text-slate-900"}`}>{stat.value}</h3>
+                      </div>
                     ))}
                   </div>
 
-                  <div className="grid lg:grid-cols-3 gap-8">
-                    {/* Activity Column (Cyan/Blue Theme) */}
-                    <div className="lg:col-span-2 p-8 rounded-[3rem] bg-white dark:bg-zinc-900/40 backdrop-blur-xl border border-white dark:border-white/5 shadow-xl">
-                      <div className="flex items-center justify-between mb-8">
+                  <div className="grid lg:grid-cols-3 gap-4 lg:gap-5 pb-6">
+                    {/* Recent Dispatch */}
+                    <div className={`lg:col-span-2 rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
+                      <div className={`px-5 py-4 border-b flex items-center justify-between ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
                         <div>
-                          <h3 className="font-black text-xl tracking-tight">Recent Dispatch</h3>
-                          <p className="text-xs text-slate-500 font-bold">Live Fleet Tracking</p>
+                          <h3 className={`text-sm font-bold ${D ? "text-zinc-300" : "text-slate-700"}`}>Recent Dispatch</h3>
+                          <p className={`text-[11px] ${D ? "text-zinc-600" : "text-slate-400"}`}>Live fleet tracking</p>
                         </div>
-                        <button className="flex items-center gap-2 px-5 py-2.5 bg-cyan-500 text-white rounded-2xl text-xs font-black shadow-lg shadow-cyan-500/30 hover:scale-105 transition-transform">
-                          Live Map <ArrowUpRight size={14} />
+                        <button className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 text-white rounded-lg text-[11px] font-bold shadow-sm shadow-blue-500/20">
+                          Live Map <ArrowUpRight size={12} />
                         </button>
                       </div>
-                      <div className="space-y-4">
+                      <div className={`divide-y ${D ? "bg-[#0e0e0e] divide-white/5" : "bg-white divide-slate-100"}`}>
                         {[1, 2, 3].map((_, i) => (
-                          <div key={i} className="flex items-center gap-4 p-5 rounded-[2rem] bg-slate-50 dark:bg-white/5 border border-transparent hover:border-cyan-500/30 hover:bg-white dark:hover:bg-zinc-800 transition-all cursor-pointer group">
-                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20 group-hover:rotate-6 transition-transform">
-                              <Truck size={24} />
+                          <div key={i} className={`flex items-center gap-4 px-5 py-4 transition-all ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white shrink-0">
+                              <Truck size={18} />
                             </div>
-                            <div className="flex-1">
-                              <p className="text-sm font-black">Lekki Toll Gate → Victoria Island</p>
-                              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 flex items-center gap-2">
-                                <Clock size={12} className="text-cyan-500" /> Estimated 14 mins
+                            <div className="flex-1 min-w-0">
+                              <p className={`text-sm font-bold truncate ${D ? "text-zinc-200" : "text-slate-800"}`}>Lekki Toll Gate → Victoria Island</p>
+                              <p className={`text-[11px] font-semibold flex items-center gap-1 mt-0.5 ${D ? "text-zinc-600" : "text-slate-400"}`}>
+                                <Clock size={10} className="text-blue-500" /> Est. 14 mins
                               </p>
                             </div>
-                            <div className="text-right">
-                              <p className="text-sm font-black text-cyan-600 dark:text-cyan-400">₦18,500</p>
-                              <span className="text-[9px] font-black text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-md">ON ROUTE</span>
+                            <div className="text-right shrink-0">
+                              <p className={`text-sm font-black ${D ? "text-blue-400" : "text-blue-600"}`}>₦18,500</p>
+                              <span className="text-[9px] font-black text-green-600 bg-green-500/10 px-2 py-0.5 rounded-full">ON ROUTE</span>
                             </div>
                           </div>
                         ))}
                       </div>
                     </div>
 
-                    {/* Progress Column (Violet Theme) */}
-                    <div className="p-8 rounded-[3rem] bg-gradient-to-b from-violet-600 to-indigo-700 text-white shadow-2xl shadow-indigo-500/30 relative overflow-hidden">
-                      <div className="relative z-10 flex flex-col h-full">
-                        <Target className="mb-6 w-10 h-10 p-2 bg-white/20 rounded-xl" />
-                        <h3 className="text-2xl font-black mb-2 tracking-tight">Monthly Target</h3>
-                        <p className="text-sm text-indigo-100 font-medium mb-8">You are currently at 84% of your monthly revenue goal.</p>
-                        
-                        <div className="mt-auto space-y-4">
-                          <div className="h-4 bg-black/20 rounded-full overflow-hidden">
-                            <motion.div initial={{ width: 0 }} animate={{ width: '84%' }} transition={{ duration: 1.5 }} className="h-full bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.5)]" />
-                          </div>
-                          <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
-                            <span>0k</span>
-                            <span>84,000 / 100,000 Orders</span>
-                          </div>
-                          <button className="w-full py-4 bg-white text-indigo-600 rounded-2xl font-black text-xs shadow-xl hover:scale-[1.02] transition-transform">
-                            View Analytics
-                          </button>
+                    {/* Monthly Target */}
+                    <div className="rounded-2xl bg-gradient-to-b from-violet-600 to-indigo-700 p-6 text-white relative overflow-hidden flex flex-col">
+                      <Target size={28} className="mb-4 p-1 bg-white/20 rounded-lg" />
+                      <h3 className="text-lg font-black mb-2">Monthly Target</h3>
+                      <p className="text-sm opacity-80 mb-6 flex-1 leading-relaxed">You are at 84% of your monthly revenue goal.</p>
+                      <div className="space-y-3">
+                        <div className="h-3 bg-black/20 rounded-full overflow-hidden">
+                          <motion.div initial={{ width: 0 }} animate={{ width: "84%" }} transition={{ duration: 1.5 }} className="h-full bg-white rounded-full" />
                         </div>
+                        <div className="flex justify-between text-[10px] font-black opacity-70">
+                          <span>0k</span>
+                          <span>84k / 100k Orders</span>
+                        </div>
+                        <button className="w-full py-3 bg-white text-violet-700 rounded-xl font-bold text-sm hover:bg-violet-50 transition-all">
+                          View Analytics
+                        </button>
                       </div>
-                      <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 blur-[60px] rounded-full" />
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-3xl rounded-full pointer-events-none" />
                     </div>
                   </div>
                 </motion.div>
               )}
 
-              {/* ── VIEW: USERS (Violet-Themed User Management) ── */}
+              {/* ── USERS ── */}
               {activeView === "users" && (
-                <motion.div key="u" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-                  <div className="flex items-center justify-between p-8 rounded-[2.5rem] bg-violet-500 text-white shadow-xl shadow-violet-500/20">
-                    <div>
-                      <h2 className="text-2xl font-black tracking-tight">User Directory</h2>
-                      <p className="text-xs font-bold opacity-80 uppercase tracking-widest mt-1">Manage 12,481 accounts</p>
-                    </div>
-                    <button className="px-6 py-3 bg-white text-violet-600 rounded-2xl font-black text-xs flex items-center gap-2 hover:bg-violet-50 transition-colors shadow-lg">
-                      <UserPlus size={16} /> Invite Member
+                <motion.div key="u" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className={`text-xl font-black ${D ? "text-white" : "text-slate-900"}`}>User Management</h2>
+                    <button className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-sm shadow-blue-500/20 transition-all">
+                      <UserPlus size={14} /> Invite Member
                     </button>
                   </div>
 
-                  <div className="grid md:grid-cols-3 gap-6">
-                    {RECENT_USERS.map((u, i) => (
-                      <motion.div key={i} whileHover={{ y: -5 }} className="p-6 rounded-[2rem] bg-white dark:bg-zinc-900 border border-white dark:border-white/5 shadow-xl flex flex-col items-center text-center group">
-                        <div className={`w-20 h-20 rounded-[2rem] ${u.color} flex items-center justify-center text-white text-xl font-black mb-4 shadow-2xl group-hover:rotate-6 transition-transform`}>{u.avatar}</div>
-                        <h4 className="font-black text-lg">{u.name}</h4>
-                        <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-4">{u.email}</p>
-                        <div className="flex gap-2 w-full mt-auto">
-                          <button className="flex-1 py-3 bg-slate-100 dark:bg-white/5 rounded-xl text-[10px] font-black uppercase hover:bg-violet-500 hover:text-white transition-all">Profile</button>
-                          <button className="p-3 bg-slate-100 dark:bg-white/5 rounded-xl text-rose-500 hover:bg-rose-500 hover:text-white transition-all"><Ban size={16} /></button>
+                  <div className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
+                    <div className={`px-5 py-4 border-b ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                      <p className={`text-xs font-semibold ${D ? "text-zinc-500" : "text-slate-400"}`}>Manage 12,481 accounts</p>
+                    </div>
+                    <div className={`divide-y ${D ? "bg-[#0e0e0e] divide-white/5" : "bg-white divide-slate-100"}`}>
+                      {RECENT_USERS.map((u, i) => (
+                        <div key={i} className={`flex items-center gap-4 px-5 py-4 transition-all ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
+                          <div className={`w-10 h-10 rounded-xl ${u.color} flex items-center justify-center text-white text-sm font-black shrink-0`}>{u.avatar}</div>
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>{u.name}</p>
+                            <p className={`text-[11px] font-semibold mt-0.5 ${D ? "text-zinc-600" : "text-slate-400"}`}>{u.email} · <span className="capitalize">{u.role}</span></p>
+                          </div>
+                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${u.status === "active" ? "bg-green-500/10 text-green-600" : "bg-amber-500/10 text-amber-600"}`}>{u.status}</span>
+                          <div className="flex items-center gap-1.5">
+                            <button className={`p-2 rounded-lg text-xs font-bold transition-all ${D ? "bg-white/5 text-zinc-400 hover:bg-blue-500/10 hover:text-blue-400" : "bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-blue-600"}`}>
+                              <Eye size={14} />
+                            </button>
+                            <button className={`p-2 rounded-lg transition-all ${D ? "bg-white/5 text-zinc-400 hover:bg-red-500/10 hover:text-red-400" : "bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-500"}`}>
+                              <Ban size={14} />
+                            </button>
+                          </div>
                         </div>
-                      </motion.div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </motion.div>
               )}
 
-              {/* ── VIEW: ORDERS (Logistics Engine) ── */}
+              {/* ── ORDERS ── */}
               {activeView === "orders" && (
-                <motion.div key="or" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-                  <div className="flex items-center justify-between p-8 rounded-[2.5rem] bg-cyan-500 text-white">
-                    <div>
-                      <h2 className="text-2xl font-black tracking-tight">Logistics Engine</h2>
-                      <p className="text-xs font-bold opacity-80 uppercase tracking-widest mt-1">3,892 total orders</p>
-                    </div>
-                    <div className="flex gap-3">
-                      <button className="px-5 py-2.5 bg-white/20 text-white rounded-2xl font-black text-xs flex items-center gap-2 hover:bg-white/30 transition-colors">
-                        <Filter size={14} /> Filter
+                <motion.div key="or" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className={`text-xl font-black ${D ? "text-white" : "text-slate-900"}`}>Logistics Engine</h2>
+                    <div className="flex gap-2">
+                      <button className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border transition-all ${D ? "border-white/10 text-zinc-400 hover:bg-white/5" : "border-slate-200 text-slate-500 hover:bg-slate-100"}`}>
+                        <Filter size={13} /> Filter
                       </button>
-                      <button className="px-5 py-2.5 bg-white text-cyan-600 rounded-2xl font-black text-xs flex items-center gap-2 hover:bg-cyan-50 transition-colors">
-                        <Download size={14} /> Export
+                      <button className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-sm shadow-blue-500/20 transition-all">
+                        <Download size={13} /> Export
                       </button>
                     </div>
                   </div>
 
-                  {/* Order Stats Row */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                     {[
-                      { label: "Pending", value: "142", color: "amber" },
-                      { label: "In Transit", value: "87", color: "cyan" },
-                      { label: "Delivered", value: "3,601", color: "emerald" },
-                      { label: "Cancelled", value: "62", color: "rose" },
+                      { label: "Pending",    value: "142",   color: "amber" },
+                      { label: "In Transit", value: "87",    color: "blue"  },
+                      { label: "Delivered",  value: "3,601", color: "green" },
+                      { label: "Cancelled",  value: "62",    color: "rose"  },
                     ].map((s, i) => (
-                      <div key={i} className={`p-6 rounded-[2rem] bg-${s.color}-50 dark:bg-${s.color}-500/10 border border-${s.color}-100 dark:border-${s.color}-500/20`}>
-                        <p className={`text-3xl font-black text-${s.color}-600 dark:text-${s.color}-400`}>{s.value}</p>
-                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">{s.label}</p>
+                      <div key={i} className={`rounded-2xl p-4 border ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-200"}`}>
+                        <p className={`text-2xl font-black text-${s.color}-${D ? "400" : "600"}`}>{s.value}</p>
+                        <p className={`text-xs font-semibold uppercase tracking-wider mt-1 ${D ? "text-zinc-600" : "text-slate-400"}`}>{s.label}</p>
                       </div>
                     ))}
                   </div>
 
-                  {/* Orders Table */}
-                  <div className="rounded-[2.5rem] bg-white dark:bg-zinc-900/50 border border-slate-100 dark:border-white/5 overflow-hidden">
-                    <div className="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
-                      <h3 className="font-black text-lg">Recent Orders</h3>
-                      <div className="flex items-center gap-2 bg-slate-50 dark:bg-white/5 px-4 py-2 rounded-xl border border-slate-100 dark:border-white/5">
-                        <Search size={14} className="text-slate-400" />
-                        <input type="text" placeholder="Search orders..." className="bg-transparent text-xs font-bold outline-none w-28" />
+                  <div className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
+                    <div className={`px-5 py-4 border-b flex items-center justify-between ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                      <h3 className={`text-sm font-bold ${D ? "text-zinc-300" : "text-slate-700"}`}>Recent Orders</h3>
+                      <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs ${D ? "bg-white/5 text-zinc-400" : "bg-slate-50 text-slate-400 border border-slate-100"}`}>
+                        <Search size={12} /><input type="text" placeholder="Search orders..." className="bg-transparent outline-none w-24 font-medium" />
                       </div>
                     </div>
-                    <div className="divide-y divide-slate-100 dark:divide-white/5">
+                    <div className={`divide-y ${D ? "bg-[#0e0e0e] divide-white/5" : "bg-white divide-slate-100"}`}>
                       {[
-                        { id: "ORD-4821", from: "Ikeja", to: "Lekki", mover: "Babatunde O.", amount: "₦22,000", status: "In Transit", statusColor: "cyan" },
-                        { id: "ORD-4820", from: "Surulere", to: "Ajah", mover: "Emeka Ltd", amount: "₦15,500", status: "Delivered", statusColor: "emerald" },
-                        { id: "ORD-4819", from: "Yaba", to: "VI", mover: "Chidi Movers", amount: "₦31,000", status: "Pending", statusColor: "amber" },
-                        { id: "ORD-4818", from: "Oshodi", to: "Ikorodu", mover: "FastMove NG", amount: "₦18,200", status: "Delivered", statusColor: "emerald" },
-                        { id: "ORD-4817", from: "Gbagada", to: "Apapa", mover: "Tunde & Sons", amount: "₦27,500", status: "Cancelled", statusColor: "rose" },
+                        { id: "ORD-4821", from: "Ikeja",    to: "Lekki",    mover: "Babatunde O.", amount: "₦22,000", status: "In Transit", statusColor: "blue"  },
+                        { id: "ORD-4820", from: "Surulere", to: "Ajah",     mover: "Emeka Ltd",    amount: "₦15,500", status: "Delivered",  statusColor: "green" },
+                        { id: "ORD-4819", from: "Yaba",     to: "VI",       mover: "Chidi Movers", amount: "₦31,000", status: "Pending",    statusColor: "amber" },
+                        { id: "ORD-4818", from: "Oshodi",   to: "Ikorodu",  mover: "FastMove NG",  amount: "₦18,200", status: "Delivered",  statusColor: "green" },
+                        { id: "ORD-4817", from: "Gbagada",  to: "Apapa",    mover: "Tunde & Sons", amount: "₦27,500", status: "Cancelled",  statusColor: "rose"  },
                       ].map((order, i) => (
-                        <div key={i} className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
-                          <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center">
-                            <Package size={18} className="text-cyan-500" />
+                        <div key={i} className={`flex items-center gap-4 px-5 py-4 transition-all ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
+                          <div className={`p-2.5 rounded-xl shrink-0 ${D ? "bg-white/5" : "bg-slate-100"}`}>
+                            <Package size={15} className={D ? "text-zinc-400" : "text-slate-500"} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-black">{order.id}</p>
-                            <p className="text-[11px] text-slate-500 font-bold flex items-center gap-1 mt-0.5">
-                              <MapPin size={10} className="text-cyan-500" /> {order.from} → {order.to}
+                            <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>{order.id}</p>
+                            <p className={`text-[11px] font-semibold mt-0.5 flex items-center gap-1 ${D ? "text-zinc-600" : "text-slate-400"}`}>
+                              <MapPin size={9} className="text-blue-500" /> {order.from} → {order.to}
                             </p>
                           </div>
-                          <div className="hidden md:block text-xs font-bold text-slate-500">{order.mover}</div>
-                          <div className="text-sm font-black text-slate-900 dark:text-white">{order.amount}</div>
-                          <span className={`text-[10px] font-black px-3 py-1 rounded-full bg-${order.statusColor}-500/10 text-${order.statusColor}-600 dark:text-${order.statusColor}-400`}>
-                            {order.status}
-                          </span>
-                          <button className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
-                            <Eye size={14} className="text-slate-400" />
+                          <div className={`hidden md:block text-xs font-semibold ${D ? "text-zinc-500" : "text-slate-500"}`}>{order.mover}</div>
+                          <div className={`text-sm font-black ${D ? "text-zinc-200" : "text-slate-800"}`}>{order.amount}</div>
+                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full bg-${order.statusColor}-500/10 text-${order.statusColor}-${D ? "400" : "600"}`}>{order.status}</span>
+                          <button className={`p-2 rounded-lg transition-all ${D ? "hover:bg-white/5 text-zinc-500" : "hover:bg-slate-100 text-slate-400"}`}>
+                            <Eye size={13} />
                           </button>
                         </div>
                       ))}
@@ -441,70 +479,62 @@ export default function AdminDashboardView() {
                 </motion.div>
               )}
 
-              {/* ── VIEW: VERIFICATION QUEUE ── */}
+              {/* ── VERIFICATION QUEUE ── */}
               {activeView === "verification" && (
-                <motion.div key="vq" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-
-                  {/* Header */}
-                  <div className="flex items-center justify-between p-8 rounded-[2.5rem] bg-amber-500 text-white">
+                <motion.div key="vq" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
+                  <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-2xl font-black tracking-tight">Verification Queue</h2>
-                      <p className="text-xs font-bold opacity-80 uppercase tracking-widest mt-1">
-                        {queue.filter(a => a.status === "pending").length} pending · {queue.filter(a => a.status === "resubmission_required").length} resubmitted
-                      </p>
+                      <h2 className={`text-xl font-black ${D ? "text-white" : "text-slate-900"}`}>Verification Queue</h2>
+                      <p className={`text-xs font-semibold mt-0.5 ${D ? "text-zinc-500" : "text-slate-400"}`}>{queue.filter(a => a.status === "pending").length} pending · {queue.filter(a => a.status === "resubmission_required").length} resubmitted</p>
                     </div>
-                    <div className="flex gap-3">
-                      <button className="px-5 py-2.5 bg-white/20 text-white rounded-2xl font-black text-xs flex items-center gap-2 hover:bg-white/30 transition-colors">
-                        <Filter size={14} /> Filter
+                    <div className="flex gap-2">
+                      <button className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border transition-all ${D ? "border-white/10 text-zinc-400 hover:bg-white/5" : "border-slate-200 text-slate-500 hover:bg-slate-100"}`}>
+                        <Filter size={13} /> Filter
                       </button>
-                      <button className="px-5 py-2.5 bg-white text-amber-600 rounded-2xl font-black text-xs flex items-center gap-2 hover:bg-amber-50 transition-colors">
-                        <Download size={14} /> Export
+                      <button className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-sm shadow-blue-500/20 transition-all">
+                        <Download size={13} /> Export
                       </button>
                     </div>
                   </div>
 
-                  {/* Status summary */}
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
                     {([
-                      { label: "Pending",   status: "pending",   color: "amber" },
-                      { label: "Resubmit",  status: "resubmission_required",  color: "orange" },
-                      { label: "Approved",  status: "approved",  color: "emerald" },
-                      { label: "Rejected",  status: "rejected",  color: "rose" },
-                      { label: "Suspended", status: "suspended", color: "slate" },
+                      { label: "Pending",   status: "pending",               color: "amber"   },
+                      { label: "Resubmit",  status: "resubmission_required", color: "orange"  },
+                      { label: "Approved",  status: "approved",              color: "green"   },
+                      { label: "Rejected",  status: "rejected",              color: "rose"    },
+                      { label: "Suspended", status: "suspended",             color: "slate"   },
                     ] as const).map(({ label, status, color }) => (
-                      <div key={status} className={`p-4 rounded-[1.5rem] bg-${color}-50 dark:bg-${color}-500/10 border border-${color}-100 dark:border-${color}-500/20 text-center`}>
-                        <p className={`text-2xl font-black text-${color}-600 dark:text-${color}-400`}>{queue.filter(a => a.status === status).length}</p>
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">{label}</p>
+                      <div key={status} className={`rounded-2xl p-4 border text-center ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-200"}`}>
+                        <p className={`text-2xl font-black text-${color}-${D ? "400" : "600"}`}>{queue.filter(a => a.status === status).length}</p>
+                        <p className={`text-[10px] font-semibold uppercase tracking-wider mt-0.5 ${D ? "text-zinc-600" : "text-slate-400"}`}>{label}</p>
                       </div>
                     ))}
                   </div>
 
-                  {/* Applicant list */}
-                  <div className="rounded-[2.5rem] bg-white dark:bg-zinc-900/50 border border-slate-100 dark:border-white/5 overflow-hidden">
-                    <div className="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
-                      <h3 className="font-black text-lg">Applications</h3>
-                      {queueLoading && <RefreshCw size={16} className="animate-spin text-amber-500" />}
+                  <div className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
+                    <div className={`px-5 py-4 border-b flex items-center justify-between ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                      <h3 className={`text-sm font-bold ${D ? "text-zinc-300" : "text-slate-700"}`}>Applications</h3>
+                      {queueLoading && <RefreshCw size={14} className="animate-spin text-amber-500" />}
                     </div>
-                    <div className="divide-y divide-slate-100 dark:divide-white/5">
+                    <div className={`divide-y ${D ? "bg-[#0e0e0e] divide-white/5" : "bg-white divide-slate-100"}`}>
                       {queue.map((applicant) => (
-                        <div key={applicant.id} className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
-                          <div className={`w-11 h-11 rounded-2xl ${applicant.avatarColor} flex items-center justify-center text-white text-sm font-black flex-shrink-0`}>
-                            {applicant.avatar}
-                          </div>
+                        <div key={applicant.id} className={`flex items-center gap-4 px-5 py-4 transition-all ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
+                          <div className={`w-10 h-10 rounded-xl ${applicant.avatarColor} flex items-center justify-center text-white text-sm font-black shrink-0`}>{applicant.avatar}</div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-black">{applicant.name}</p>
-                            <p className="text-[11px] text-slate-500 font-bold flex items-center gap-2 mt-0.5">
+                            <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>{applicant.name}</p>
+                            <p className={`text-[11px] font-semibold mt-0.5 flex items-center gap-2 ${D ? "text-zinc-600" : "text-slate-400"}`}>
                               <span className="capitalize">{applicant.role}</span>
-                              <span className="text-slate-300">·</span>
-                              <Clock size={10} className="text-slate-400" /> {applicant.submittedAt}
+                              <span>·</span>
+                              <Clock size={9} /> {applicant.submittedAt}
                             </p>
                           </div>
                           <VerifStatusBadge status={applicant.status} />
                           <button
                             onClick={() => { setSelectedApplicant(applicant); setActionReason(applicant.reason ?? ""); }}
-                            className="p-2.5 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors flex-shrink-0"
+                            className={`p-2 rounded-lg transition-all shrink-0 ${D ? "bg-white/5 text-zinc-400 hover:bg-amber-500/10 hover:text-amber-400" : "bg-slate-100 text-slate-500 hover:bg-amber-50 hover:text-amber-600"}`}
                           >
-                            <Eye size={15} className="text-slate-500" />
+                            <Eye size={14} />
                           </button>
                         </div>
                       ))}
@@ -513,22 +543,22 @@ export default function AdminDashboardView() {
 
                   {/* Audit log */}
                   {auditLog.length > 0 && (
-                    <div className="rounded-[2.5rem] bg-white dark:bg-zinc-900/50 border border-slate-100 dark:border-white/5 overflow-hidden">
-                      <div className="p-6 border-b border-slate-100 dark:border-white/5">
-                        <h3 className="font-black text-lg">Audit Log</h3>
+                    <div className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
+                      <div className={`px-5 py-4 border-b ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                        <h3 className={`text-sm font-bold ${D ? "text-zinc-300" : "text-slate-700"}`}>Audit Log</h3>
                       </div>
-                      <div className="divide-y divide-slate-100 dark:divide-white/5">
+                      <div className={`divide-y ${D ? "bg-[#0e0e0e] divide-white/5" : "bg-white divide-slate-100"}`}>
                         {auditLog.map((entry, i) => (
-                          <div key={i} className="flex items-start gap-4 px-6 py-4">
-                            <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-white/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                              <Shield size={14} className="text-slate-500" />
+                          <div key={i} className="flex items-start gap-4 px-5 py-4">
+                            <div className={`p-2 rounded-lg shrink-0 mt-0.5 ${D ? "bg-white/5" : "bg-slate-100"}`}>
+                              <Shield size={13} className={D ? "text-zinc-400" : "text-slate-500"} />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-black">
-                                {entry.id} — <span className="capitalize text-amber-600 dark:text-amber-400">{entry.action}</span>
+                              <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>
+                                {entry.id} — <span className="capitalize text-amber-500">{entry.action}</span>
                               </p>
-                              {entry.reason && <p className="text-xs text-slate-500 font-medium mt-0.5">"{entry.reason}"</p>}
-                              <p className="text-[10px] text-slate-400 font-bold mt-1 flex items-center gap-1">
+                              {entry.reason && <p className={`text-xs mt-0.5 ${D ? "text-zinc-600" : "text-slate-500"}`}>"{entry.reason}"</p>}
+                              <p className={`text-[10px] font-semibold mt-1 flex items-center gap-1 ${D ? "text-zinc-600" : "text-slate-400"}`}>
                                 <Clock size={9} /> {entry.timestamp} · {entry.admin}
                               </p>
                             </div>
@@ -537,171 +567,46 @@ export default function AdminDashboardView() {
                       </div>
                     </div>
                   )}
-
-                  {/* Detail / action modal */}
-                  <AnimatePresence>
-                    {selectedApplicant && (
-                      <>
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                          onClick={() => setSelectedApplicant(null)}
-                          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40" />
-                        <motion.div initial={{ opacity: 0, scale: 0.95, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 16 }}
-                          className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                          <div className="w-full max-w-lg bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-2xl border border-slate-100 dark:border-white/5 overflow-hidden max-h-[90vh] flex flex-col">
-                            {/* Modal header */}
-                            <div className="flex items-center gap-4 p-6 border-b border-slate-100 dark:border-white/5">
-                              <div className={`w-12 h-12 rounded-2xl ${selectedApplicant.avatarColor} flex items-center justify-center text-white font-black`}>
-                                {selectedApplicant.avatar}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="font-black text-slate-900 dark:text-white">{selectedApplicant.name}</p>
-                                <p className="text-xs text-slate-500 font-bold capitalize">{selectedApplicant.role} · {selectedApplicant.email}</p>
-                              </div>
-                              <VerifStatusBadge status={selectedApplicant.status} />
-                              <button onClick={() => setSelectedApplicant(null)} className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
-                                <XCircle size={18} className="text-slate-400" />
-                              </button>
-                            </div>
-
-                            {/* Documents */}
-                            <div className="p-6 overflow-y-auto flex-1">
-                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Submitted Documents</p>
-                              <div className="space-y-2 mb-6">
-                                {selectedApplicant.documents.map((doc) => (
-                                  <div key={doc} className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
-                                    <div className="flex items-center gap-3">
-                                      <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" />
-                                      <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{doc}</span>
-                                    </div>
-                                    <button className="text-[10px] font-black text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1">
-                                      <Eye size={11} /> View
-                                    </button>
-                                  </div>
-                                ))}
-                              </div>
-
-                              {/* Reason input */}
-                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Reason / Note (required for reject, resubmit, suspend)</p>
-                              <textarea
-                                value={actionReason}
-                                onChange={(e) => setActionReason(e.target.value)}
-                                placeholder="Explain the action taken for the audit log..."
-                                rows={3}
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-800 border border-slate-100 dark:border-white/10 rounded-2xl text-sm font-medium text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500/30 resize-none transition-all"
-                              />
-                            </div>
-
-                            {/* Action buttons */}
-                            <div className="p-6 border-t border-slate-100 dark:border-white/5 space-y-3">
-                              {actionError && (
-                                <p className="text-xs font-bold text-rose-500 text-center">{actionError}</p>
-                              )}
-                              <div className="grid grid-cols-2 gap-3">
-                                <button
-                                  disabled={actionLoading}
-                                  onClick={() => handleVerificationAction(selectedApplicant.id, "approved", actionReason)}
-                                  className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-emerald-500 text-white font-black text-sm hover:bg-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                  {actionLoading ? <RefreshCw size={16} className="animate-spin" /> : <CheckCircle2 size={16} />} Approve
-                                </button>
-                                <button
-                                  disabled={actionLoading}
-                                  onClick={() => handleVerificationAction(selectedApplicant.id, "rejected", actionReason)}
-                                  className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-rose-500 text-white font-black text-sm hover:bg-rose-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                  {actionLoading ? <RefreshCw size={16} className="animate-spin" /> : <XCircle size={16} />} Reject
-                                </button>
-                                <button
-                                  disabled={actionLoading}
-                                  onClick={() => handleVerificationAction(selectedApplicant.id, "resubmission_required", actionReason)}
-                                  className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-amber-500 text-white font-black text-sm hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                  {actionLoading ? <RefreshCw size={16} className="animate-spin" /> : <RefreshCw size={16} />} Request Resubmit
-                                </button>
-                                <button
-                                  disabled={actionLoading}
-                                  onClick={() => handleVerificationAction(selectedApplicant.id, "suspended", actionReason)}
-                                  className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-slate-700 text-white font-black text-sm hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                  {actionLoading ? <RefreshCw size={16} className="animate-spin" /> : <AlertTriangle size={16} />} Suspend
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </motion.div>
-                      </>
-                    )}
-                  </AnimatePresence>
                 </motion.div>
               )}
 
-              {/* ── VIEW: ALERTS (System Alerts) ── */}
+              {/* ── ALERTS ── */}
               {activeView === "alerts" && (
-                <motion.div key="al" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-                  <div className="flex items-center justify-between p-8 rounded-[2.5rem] bg-rose-500 text-white">
+                <motion.div key="al" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
+                  <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-2xl font-black tracking-tight">System Alerts</h2>
-                      <p className="text-xs font-bold opacity-80 uppercase tracking-widest mt-1">3 active alerts require attention</p>
+                      <h2 className={`text-xl font-black ${D ? "text-white" : "text-slate-900"}`}>System Alerts</h2>
+                      <p className={`text-xs font-semibold mt-0.5 ${D ? "text-zinc-500" : "text-slate-400"}`}>3 active alerts require attention</p>
                     </div>
-                    <button className="px-6 py-3 bg-white text-rose-600 rounded-2xl font-black text-xs flex items-center gap-2 hover:bg-rose-50 transition-colors">
-                      <CheckCircle2 size={14} /> Mark All Read
+                    <button className={`px-4 py-2 rounded-xl text-xs font-bold border flex items-center gap-1.5 transition-all ${D ? "border-white/10 text-zinc-400 hover:bg-white/5" : "border-slate-200 text-slate-500 hover:bg-slate-100"}`}>
+                      <CheckCircle2 size={13} /> Mark All Read
                     </button>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-3 pb-6">
                     {[
-                      {
-                        type: "critical", icon: AlertCircle, color: "rose",
-                        title: "Payment Gateway Timeout",
-                        desc: "Paystack webhook failed to respond for 3 consecutive transactions. Manual review required.",
-                        time: "2 mins ago",
-                      },
-                      {
-                        type: "warning", icon: ShieldCheck, color: "amber",
-                        title: "Unverified Mover Account",
-                        desc: "Mover ID MVR-2291 has completed 4 orders without document verification.",
-                        time: "18 mins ago",
-                      },
-                      {
-                        type: "warning", icon: Activity, color: "amber",
-                        title: "High System Load Detected",
-                        desc: "CPU usage peaked at 94% over the last 15 minutes. Consider scaling up.",
-                        time: "34 mins ago",
-                      },
-                      {
-                        type: "info", icon: CheckCircle2, color: "emerald",
-                        title: "Database Backup Completed",
-                        desc: "Nightly backup completed successfully. 2.4 GB stored to cold storage.",
-                        time: "2 hrs ago",
-                      },
-                      {
-                        type: "info", icon: Zap, color: "cyan",
-                        title: "New Company Registration",
-                        desc: "Chukwuemeka Logistics Ltd submitted onboarding documents for review.",
-                        time: "3 hrs ago",
-                      },
+                      { icon: AlertCircle,  color: "rose",    title: "Payment Gateway Timeout",     desc: "Paystack webhook failed to respond for 3 consecutive transactions.",        time: "2 mins ago"  },
+                      { icon: ShieldCheck,  color: "amber",   title: "Unverified Mover Account",    desc: "Mover ID MVR-2291 has completed 4 orders without document verification.",   time: "18 mins ago" },
+                      { icon: Activity,     color: "amber",   title: "High System Load Detected",   desc: "CPU usage peaked at 94% over the last 15 minutes.",                         time: "34 mins ago" },
+                      { icon: CheckCircle2, color: "green",   title: "Database Backup Completed",   desc: "Nightly backup completed successfully. 2.4 GB stored to cold storage.",       time: "2 hrs ago"   },
+                      { icon: Zap,          color: "blue",    title: "New Company Registration",    desc: "Chukwuemeka Logistics Ltd submitted onboarding documents for review.",       time: "3 hrs ago"   },
                     ].map((alert, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.05 }}
-                        className={`flex gap-5 p-6 rounded-[2rem] bg-white dark:bg-zinc-900/50 border border-${alert.color}-100 dark:border-${alert.color}-500/20`}
-                      >
-                        <div className={`w-12 h-12 rounded-2xl bg-${alert.color}-500/10 flex items-center justify-center flex-shrink-0`}>
-                          <alert.icon size={22} className={`text-${alert.color}-500`} />
+                      <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                        className={`flex gap-4 p-4 rounded-2xl border transition-all ${D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                        <div className={`p-2.5 rounded-xl shrink-0 bg-${alert.color}-500/10`}>
+                          <alert.icon size={18} className={`text-${alert.color}-${D ? "400" : "600"}`} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-4">
-                            <p className="font-black text-sm">{alert.title}</p>
-                            <span className="text-[10px] font-bold text-slate-400 whitespace-nowrap flex items-center gap-1">
-                              <Clock size={10} /> {alert.time}
+                            <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>{alert.title}</p>
+                            <span className={`text-[10px] font-semibold whitespace-nowrap flex items-center gap-1 shrink-0 ${D ? "text-zinc-600" : "text-slate-400"}`}>
+                              <Clock size={9} /> {alert.time}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">{alert.desc}</p>
+                          <p className={`text-xs mt-0.5 leading-relaxed ${D ? "text-zinc-600" : "text-slate-500"}`}>{alert.desc}</p>
                         </div>
-                        <button className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 transition-colors self-start flex-shrink-0">
-                          <MoreHorizontal size={16} className="text-slate-400" />
+                        <button className={`p-2 rounded-lg transition-all self-start shrink-0 ${D ? "text-zinc-600 hover:bg-white/5" : "text-slate-400 hover:bg-slate-100"}`}>
+                          <MoreHorizontal size={15} />
                         </button>
                       </motion.div>
                     ))}
@@ -709,68 +614,62 @@ export default function AdminDashboardView() {
                 </motion.div>
               )}
 
-              {/* ── VIEW: SETTINGS (Configuration) ── */}
+              {/* ── SETTINGS ── */}
               {activeView === "settings" && (
-                <motion.div key="st" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-                  <div className="p-8 rounded-[2.5rem] bg-slate-900 dark:bg-zinc-800 text-white">
-                    <h2 className="text-2xl font-black tracking-tight">Configuration</h2>
-                    <p className="text-xs font-bold opacity-60 uppercase tracking-widest mt-1">Platform-wide settings and controls</p>
-                  </div>
+                <motion.div key="st" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4 pb-6">
+                  <h2 className={`text-xl font-black ${D ? "text-white" : "text-slate-900"}`}>Configuration</h2>
+                  <p className={`text-sm -mt-2 ${D ? "text-zinc-500" : "text-slate-400"}`}>Platform-wide settings and controls</p>
 
-                  {/* Settings Sections */}
                   {[
                     {
                       title: "Platform Controls",
                       icon: Shield,
                       items: [
-                        { label: "Maintenance Mode", desc: "Take the platform offline for all users", type: "toggle", value: false },
-                        { label: "New Registrations", desc: "Allow new users to sign up", type: "toggle", value: true },
-                        { label: "Order Processing", desc: "Enable order creation and dispatch", type: "toggle", value: true },
+                        { label: "Maintenance Mode",   desc: "Take the platform offline for all users",       type: "toggle", value: false },
+                        { label: "New Registrations",  desc: "Allow new users to sign up",                    type: "toggle", value: true  },
+                        { label: "Order Processing",   desc: "Enable order creation and dispatch",            type: "toggle", value: true  },
                       ],
                     },
                     {
                       title: "Payment Settings",
                       icon: CreditCard,
                       items: [
-                        { label: "Platform Commission", desc: "Percentage taken from each order", type: "input", value: "12%" },
-                        { label: "Minimum Order Value", desc: "Lowest accepted order amount", type: "input", value: "₦2,500" },
-                        { label: "Auto Payout", desc: "Automatically pay movers after delivery", type: "toggle", value: true },
+                        { label: "Platform Commission", desc: "Percentage taken from each order",             type: "input",  value: "12%" },
+                        { label: "Minimum Order Value", desc: "Lowest accepted order amount",                 type: "input",  value: "₦2,500" },
+                        { label: "Auto Payout",         desc: "Automatically pay movers after delivery",      type: "toggle", value: true  },
                       ],
                     },
                     {
                       title: "Notifications",
                       icon: Bell,
                       items: [
-                        { label: "Email Alerts", desc: "Send system alerts to admin email", type: "toggle", value: true },
-                        { label: "SMS Notifications", desc: "Send SMS for critical events", type: "toggle", value: false },
-                        { label: "Push Notifications", desc: "Browser push for real-time alerts", type: "toggle", value: true },
+                        { label: "Email Alerts",        desc: "Send system alerts to admin email",            type: "toggle", value: true  },
+                        { label: "SMS Notifications",   desc: "Send SMS for critical events",                 type: "toggle", value: false },
+                        { label: "Push Notifications",  desc: "Browser push for real-time alerts",            type: "toggle", value: true  },
                       ],
                     },
                   ].map((section, si) => (
-                    <div key={si} className="rounded-[2.5rem] bg-white dark:bg-zinc-900/50 border border-slate-100 dark:border-white/5 overflow-hidden">
-                      <div className="flex items-center gap-3 px-8 py-5 border-b border-slate-100 dark:border-white/5">
-                        <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/10 flex items-center justify-center">
-                          <section.icon size={18} className="text-slate-600 dark:text-slate-300" />
+                    <div key={si} className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
+                      <div className={`flex items-center gap-3 px-5 py-4 border-b ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                        <div className={`p-2 rounded-lg ${D ? "bg-white/5" : "bg-slate-100"}`}>
+                          <section.icon size={15} className={D ? "text-zinc-400" : "text-slate-500"} />
                         </div>
-                        <h3 className="font-black text-base">{section.title}</h3>
+                        <h3 className={`text-sm font-bold ${D ? "text-zinc-300" : "text-slate-700"}`}>{section.title}</h3>
                       </div>
-                      <div className="divide-y divide-slate-100 dark:divide-white/5">
+                      <div className={`divide-y ${D ? "bg-[#0e0e0e] divide-white/5" : "bg-white divide-slate-100"}`}>
                         {section.items.map((item, ii) => (
-                          <div key={ii} className="flex items-center justify-between px-8 py-5">
+                          <div key={ii} className="flex items-center justify-between px-5 py-4">
                             <div>
-                              <p className="text-sm font-black">{item.label}</p>
-                              <p className="text-xs text-slate-500 font-medium mt-0.5">{item.desc}</p>
+                              <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>{item.label}</p>
+                              <p className={`text-xs mt-0.5 ${D ? "text-zinc-600" : "text-slate-400"}`}>{item.desc}</p>
                             </div>
                             {item.type === "toggle" ? (
-                              <button
-                                className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${item.value ? "bg-emerald-500" : "bg-slate-200 dark:bg-zinc-700"}`}
-                              >
-                                <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300 ${item.value ? "translate-x-7" : "translate-x-1"}`} />
+                              <button className={`relative w-10 h-5 rounded-full transition-colors duration-300 ${item.value ? "bg-blue-500" : D ? "bg-white/10" : "bg-slate-200"}`}>
+                                <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300 ${item.value ? "translate-x-5" : "translate-x-0.5"}`} />
                               </button>
                             ) : (
-                              <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/10">
-                                <span className="text-sm font-black text-slate-700 dark:text-slate-200">{item.value}</span>
-                                <ChevronRight size={14} className="text-slate-400" />
+                              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-bold ${D ? "bg-white/5 border-white/10 text-zinc-300" : "bg-slate-50 border-slate-100 text-slate-700"}`}>
+                                {item.value} <ChevronRight size={13} className={D ? "text-zinc-600" : "text-slate-300"} />
                               </div>
                             )}
                           </div>
@@ -779,38 +678,136 @@ export default function AdminDashboardView() {
                     </div>
                   ))}
 
-                  <button className="w-full py-4 rounded-[2rem] bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 font-black text-sm flex items-center justify-center gap-2 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors">
-                    <LogOut size={16} /> Sign Out of Admin Console
+                  <button
+                    onClick={() => { logout(); router.push("/auth/login"); }}
+                    className={`w-full py-3.5 rounded-2xl border font-bold text-sm flex items-center justify-center gap-2 transition-all ${D ? "border-red-500/20 bg-red-500/5 text-red-400 hover:bg-red-500/10" : "border-red-100 bg-red-50 text-red-500 hover:bg-red-100"}`}
+                  >
+                    <LogOut size={15} /> Sign Out of Admin Console
                   </button>
                 </motion.div>
               )}
 
             </AnimatePresence>
           </div>
-        </main>
-      </div>
+        </div>
 
-      {/* ── Mobile UI Overlays ── */}
+        {/* Mobile bottom nav */}
+        <nav className={`lg:hidden border-t flex items-center justify-around px-2 py-2 shrink-0 transition-colors ${D ? "bg-[#0a0a0a] border-white/5" : "bg-white border-slate-200"}`}>
+          {[
+            { id: "overview" as ActiveView,     icon: LayoutGrid  },
+            { id: "users" as ActiveView,         icon: Users       },
+            { id: "verification" as ActiveView,  icon: ClipboardList },
+            { id: "alerts" as ActiveView,        icon: Bell        },
+            { id: "settings" as ActiveView,      icon: Settings    },
+          ].map((item) => {
+            const isActive = activeView === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleTabChange(item.id)}
+                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all ${isActive ? "text-blue-500" : D ? "text-zinc-600 hover:text-zinc-400" : "text-slate-400 hover:text-slate-600"}`}
+              >
+                <item.icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
+              </button>
+            );
+          })}
+        </nav>
+      </main>
+
+      {/* ── Verification Action Modal ── */}
       <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMobileMenuOpen(false)} className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[45] lg:hidden" />
+        {selectedApplicant && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setSelectedApplicant(null)}
+              className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40" />
+            <motion.div initial={{ opacity: 0, scale: 0.96, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96, y: 12 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div className={`w-full max-w-lg rounded-2xl shadow-2xl border overflow-hidden max-h-[90vh] flex flex-col ${D ? "bg-[#0e0e0e] border-white/10" : "bg-white border-slate-200"}`}>
+                {/* Modal header */}
+                <div className={`flex items-center gap-4 p-5 border-b ${D ? "border-white/5" : "border-slate-100"}`}>
+                  <div className={`w-11 h-11 rounded-xl ${selectedApplicant.avatarColor} flex items-center justify-center text-white font-black shrink-0`}>{selectedApplicant.avatar}</div>
+                  <div className="flex-1 min-w-0">
+                    <p className={`font-black ${D ? "text-white" : "text-slate-900"}`}>{selectedApplicant.name}</p>
+                    <p className={`text-xs font-semibold capitalize mt-0.5 ${D ? "text-zinc-500" : "text-slate-400"}`}>{selectedApplicant.role} · {selectedApplicant.email}</p>
+                  </div>
+                  <VerifStatusBadge status={selectedApplicant.status} />
+                  <button onClick={() => setSelectedApplicant(null)} className={`p-2 rounded-lg transition-all ${D ? "text-zinc-500 hover:bg-white/5" : "text-slate-400 hover:bg-slate-100"}`}>
+                    <XCircle size={17} />
+                  </button>
+                </div>
+
+                {/* Modal body */}
+                <div className="p-5 overflow-y-auto flex-1 space-y-4">
+                  <div>
+                    <p className={`text-[10px] font-black uppercase tracking-widest mb-2 ${D ? "text-zinc-500" : "text-slate-400"}`}>Submitted Documents</p>
+                    <div className="space-y-2">
+                      {selectedApplicant.documents.map((doc) => (
+                        <div key={doc} className={`flex items-center justify-between p-3 rounded-xl border ${D ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-100"}`}>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 size={14} className="text-green-500 shrink-0" />
+                            <span className={`text-sm font-semibold ${D ? "text-zinc-200" : "text-slate-700"}`}>{doc}</span>
+                          </div>
+                          <button className="text-[10px] font-bold text-amber-500 hover:underline flex items-center gap-1">
+                            <Eye size={10} /> View
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className={`text-[10px] font-black uppercase tracking-widest mb-2 ${D ? "text-zinc-500" : "text-slate-400"}`}>Reason / Note</p>
+                    <textarea
+                      value={actionReason}
+                      onChange={(e) => setActionReason(e.target.value)}
+                      placeholder="Explain the action taken for the audit log..."
+                      rows={3}
+                      className={`w-full px-4 py-3 border rounded-xl text-sm font-medium outline-none resize-none transition-all focus:ring-2 focus:ring-blue-500/20 ${D ? "bg-white/5 border-white/10 text-zinc-200 placeholder:text-zinc-600" : "bg-slate-50 border-slate-100 text-slate-700 placeholder:text-slate-400"}`}
+                    />
+                  </div>
+                </div>
+
+                {/* Modal footer */}
+                <div className={`p-5 border-t space-y-3 ${D ? "border-white/5" : "border-slate-100"}`}>
+                  {actionError && <p className="text-xs font-bold text-red-500 text-center">{actionError}</p>}
+                  <div className="grid grid-cols-2 gap-2">
+                    <button disabled={actionLoading} onClick={() => handleVerificationAction(selectedApplicant.id, "approved", actionReason)}
+                      className="flex items-center justify-center gap-2 py-3 rounded-xl bg-green-500 hover:bg-green-600 text-white font-bold text-sm transition-all disabled:opacity-50">
+                      {actionLoading ? <RefreshCw size={14} className="animate-spin" /> : <CheckCircle2 size={14} />} Approve
+                    </button>
+                    <button disabled={actionLoading} onClick={() => handleVerificationAction(selectedApplicant.id, "rejected", actionReason)}
+                      className="flex items-center justify-center gap-2 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold text-sm transition-all disabled:opacity-50">
+                      {actionLoading ? <RefreshCw size={14} className="animate-spin" /> : <XCircle size={14} />} Reject
+                    </button>
+                    <button disabled={actionLoading} onClick={() => handleVerificationAction(selectedApplicant.id, "resubmission_required", actionReason)}
+                      className="flex items-center justify-center gap-2 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm transition-all disabled:opacity-50">
+                      {actionLoading ? <RefreshCw size={14} className="animate-spin" /> : <RefreshCw size={14} />} Request Resubmit
+                    </button>
+                    <button disabled={actionLoading} onClick={() => handleVerificationAction(selectedApplicant.id, "suspended", actionReason)}
+                      className="flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-700 hover:bg-slate-800 text-white font-bold text-sm transition-all disabled:opacity-50">
+                      {actionLoading ? <RefreshCw size={14} className="animate-spin" /> : <AlertTriangle size={14} />} Suspend
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </div>
   );
 }
 
-// ── Verification status badge ─────────────────────────────
+// ── Verification Status Badge ─────────────────────────────
 function VerifStatusBadge({ status }: { status: VerificationStatus }) {
   const map: Record<VerificationStatus, { label: string; cls: string }> = {
-    pending:   { label: "Pending",   cls: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400" },
-    approved:  { label: "Approved",  cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400" },
-    rejected:  { label: "Rejected",  cls: "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400" },
-    suspended: { label: "Suspended", cls: "bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300" },
-    resubmission_required: { label: "Resubmit", cls: "bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400" },
+    pending:               { label: "Pending",   cls: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400"   },
+    approved:              { label: "Approved",  cls: "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400"   },
+    rejected:              { label: "Rejected",  cls: "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400"           },
+    suspended:             { label: "Suspended", cls: "bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300"       },
+    resubmission_required: { label: "Resubmit",  cls: "bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400" },
   };
   const { label, cls } = map[status];
-  return (
-    <span className={`text-[10px] font-black px-3 py-1 rounded-full flex-shrink-0 ${cls}`}>{label}</span>
-  );
+  return <span className={`text-[10px] font-black px-2.5 py-1 rounded-full shrink-0 ${cls}`}>{label}</span>;
 }
