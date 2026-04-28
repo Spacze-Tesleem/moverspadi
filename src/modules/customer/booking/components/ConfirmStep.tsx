@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { BookingFormData } from "@/src/domain/booking/types";
+import { useBookingStore } from "@/src/application/store/bookingStore";
 import {
   CheckCircle2, Car, Calendar, ChevronLeft,
   Loader2, Package, Truck, Wrench, ShieldCheck
@@ -25,19 +26,24 @@ const SERVICE_ICONS: Record<string, React.ComponentType<{ className?: string }>>
 export default function ConfirmStep({ bookingData, onPrev, onConfirm }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  const { setPickup, setDropoff, setService } = useBookingStore();
 
   const ServiceIcon = SERVICE_ICONS[bookingData.serviceType] || Car;
 
   const handleConfirm = async () => {
     setIsSubmitting(true);
-    
-    // Simulate API Processing (2 seconds)
+
+    // Persist booking details to Zustand store (localStorage-backed) so
+    // PriceView, SearchingView, and the Mover Work Queue can all read them.
+    setPickup(bookingData.pickup || "");
+    setDropoff(bookingData.dropoff || "");
+    setService(bookingData.serviceType || "");
+
+    // Simulate API processing
     await new Promise((resolve) => setTimeout(resolve, 2000));
-    
-    // Execute any cleanup from parent if needed
+
     if (onConfirm) onConfirm();
 
-    // 🚀 ROUTE TO PRICE PAGE
     router.push("/customer/price");
   };
 
