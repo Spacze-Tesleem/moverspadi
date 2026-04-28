@@ -287,12 +287,22 @@ function AdminDashboardInner() {
               <Bell size={18} />
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full" />
             </button>
+            <div className={`hidden sm:block h-5 w-px mx-1 ${D ? "bg-white/10" : "bg-slate-200"}`} />
+            <button
+              onClick={() => handleTabChange("verification")}
+              className="hidden sm:flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm shadow-blue-500/20"
+            >
+              <ClipboardList size={12} /> Review Queue
+            </button>
+            <button onClick={() => handleTabChange("verification")} className="sm:hidden p-2 bg-blue-600 text-white rounded-xl">
+              <ClipboardList size={18} />
+            </button>
           </div>
         </header>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
-          <div className="max-w-5xl mx-auto px-4 lg:px-6 py-5 lg:py-6">
+          <div className="max-w-6xl mx-auto px-4 lg:px-6 py-5 lg:py-6">
             <AnimatePresence mode="wait">
 
               {/* ── OVERVIEW ── */}
@@ -693,21 +703,25 @@ function AdminDashboardInner() {
 
         {/* Mobile bottom nav */}
         <nav className={`lg:hidden border-t flex items-center justify-around px-2 py-2 shrink-0 transition-colors ${D ? "bg-[#0a0a0a] border-white/5" : "bg-white border-slate-200"}`}>
-          {[
-            { id: "overview" as ActiveView,     icon: LayoutGrid  },
-            { id: "users" as ActiveView,         icon: Users       },
-            { id: "verification" as ActiveView,  icon: ClipboardList },
-            { id: "alerts" as ActiveView,        icon: Bell        },
-            { id: "settings" as ActiveView,      icon: Settings    },
-          ].map((item) => {
+          {([
+            { id: "overview"     as ActiveView, icon: LayoutGrid,   label: "Home"   },
+            { id: "users"        as ActiveView, icon: Users,        label: "Users"  },
+            { id: "verification" as ActiveView, icon: ClipboardList, label: "Verify", badge: pendingCount > 0 ? pendingCount : undefined },
+            { id: "alerts"       as ActiveView, icon: Bell,         label: "Alerts", badge: 3 },
+            { id: "settings"     as ActiveView, icon: Settings,     label: "Config" },
+          ] as { id: ActiveView; icon: React.ComponentType<{ size?: number; strokeWidth?: number }>; label: string; badge?: number }[]).map((item) => {
             const isActive = activeView === item.id;
             return (
               <button
                 key={item.id}
                 onClick={() => handleTabChange(item.id)}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all ${isActive ? "text-blue-500" : D ? "text-zinc-600 hover:text-zinc-400" : "text-slate-400 hover:text-slate-600"}`}
+                className={`relative flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all ${isActive ? "text-blue-500" : D ? "text-zinc-600 hover:text-zinc-400" : "text-slate-400 hover:text-slate-600"}`}
               >
-                <item.icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
+                <span className="relative">
+                  <item.icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
+                  {item.badge && <span className="absolute -top-1 -right-1.5 w-3.5 h-3.5 bg-red-500 text-white text-[8px] font-black rounded-full flex items-center justify-center">{item.badge}</span>}
+                </span>
+                <span className="text-[10px] font-semibold">{item.label}</span>
               </button>
             );
           })}

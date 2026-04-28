@@ -281,12 +281,22 @@ export function MoverDashboardInner() {
               <Bell size={18} />
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-blue-500 rounded-full" />
             </button>
+            <div className={`hidden sm:block h-5 w-px mx-1 ${D ? "bg-white/10" : "bg-slate-200"}`} />
+            <button
+              onClick={() => handleTabChange("jobs")}
+              className="hidden sm:flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm shadow-blue-500/20"
+            >
+              <Zap size={12} /> Find Jobs
+            </button>
+            <button onClick={() => handleTabChange("jobs")} className="sm:hidden p-2 bg-blue-600 text-white rounded-xl">
+              <Zap size={18} />
+            </button>
           </div>
         </header>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
-          <div className="max-w-5xl mx-auto px-4 lg:px-6 py-5 lg:py-6">
+          <div className="max-w-6xl mx-auto px-4 lg:px-6 py-5 lg:py-6">
             <AnimatePresence mode="wait">
 
               {/* DASHBOARD */}
@@ -459,13 +469,13 @@ export function MoverDashboardInner() {
 
         {/* Mobile bottom nav */}
         <nav className={`lg:hidden border-t flex items-center justify-around px-2 py-2 shrink-0 transition-colors ${D ? "bg-[#0a0a0a] border-white/5" : "bg-white border-slate-200"}`}>
-          {[
-            { id: "dashboard",    icon: TrendingUp  },
-            { id: "jobs",         icon: Zap         },
-            { id: "earnings",     icon: DollarSign  },
-            { id: "verification", icon: ShieldCheck },
-            { id: "profile",      icon: User        },
-          ].map((item) => {
+          {([
+            { id: "dashboard",    icon: TrendingUp,  label: "Home"   },
+            { id: "jobs",         icon: Zap,         label: "Jobs"   },
+            { id: "earnings",     icon: DollarSign,  label: "Earn"   },
+            { id: "verification", icon: ShieldCheck, label: "Verify" },
+            { id: "profile",      icon: User,        label: "Profile"},
+          ] as { id: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number }>; label: string }[]).map((item) => {
             const isActive = activeView === item.id;
             return (
               <button
@@ -474,6 +484,7 @@ export function MoverDashboardInner() {
                 className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all ${isActive ? "text-blue-500" : D ? "text-zinc-600 hover:text-zinc-400" : "text-slate-400 hover:text-slate-600"}`}
               >
                 <item.icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
+                <span className="text-[10px] font-semibold">{item.label}</span>
               </button>
             );
           })}
