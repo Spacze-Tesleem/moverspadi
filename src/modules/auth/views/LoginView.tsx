@@ -301,7 +301,7 @@ function LoginPageInner() {
         </div>
 
         {/* RIGHT — form */}
-        <div className="flex-1 p-8 md:p-14 lg:p-20 flex flex-col justify-center">
+        <div className="flex-1 p-6 sm:p-8 md:p-14 lg:p-20 flex flex-col justify-center overflow-y-auto">
           <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-3xl mb-10">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm text-blue-600">
@@ -396,7 +396,7 @@ function LoginPageInner() {
               </span>
               <div className="flex-1 h-px bg-slate-100" />
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {DEMO_ACCOUNTS.map((account) => {
                 const Icon = account.icon;
                 const isLoading = demoLoading === account.role;

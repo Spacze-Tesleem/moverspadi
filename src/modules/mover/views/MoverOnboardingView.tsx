@@ -137,7 +137,7 @@ export default function MoverOnboardingView() {
           })}
         </div>
 
-        <div className="bg-white/80 backdrop-blur-3xl rounded-[40px] shadow-2xl shadow-slate-200/60 border border-white p-8 md:p-12">
+        <div className="bg-white/80 backdrop-blur-3xl rounded-3xl sm:rounded-[40px] shadow-2xl shadow-slate-200/60 border border-white p-5 sm:p-8 md:p-12">
           <div className="mb-8">
             <div className="flex justify-between mb-2 px-1">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Step {step} of {STEPS.length}</span>

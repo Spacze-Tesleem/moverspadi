@@ -161,7 +161,7 @@ export default function CompanyOnboardingView() {
         </div>
 
         {/* ── Form Card ── */}
-        <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-3xl rounded-[3rem] shadow-2xl shadow-slate-200/50 dark:shadow-none border border-white dark:border-white/5 p-10 overflow-hidden relative">
+        <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-3xl rounded-3xl sm:rounded-[3rem] shadow-2xl shadow-slate-200/50 dark:shadow-none border border-white dark:border-white/5 p-5 sm:p-10 overflow-hidden relative">
           
           <AnimatePresence mode="wait">
             <motion.div

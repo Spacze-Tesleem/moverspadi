@@ -119,7 +119,7 @@ export default function SaasHero() {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.6 }}
-              className="absolute -left-8 top-20 bg-white/90 backdrop-blur-md p-4 pr-8 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-white/50 flex items-center gap-4 animate-float-slow"
+              className="hidden sm:flex absolute -left-8 top-20 bg-white/90 backdrop-blur-md p-4 pr-8 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-white/50 items-center gap-4 animate-float-slow"
             >
               <div className="w-12 h-12 rounded-xl bg-green-500 flex items-center justify-center text-white shadow-lg shadow-green-500/30">
                 <CheckCircle2 size={24} />
@@ -135,7 +135,7 @@ export default function SaasHero() {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.8 }}
-              className="absolute -right-6 bottom-32 bg-slate-900 p-5 rounded-2xl shadow-2xl shadow-slate-900/20 flex flex-col gap-3 animate-float-reverse"
+              className="hidden sm:flex absolute -right-6 bottom-32 bg-slate-900 p-5 rounded-2xl shadow-2xl shadow-slate-900/20 flex-col gap-3 animate-float-reverse"
             >
               <div className="flex items-center gap-3 mb-1">
                 <div className="p-1.5 bg-white/10 rounded-lg">

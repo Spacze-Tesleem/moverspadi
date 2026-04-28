@@ -53,7 +53,7 @@ function BookServiceContent() {
       <div className="w-full lg:w-[540px] bg-[#0a0a0a] border-r border-white/5 flex flex-col h-full relative z-20 shadow-2xl">
         
         {/* Header / Breadcrumbs */}
-        <div className="h-16 flex items-center justify-between px-8 border-b border-white/5 bg-[#0a0a0a]/50 backdrop-blur-sm">
+        <div className="h-14 sm:h-16 flex items-center justify-between px-4 sm:px-8 border-b border-white/5 bg-[#0a0a0a]/50 backdrop-blur-sm">
           <div className="flex items-center gap-2 text-sm">
             <span className="text-zinc-500">New Request</span>
             <span className="text-zinc-700">/</span>
@@ -68,7 +68,7 @@ function BookServiceContent() {
         </div>
 
         {/* Progress Bar (Minimalist) */}
-        <div className="px-8 pt-6 pb-2">
+        <div className="px-4 sm:px-8 pt-5 sm:pt-6 pb-2">
           <div className="flex gap-1.5 h-1">
             {steps.map((_, idx) => (
               <div 
@@ -86,7 +86,7 @@ function BookServiceContent() {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-4 sm:py-6 custom-scrollbar">
           {steps[activeStep] === "Location" && (
             <LocationStep 
                 bookingData={bookingData} 
