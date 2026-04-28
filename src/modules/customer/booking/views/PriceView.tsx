@@ -30,7 +30,7 @@ export default function PriceView() {
 
   const handleConfirm = () => {
     confirmBooking(total);
-    router.push("/customer/track");
+    router.push("/customer/searching");
   };
 
   return (

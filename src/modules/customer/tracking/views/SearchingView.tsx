@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useBookingStore } from "@/src/application/store/bookingStore";
+import { useBookingStore, startBookingStoreSync } from "@/src/application/store/bookingStore";
 import { 
   MapPin, 
   Navigation, 
@@ -34,29 +34,49 @@ const loadingSteps = [
 export default function SearchingView() {
   const router = useRouter();
   
-  // Zustand State Management (clearBooking removed)
-  const { service, pickup, dropoff, price } = useBookingStore();
+  const { service, pickup, dropoff, price, status } = useBookingStore();
 
   const [step, setStep] = useState(0);
   const [isFound, setIsFound] = useState(false);
   
-  // Fallback to Bike icon if service is undefined
   const Icon = serviceIcons[service as string] || Bike;
 
+  // Watch for the mover accepting (status → "matched") via the shared store.
+  // The mover dashboard writes to localStorage and startBookingStoreSync keeps
+  // the Zustand store in sync, so this effect reacts in near-real-time.
   useEffect(() => {
-    // 1. Cycle through the status text steps every 800ms
+    if (status === "matched" && !isFound) {
+      setIsFound(true);
+    }
+  }, [status, isFound]);
+
+  // Auto-navigate to tracking once a mover is found (either real or simulated).
+  useEffect(() => {
+    if (!isFound) return;
+    const timer = setTimeout(() => {
+      router.push("/customer/track");
+    }, 1800);
+    return () => clearTimeout(timer);
+  }, [isFound, router]);
+
+  useEffect(() => {
+    // Start cross-tab sync so this view reacts when the mover accepts
+    // in another browser tab and sets status → "matched" in localStorage.
+    const stopSync = startBookingStoreSync();
+
+    // 1. Cycle through status text every 800ms while searching
     const stepInterval = setInterval(() => {
       setStep((prev) => (prev < loadingSteps.length - 1 ? prev + 1 : prev));
     }, 800);
 
-    // 2. Simulate the backend "finding" a mover after 3.5 seconds
+    // 2. Fallback simulation — if no real mover accepts within 8s, proceed anyway
     const timer = setTimeout(() => {
       setIsFound(true);
       clearInterval(stepInterval);
-    }, 3500);
+    }, 8000);
 
-    // Cleanup timers on unmount
     return () => {
+      stopSync();
       clearTimeout(timer);
       clearInterval(stepInterval);
     };
@@ -130,11 +150,15 @@ export default function SearchingView() {
             animate={{ opacity: 1, y: 0 }}
             className="text-3xl font-black tracking-tight"
           >
-            {isFound ? "Mover Found!" : loadingSteps[step]}
+            {isFound
+              ? status === "matched" ? "Mover Accepted!" : "Mover Found!"
+              : loadingSteps[step]}
           </motion.h1>
           <p className="text-slate-400 font-medium max-w-[280px] mx-auto">
             {isFound 
-              ? "A professional mover is being assigned to your route." 
+              ? status === "matched"
+                ? "Your mover has accepted the trip and is on the way."
+                : "A professional mover is being assigned to your route."
               : "We're matching you with the best rates in your area..."}
           </p>
         </div>
@@ -195,16 +219,20 @@ export default function SearchingView() {
           )}
           
           {isFound && (
-            <motion.button
+            <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              onClick={() => router.push('/customer/track')}
-              className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-lg shadow-slate-200 hover:bg-blue-600 transition-all flex items-center gap-3 group"
+              className="flex flex-col items-center gap-3"
             >
-              Track Driver Location
-              <Loader2 className="w-4 h-4 animate-spin group-hover:hidden" />
-              <Navigation className="w-4 h-4 hidden group-hover:block animate-bounce" />
-            </motion.button>
+              <button
+                onClick={() => router.push('/customer/track')}
+                className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-lg shadow-slate-200 hover:bg-blue-600 transition-all flex items-center gap-3 group"
+              >
+                Track Your Mover
+                <Navigation className="w-4 h-4 animate-bounce" />
+              </button>
+              <p className="text-xs text-slate-400 font-medium">Opening tracking automatically…</p>
+            </motion.div>
           )}
         </div>
       </div>
