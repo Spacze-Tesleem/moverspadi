@@ -86,6 +86,20 @@ function AdminDashboardInner() {
   const [actionError, setActionError]         = useState<string | null>(null);
   const [auditLog, setAuditLog]               = useState<{ id: string; action: string; reason: string; admin: string; timestamp: string }[]>([]);
 
+  const [userSearch, setUserSearch]           = useState("");
+  const [showInvite, setShowInvite]           = useState(false);
+  const [inviteEmail, setInviteEmail]         = useState("");
+  const [inviteRole, setInviteRole]           = useState("mover");
+  const [inviteSent, setInviteSent]           = useState(false);
+  const [orderSearch, setOrderSearch]         = useState("");
+
+  const [adminConfig, setAdminConfig] = useState({
+    maintenanceMode: false, newRegistrations: true, orderProcessing: true,
+    autoPayout: true, emailAlerts: true, smsNotifications: false, pushNotifications: true,
+  });
+  const toggleConfig = (k: keyof typeof adminConfig) =>
+    setAdminConfig((p) => ({ ...p, [k]: !p[k] }));
+
   // Load real verification queue
   useEffect(() => {
     if (!token) return;
@@ -387,19 +401,65 @@ function AdminDashboardInner() {
               {/* ── USERS ── */}
               {activeView === "users" && (
                 <motion.div key="u" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
                     <h2 className={`text-xl font-black ${D ? "text-white" : "text-slate-900"}`}>User Management</h2>
-                    <button className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-sm shadow-blue-500/20 transition-all">
+                    <button
+                      onClick={() => { setShowInvite(true); setInviteSent(false); setInviteEmail(""); }}
+                      className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-sm shadow-blue-500/20 transition-all"
+                    >
                       <UserPlus size={14} /> Invite Member
                     </button>
                   </div>
 
+                  {showInvite && (
+                    <div className={`rounded-2xl border p-5 space-y-3 ${D ? "bg-[#0e0e0e] border-white/10" : "bg-white border-slate-200"}`}>
+                      <div className="flex items-center justify-between">
+                        <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>Invite a Member</p>
+                        <button onClick={() => setShowInvite(false)} className={D ? "text-zinc-500 hover:text-zinc-300" : "text-slate-400 hover:text-slate-600"}><X size={16} /></button>
+                      </div>
+                      {inviteSent ? (
+                        <div className="py-6 text-center space-y-2">
+                          <CheckCircle2 size={32} className="mx-auto text-green-500" />
+                          <p className="text-green-600 font-bold text-sm">Invitation sent to {inviteEmail}</p>
+                          <p className={`text-xs ${D ? "text-zinc-500" : "text-slate-400"}`}>They will receive an email with access instructions.</p>
+                        </div>
+                      ) : (
+                        <>
+                          <div>
+                            <label className={`text-[10px] font-bold uppercase tracking-wider ${D ? "text-zinc-500" : "text-slate-400"}`}>Email Address</label>
+                            <input value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="colleague@company.com"
+                              className={`mt-1 w-full px-4 py-2.5 rounded-xl border text-sm font-semibold outline-none transition-all ${D ? "bg-white/5 border-white/10 text-zinc-200 placeholder:text-zinc-600 focus:border-blue-500" : "bg-slate-50 border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"}`}
+                            />
+                          </div>
+                          <div>
+                            <label className={`text-[10px] font-bold uppercase tracking-wider ${D ? "text-zinc-500" : "text-slate-400"}`}>Role</label>
+                            <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value)}
+                              className={`mt-1 w-full px-4 py-2.5 rounded-xl border text-sm font-semibold outline-none transition-all ${D ? "bg-white/5 border-white/10 text-zinc-200 focus:border-blue-500" : "bg-slate-50 border-slate-200 text-slate-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"}`}
+                            >
+                              {["admin", "mover", "company", "customer"].map((r) => (
+                                <option key={r} value={r} className={D ? "bg-[#0e0e0e]" : "bg-white"}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="flex gap-3 pt-1">
+                            <button onClick={() => setShowInvite(false)} className={`flex-1 py-2.5 rounded-xl text-sm font-bold border transition-all ${D ? "border-white/10 text-zinc-400 hover:bg-white/5" : "border-slate-200 text-slate-500 hover:bg-slate-50"}`}>Cancel</button>
+                            <button onClick={() => { if (inviteEmail) setInviteSent(true); }} className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all">Send Invite</button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+
                   <div className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
-                    <div className={`px-4 py-3 border-b ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                    <div className={`px-4 py-3 border-b flex items-center justify-between gap-3 ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
                       <p className={`text-xs font-semibold ${D ? "text-zinc-500" : "text-slate-400"}`}>Manage 12,481 accounts</p>
+                      <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs ${D ? "bg-white/5 text-zinc-400 border border-white/5" : "bg-slate-50 text-slate-400 border border-slate-100"}`}>
+                        <Search size={12} />
+                        <input type="text" placeholder="Search users…" value={userSearch} onChange={(e) => setUserSearch(e.target.value)} className="bg-transparent outline-none w-28 font-medium" />
+                      </div>
                     </div>
                     <div className={`divide-y ${D ? "bg-[#0e0e0e] divide-white/5" : "bg-white divide-slate-100"}`}>
-                      {RECENT_USERS.map((u, i) => (
+                      {RECENT_USERS.filter((u) => !userSearch || u.name.toLowerCase().includes(userSearch.toLowerCase()) || u.email.toLowerCase().includes(userSearch.toLowerCase())).map((u, i) => (
                         <div key={i} className={`flex items-center gap-4 px-4 py-3 transition-all ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
                           <div className={`w-10 h-10 rounded-xl ${u.color} flex items-center justify-center text-white text-sm font-black shrink-0`}>{u.avatar}</div>
                           <div className="flex-1 min-w-0">
@@ -417,6 +477,9 @@ function AdminDashboardInner() {
                           </div>
                         </div>
                       ))}
+                      {RECENT_USERS.filter((u) => !userSearch || u.name.toLowerCase().includes(userSearch.toLowerCase()) || u.email.toLowerCase().includes(userSearch.toLowerCase())).length === 0 && (
+                        <div className={`px-4 py-8 text-center text-sm ${D ? "text-zinc-600" : "text-slate-400"}`}>No users match your search.</div>
+                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -454,8 +517,8 @@ function AdminDashboardInner() {
                   <div className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
                     <div className={`px-4 py-3 border-b flex items-center justify-between ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
                       <h3 className={`text-sm font-bold ${D ? "text-zinc-300" : "text-slate-700"}`}>Recent Orders</h3>
-                      <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs ${D ? "bg-white/5 text-zinc-400" : "bg-slate-50 text-slate-400 border border-slate-100"}`}>
-                        <Search size={12} /><input type="text" placeholder="Search orders..." className="bg-transparent outline-none w-24 font-medium" />
+                      <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs ${D ? "bg-white/5 text-zinc-400 border border-white/5" : "bg-slate-50 text-slate-400 border border-slate-100"}`}>
+                        <Search size={12} /><input type="text" placeholder="Search orders…" value={orderSearch} onChange={(e) => setOrderSearch(e.target.value)} className="bg-transparent outline-none w-24 font-medium" />
                       </div>
                     </div>
                     <div className={`divide-y ${D ? "bg-[#0e0e0e] divide-white/5" : "bg-white divide-slate-100"}`}>
@@ -465,7 +528,7 @@ function AdminDashboardInner() {
                         { id: "ORD-4819", from: "Yaba",     to: "VI",       mover: "Chidi Movers", amount: "₦31,000", status: "Pending",    statusColor: "amber" },
                         { id: "ORD-4818", from: "Oshodi",   to: "Ikorodu",  mover: "FastMove NG",  amount: "₦18,200", status: "Delivered",  statusColor: "green" },
                         { id: "ORD-4817", from: "Gbagada",  to: "Apapa",    mover: "Tunde & Sons", amount: "₦27,500", status: "Cancelled",  statusColor: "rose"  },
-                      ].map((order, i) => (
+                      ].filter((o) => !orderSearch || [o.id, o.from, o.to, o.mover, o.status].some((f) => f.toLowerCase().includes(orderSearch.toLowerCase()))).map((order, i) => (
                         <div key={i} className={`flex items-center gap-4 px-4 py-3 transition-all ${D ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
                           <div className={`p-2.5 rounded-xl shrink-0 ${D ? "bg-white/5" : "bg-slate-100"}`}>
                             <Package size={15} className={D ? "text-zinc-400" : "text-slate-500"} />
@@ -630,35 +693,32 @@ function AdminDashboardInner() {
                   <h2 className={`text-xl font-black ${D ? "text-white" : "text-slate-900"}`}>Configuration</h2>
                   <p className={`text-sm -mt-2 ${D ? "text-zinc-500" : "text-slate-400"}`}>Platform-wide settings and controls</p>
 
-                  {[
+                  {([
                     {
-                      title: "Platform Controls",
-                      icon: Shield,
+                      title: "Platform Controls", icon: Shield,
                       items: [
-                        { label: "Maintenance Mode",   desc: "Take the platform offline for all users",       type: "toggle", value: false },
-                        { label: "New Registrations",  desc: "Allow new users to sign up",                    type: "toggle", value: true  },
-                        { label: "Order Processing",   desc: "Enable order creation and dispatch",            type: "toggle", value: true  },
+                        { label: "Maintenance Mode",  desc: "Take the platform offline for all users",  key: "maintenanceMode"  as const, type: "toggle" as const },
+                        { label: "New Registrations", desc: "Allow new users to sign up",               key: "newRegistrations" as const, type: "toggle" as const },
+                        { label: "Order Processing",  desc: "Enable order creation and dispatch",       key: "orderProcessing"  as const, type: "toggle" as const },
                       ],
                     },
                     {
-                      title: "Payment Settings",
-                      icon: CreditCard,
+                      title: "Payment Settings", icon: CreditCard,
                       items: [
-                        { label: "Platform Commission", desc: "Percentage taken from each order",             type: "input",  value: "12%" },
-                        { label: "Minimum Order Value", desc: "Lowest accepted order amount",                 type: "input",  value: "₦2,500" },
-                        { label: "Auto Payout",         desc: "Automatically pay movers after delivery",      type: "toggle", value: true  },
+                        { label: "Platform Commission", desc: "Percentage taken from each order",       key: null as null, type: "input" as const, value: "12%" },
+                        { label: "Minimum Order Value", desc: "Lowest accepted order amount",           key: null as null, type: "input" as const, value: "₦2,500" },
+                        { label: "Auto Payout",         desc: "Automatically pay movers after delivery",key: "autoPayout" as const, type: "toggle" as const },
                       ],
                     },
                     {
-                      title: "Notifications",
-                      icon: Bell,
+                      title: "Notifications", icon: Bell,
                       items: [
-                        { label: "Email Alerts",        desc: "Send system alerts to admin email",            type: "toggle", value: true  },
-                        { label: "SMS Notifications",   desc: "Send SMS for critical events",                 type: "toggle", value: false },
-                        { label: "Push Notifications",  desc: "Browser push for real-time alerts",            type: "toggle", value: true  },
+                        { label: "Email Alerts",       desc: "Send system alerts to admin email",       key: "emailAlerts"       as const, type: "toggle" as const },
+                        { label: "SMS Notifications",  desc: "Send SMS for critical events",            key: "smsNotifications"  as const, type: "toggle" as const },
+                        { label: "Push Notifications", desc: "Browser push for real-time alerts",       key: "pushNotifications" as const, type: "toggle" as const },
                       ],
                     },
-                  ].map((section, si) => (
+                  ] as const).map((section, si) => (
                     <div key={si} className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
                       <div className={`flex items-center gap-3 px-4 py-3 border-b ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
                         <div className={`p-2 rounded-lg ${D ? "bg-white/5" : "bg-slate-100"}`}>
@@ -667,23 +727,26 @@ function AdminDashboardInner() {
                         <h3 className={`text-sm font-bold ${D ? "text-zinc-300" : "text-slate-700"}`}>{section.title}</h3>
                       </div>
                       <div className={`divide-y ${D ? "bg-[#0e0e0e] divide-white/5" : "bg-white divide-slate-100"}`}>
-                        {section.items.map((item, ii) => (
-                          <div key={ii} className="flex items-center justify-between px-5 py-4">
-                            <div>
-                              <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>{item.label}</p>
-                              <p className={`text-xs mt-0.5 ${D ? "text-zinc-600" : "text-slate-400"}`}>{item.desc}</p>
-                            </div>
-                            {item.type === "toggle" ? (
-                              <button className={`relative w-10 h-5 rounded-full transition-colors duration-300 ${item.value ? "bg-blue-500" : D ? "bg-white/10" : "bg-slate-200"}`}>
-                                <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300 ${item.value ? "translate-x-5" : "translate-x-0.5"}`} />
-                              </button>
-                            ) : (
-                              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-bold ${D ? "bg-white/5 border-white/10 text-zinc-300" : "bg-slate-50 border-slate-100 text-slate-700"}`}>
-                                {item.value} <ChevronRight size={13} className={D ? "text-zinc-600" : "text-slate-300"} />
+                        {section.items.map((item, ii) => {
+                          const isOn = item.key ? adminConfig[item.key] : false;
+                          return (
+                            <div key={ii} className="flex items-center justify-between px-5 py-4">
+                              <div>
+                                <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>{item.label}</p>
+                                <p className={`text-xs mt-0.5 ${D ? "text-zinc-600" : "text-slate-400"}`}>{item.desc}</p>
                               </div>
-                            )}
-                          </div>
-                        ))}
+                              {item.type === "toggle" ? (
+                                <button onClick={() => item.key && toggleConfig(item.key)} className={`relative w-10 h-5 rounded-full transition-colors duration-300 ${isOn ? "bg-blue-500" : D ? "bg-white/10" : "bg-slate-200"}`}>
+                                  <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300 ${isOn ? "translate-x-5" : "translate-x-0.5"}`} />
+                                </button>
+                              ) : (
+                                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-bold ${D ? "bg-white/5 border-white/10 text-zinc-300" : "bg-slate-50 border-slate-100 text-slate-700"}`}>
+                                  {"value" in item ? item.value : ""} <ChevronRight size={13} className={D ? "text-zinc-600" : "text-slate-300"} />
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   ))}

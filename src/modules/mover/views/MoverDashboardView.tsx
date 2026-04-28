@@ -50,6 +50,23 @@ export function MoverDashboardInner() {
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSidebarOpen, setSidebarOpen]   = useState(true);
 
+  const [moverSettings, setMoverSettings] = useState({
+    newJobAlerts: true, payoutConfirm: true, appUpdates: false,
+    twoFactor: false, locationSharing: true, profileVisibility: true,
+    offlineByDefault: false, soundAlerts: true,
+  });
+  const toggleSetting = (k: keyof typeof moverSettings) =>
+    setMoverSettings((p) => ({ ...p, [k]: !p[k] }));
+
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({ name: "", phone: "", vehicle: "Toyota Hilux · LND-421" });
+
+  const [showWithdraw, setShowWithdraw]   = useState(false);
+  const [withdrawBank, setWithdrawBank]   = useState("");
+  const [withdrawAcct, setWithdrawAcct]   = useState("");
+  const [withdrawAmt, setWithdrawAmt]     = useState("");
+  const [withdrawDone, setWithdrawDone]   = useState(false);
+
   const {
     status: customerStatus,
     pickup: customerPickup,
@@ -554,18 +571,55 @@ export function MoverDashboardInner() {
                         </div>
                       ))}
                     </div>
-                    <button className="w-full py-2.5 bg-white text-blue-700 font-bold text-sm rounded-xl hover:bg-blue-50 transition-all">
+                    <button onClick={() => { setShowWithdraw(true); setWithdrawDone(false); }} className="w-full py-2.5 bg-white text-blue-700 font-bold text-sm rounded-xl hover:bg-blue-50 transition-all">
                       Withdraw to Bank
                     </button>
                     <div className="absolute -right-6 -top-6 w-28 h-28 bg-white/10 rounded-full blur-2xl pointer-events-none" />
                   </div>
 
+                  {showWithdraw && (
+                    <div className={`rounded-2xl border p-5 space-y-3 ${D ? "bg-[#0e0e0e] border-white/10" : "bg-white border-slate-200"}`}>
+                      <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>Withdraw to Bank</p>
+                      {withdrawDone ? (
+                        <div className="py-6 text-center space-y-2">
+                          <CheckCircle2 size={32} className="mx-auto text-green-500" />
+                          <p className="text-green-600 font-bold text-sm">Withdrawal request submitted!</p>
+                          <p className={`text-xs ${D ? "text-zinc-500" : "text-slate-400"}`}>Funds arrive in 1–2 business days.</p>
+                        </div>
+                      ) : (
+                        <>
+                          {[
+                            { label: "Bank Name",       val: withdrawBank,  set: setWithdrawBank, placeholder: "e.g. GTBank"       },
+                            { label: "Account Number",  val: withdrawAcct,  set: setWithdrawAcct, placeholder: "10-digit number"    },
+                            { label: "Amount (₦)",      val: withdrawAmt,   set: setWithdrawAmt,  placeholder: "Enter amount"       },
+                          ].map((f) => (
+                            <div key={f.label}>
+                              <label className={`text-[10px] font-bold uppercase tracking-wider ${D ? "text-zinc-500" : "text-slate-400"}`}>{f.label}</label>
+                              <input
+                                value={f.val} onChange={(e) => f.set(e.target.value)}
+                                placeholder={f.placeholder}
+                                className={`mt-1 w-full px-4 py-2.5 rounded-xl border text-sm font-semibold outline-none transition-all ${D ? "bg-white/5 border-white/10 text-zinc-200 placeholder:text-zinc-600 focus:border-blue-500" : "bg-slate-50 border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"}`}
+                              />
+                            </div>
+                          ))}
+                          <div className="flex gap-3 pt-1">
+                            <button onClick={() => setShowWithdraw(false)} className={`flex-1 py-2.5 rounded-xl text-sm font-bold border transition-all ${D ? "border-white/10 text-zinc-400 hover:bg-white/5" : "border-slate-200 text-slate-500 hover:bg-slate-50"}`}>Cancel</button>
+                            <button
+                              onClick={() => { if (withdrawBank && withdrawAcct && withdrawAmt) setWithdrawDone(true); }}
+                              className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all"
+                            >Confirm Withdrawal</button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-2 gap-3">
                     {[
-                      { label: "Add Bank Account", icon: CreditCard, color: "blue-500"  },
-                      { label: "Transaction History", icon: History, color: "violet-500" },
+                      { label: "Add Bank Account",    icon: CreditCard, color: "blue-500",   action: () => setShowWithdraw(true)  },
+                      { label: "Transaction History", icon: History,    color: "violet-500", action: () => {}                     },
                     ].map((item, i) => (
-                      <button key={i} className={`flex items-center gap-3 p-4 rounded-2xl border text-left transition-all hover:shadow-sm ${D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                      <button key={i} onClick={item.action} className={`flex items-center gap-3 p-4 rounded-2xl border text-left transition-all hover:shadow-sm ${D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300"}`}>
                         <div className={`p-2.5 rounded-xl ${D ? "bg-white/5" : "bg-slate-100"}`}>
                           <item.icon size={16} className={`text-${item.color}`} />
                         </div>
@@ -630,10 +684,38 @@ export function MoverDashboardInner() {
                         </span>
                       </div>
                     </div>
-                    <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm shadow-blue-500/20 shrink-0">
+                    <button
+                      onClick={() => { setProfileForm({ name: user?.name ?? profile?.fullName ?? "", phone: profile?.phone ?? "", vehicle: "Toyota Hilux · LND-421" }); setEditingProfile(true); }}
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm shadow-blue-500/20 shrink-0"
+                    >
                       <Edit size={13} /> Edit Profile
                     </button>
                   </div>
+
+                  {editingProfile && (
+                    <div className={`rounded-2xl border p-5 space-y-3 ${D ? "bg-[#0e0e0e] border-white/10" : "bg-white border-slate-200"}`}>
+                      <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>Edit Profile</p>
+                      {[
+                        { label: "Full Name", key: "name"    as const, placeholder: "Your full name"   },
+                        { label: "Phone",     key: "phone"   as const, placeholder: "+234 800 000 0000" },
+                        { label: "Vehicle",   key: "vehicle" as const, placeholder: "e.g. Toyota Hilux · LND-421" },
+                      ].map((f) => (
+                        <div key={f.key}>
+                          <label className={`text-[10px] font-bold uppercase tracking-wider ${D ? "text-zinc-500" : "text-slate-400"}`}>{f.label}</label>
+                          <input
+                            value={profileForm[f.key]}
+                            onChange={(e) => setProfileForm((p) => ({ ...p, [f.key]: e.target.value }))}
+                            placeholder={f.placeholder}
+                            className={`mt-1 w-full px-4 py-2.5 rounded-xl border text-sm font-semibold outline-none transition-all ${D ? "bg-white/5 border-white/10 text-zinc-200 placeholder:text-zinc-600 focus:border-blue-500" : "bg-slate-50 border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"}`}
+                          />
+                        </div>
+                      ))}
+                      <div className="flex gap-3 pt-1">
+                        <button onClick={() => setEditingProfile(false)} className={`flex-1 py-2.5 rounded-xl text-sm font-bold border transition-all ${D ? "border-white/10 text-zinc-400 hover:bg-white/5" : "border-slate-200 text-slate-500 hover:bg-slate-50"}`}>Cancel</button>
+                        <button onClick={() => setEditingProfile(false)} className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all">Save Changes</button>
+                      </div>
+                    </div>
+                  )}
 
                   <div className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
                     <div className={`px-4 py-3 border-b ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
@@ -684,32 +766,32 @@ export function MoverDashboardInner() {
                 <motion.div key="settings" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4 pb-4 max-w-2xl">
                   <h2 className={`text-xl lg:text-2xl font-black ${D ? "text-white" : "text-slate-900"}`}>Settings</h2>
 
-                  {[
+                  {([
                     {
                       title: "Notifications", icon: BellRing,
                       items: [
-                        { label: "New Job Alerts",      sub: "Get notified when a nearby trip request arrives", on: true  },
-                        { label: "Payout Confirmations",sub: "Receive alerts when earnings are transferred",    on: true  },
-                        { label: "App Updates",         sub: "Stay informed about platform improvements",       on: false },
+                        { label: "New Job Alerts",       sub: "Get notified when a nearby trip request arrives", key: "newJobAlerts"      as const },
+                        { label: "Payout Confirmations", sub: "Receive alerts when earnings are transferred",    key: "payoutConfirm"     as const },
+                        { label: "App Updates",          sub: "Stay informed about platform improvements",       key: "appUpdates"        as const },
                       ],
                     },
                     {
                       title: "Privacy & Security", icon: Lock,
                       items: [
-                        { label: "Two-Factor Authentication", sub: "Add an extra layer of security to your account", on: false },
-                        { label: "Location Sharing",          sub: "Allow real-time GPS tracking during active trips", on: true  },
-                        { label: "Profile Visibility",        sub: "Let customers see your profile while matched",    on: true  },
+                        { label: "Two-Factor Auth",   sub: "Add an extra layer of security to your account",   key: "twoFactor"         as const },
+                        { label: "Location Sharing",  sub: "Allow real-time GPS tracking during active trips",  key: "locationSharing"   as const },
+                        { label: "Profile Visibility",sub: "Let customers see your profile while matched",      key: "profileVisibility" as const },
                       ],
                     },
                     {
                       title: "Preferences", icon: Globe,
                       items: [
-                        { label: "Dark Mode",           sub: "Toggle between light and dark interface",           on: D     },
-                        { label: "Offline by Default",  sub: "Start app in offline mode each session",            on: false },
-                        { label: "Sound Alerts",        sub: "Play a sound when new trip requests arrive",        on: true  },
+                        { label: "Dark Mode",          sub: "Toggle between light and dark interface",          key: null as null },
+                        { label: "Offline by Default", sub: "Start app in offline mode each session",           key: "offlineByDefault"  as const },
+                        { label: "Sound Alerts",       sub: "Play a sound when new trip requests arrive",       key: "soundAlerts"       as const },
                       ],
                     },
-                  ].map((section, si) => (
+                  ] as const).map((section, si) => (
                     <div key={si} className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
                       <div className={`flex items-center gap-3 px-4 py-3 border-b ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
                         <div className={`p-1.5 rounded-lg ${D ? "bg-white/5" : "bg-slate-100"}`}>
@@ -718,20 +800,23 @@ export function MoverDashboardInner() {
                         <h3 className={`text-sm font-bold ${D ? "text-zinc-300" : "text-slate-700"}`}>{section.title}</h3>
                       </div>
                       <div className={`divide-y ${D ? "bg-[#0e0e0e] divide-white/5" : "bg-white divide-slate-100"}`}>
-                        {section.items.map((item, ii) => (
-                          <div key={ii} className="flex items-center justify-between px-4 py-3">
-                            <div>
-                              <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>{item.label}</p>
-                              <p className={`text-xs mt-0.5 ${D ? "text-zinc-600" : "text-slate-400"}`}>{item.sub}</p>
+                        {section.items.map((item, ii) => {
+                          const isOn = item.key ? moverSettings[item.key] : D;
+                          return (
+                            <div key={ii} className="flex items-center justify-between px-4 py-3">
+                              <div>
+                                <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>{item.label}</p>
+                                <p className={`text-xs mt-0.5 ${D ? "text-zinc-600" : "text-slate-400"}`}>{item.sub}</p>
+                              </div>
+                              <button
+                                onClick={item.key ? () => toggleSetting(item.key!) : toggleTheme}
+                                className={`relative w-10 h-5 rounded-full transition-colors duration-300 shrink-0 ml-4 ${isOn ? "bg-blue-500" : D ? "bg-white/10" : "bg-slate-200"}`}
+                              >
+                                <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300 ${isOn ? "translate-x-5" : "translate-x-0.5"}`} />
+                              </button>
                             </div>
-                            <button
-                              onClick={item.label === "Dark Mode" ? toggleTheme : undefined}
-                              className={`relative w-10 h-5 rounded-full transition-colors duration-300 shrink-0 ml-4 ${item.on ? "bg-blue-500" : D ? "bg-white/10" : "bg-slate-200"}`}
-                            >
-                              <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300 ${item.on ? "translate-x-5" : "translate-x-0.5"}`} />
-                            </button>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   ))}

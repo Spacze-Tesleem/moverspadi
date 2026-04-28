@@ -58,6 +58,9 @@ function CompanyDashboardInner() {
   const [activeView, setActiveView]           = useState<ActiveView>("overview");
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSidebarOpen, setSidebarOpen]       = useState(true);
+  const [expandedSetting, setExpandedSetting] = useState<string | null>(null);
+  const [companyForm, setCompanyForm] = useState({ name: user?.name ?? "Zenith Logistics Ltd", email: user?.email ?? "", phone: "+234 800 000 0001", rc: "RC-1234567" });
+  const toggleExpandedSetting = (label: string) => setExpandedSetting((p) => (p === label ? null : label));
 
   const navItems: { id: ActiveView; label: string; icon: typeof LayoutGrid }[] = [
     { id: "overview",  label: "Operations", icon: LayoutGrid  },
@@ -457,24 +460,111 @@ function CompanyDashboardInner() {
 
               {/* SETTINGS */}
               {activeView === "settings" && (
-                <motion.div key="st" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4 max-w-2xl">
+                <motion.div key="st" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3 max-w-2xl pb-4">
                   <h2 className={`text-xl font-black ${D ? "text-white" : "text-slate-900"}`}>Settings</h2>
-                  {[
-                    { label: "Company Profile",  sub: "Update your company name and details",  icon: Building2,   color: "blue-500"   },
-                    { label: "Billing",          sub: "Payment cycle: 28th of every month",    icon: TrendingUp,  color: "green-600"  },
-                    { label: "Access Control",   sub: "Manage team permission levels",          icon: ShieldCheck, color: "violet-500" },
-                  ].map((item, i) => (
-                    <button key={i} className={`w-full p-5 border rounded-2xl flex items-center gap-4 transition-all text-left group hover:shadow-sm ${D ? "bg-[#0e0e0e] border-white/5 hover:border-white/10" : "bg-white border-slate-200 hover:border-slate-300"}`}>
-                      <div className={`p-2.5 rounded-xl shrink-0 ${D ? "bg-white/5" : "bg-slate-100"}`}>
-                        <item.icon size={18} className={`text-${item.color}`} />
-                      </div>
+
+                  {/* Company Profile */}
+                  <div className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
+                    <button onClick={() => toggleExpandedSetting("profile")} className={`w-full p-4 flex items-center gap-4 transition-all text-left ${D ? "bg-[#0e0e0e] hover:bg-white/5" : "bg-white hover:bg-slate-50"}`}>
+                      <div className={`p-2.5 rounded-xl shrink-0 ${D ? "bg-white/5" : "bg-slate-100"}`}><Building2 size={18} className="text-blue-500" /></div>
                       <div className="flex-1">
-                        <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>{item.label}</p>
-                        <p className={`text-xs mt-0.5 ${D ? "text-zinc-600" : "text-slate-400"}`}>{item.sub}</p>
+                        <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>Company Profile</p>
+                        <p className={`text-xs mt-0.5 ${D ? "text-zinc-600" : "text-slate-400"}`}>Update your company name and details</p>
                       </div>
-                      <ChevronRight size={16} className={D ? "text-zinc-600" : "text-slate-300"} />
+                      <ChevronRight size={16} className={`transition-transform ${expandedSetting === "profile" ? "rotate-90" : ""} ${D ? "text-zinc-600" : "text-slate-300"}`} />
                     </button>
-                  ))}
+                    {expandedSetting === "profile" && (
+                      <div className={`px-4 pb-4 space-y-3 border-t ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                        <div className="pt-3 grid sm:grid-cols-2 gap-3">
+                          {[
+                            { label: "Company Name", key: "name"  as const, placeholder: "Your company name"  },
+                            { label: "Email",        key: "email" as const, placeholder: "hello@company.ng"   },
+                            { label: "Phone",        key: "phone" as const, placeholder: "+234 800 000 0001"   },
+                            { label: "RC Number",    key: "rc"    as const, placeholder: "RC-0000000"          },
+                          ].map((f) => (
+                            <div key={f.key}>
+                              <label className={`text-[10px] font-bold uppercase tracking-wider ${D ? "text-zinc-500" : "text-slate-400"}`}>{f.label}</label>
+                              <input value={companyForm[f.key]} onChange={(e) => setCompanyForm((p) => ({ ...p, [f.key]: e.target.value }))} placeholder={f.placeholder}
+                                className={`mt-1 w-full px-3 py-2.5 rounded-xl border text-sm font-semibold outline-none transition-all ${D ? "bg-white/5 border-white/10 text-zinc-200 placeholder:text-zinc-600 focus:border-blue-500" : "bg-slate-50 border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"}`}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex gap-3">
+                          <button onClick={() => toggleExpandedSetting("profile")} className={`flex-1 py-2.5 rounded-xl text-sm font-bold border transition-all ${D ? "border-white/10 text-zinc-400 hover:bg-white/5" : "border-slate-200 text-slate-500 hover:bg-slate-50"}`}>Cancel</button>
+                          <button onClick={() => toggleExpandedSetting("profile")} className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all">Save Changes</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Billing */}
+                  <div className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
+                    <button onClick={() => toggleExpandedSetting("billing")} className={`w-full p-4 flex items-center gap-4 transition-all text-left ${D ? "bg-[#0e0e0e] hover:bg-white/5" : "bg-white hover:bg-slate-50"}`}>
+                      <div className={`p-2.5 rounded-xl shrink-0 ${D ? "bg-white/5" : "bg-slate-100"}`}><TrendingUp size={18} className="text-green-600" /></div>
+                      <div className="flex-1">
+                        <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>Billing</p>
+                        <p className={`text-xs mt-0.5 ${D ? "text-zinc-600" : "text-slate-400"}`}>Payment cycle: 28th of every month</p>
+                      </div>
+                      <ChevronRight size={16} className={`transition-transform ${expandedSetting === "billing" ? "rotate-90" : ""} ${D ? "text-zinc-600" : "text-slate-300"}`} />
+                    </button>
+                    {expandedSetting === "billing" && (
+                      <div className={`px-4 pb-4 space-y-3 border-t ${D ? "bg-[#0e0e0e] border-white/5" : "bg-white border-slate-100"}`}>
+                        <div className={`mt-3 p-4 rounded-xl ${D ? "bg-white/5" : "bg-slate-50"}`}>
+                          <p className={`text-xs font-bold uppercase tracking-wider mb-3 ${D ? "text-zinc-500" : "text-slate-400"}`}>Current Plan</p>
+                          {[
+                            { label: "Plan",            value: "Business"              },
+                            { label: "Billing Cycle",   value: "Monthly (28th)"        },
+                            { label: "Platform Fee",    value: "12% per order"         },
+                            { label: "Next Invoice",    value: "May 28, 2026"          },
+                            { label: "Payment Method",  value: "GTBank ****4521"       },
+                          ].map((r) => (
+                            <div key={r.label} className={`flex justify-between py-2 border-b last:border-0 ${D ? "border-white/5" : "border-slate-100"}`}>
+                              <span className={`text-xs ${D ? "text-zinc-500" : "text-slate-400"}`}>{r.label}</span>
+                              <span className={`text-xs font-bold ${D ? "text-zinc-200" : "text-slate-700"}`}>{r.value}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <button className="w-full py-2.5 rounded-xl text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all">Update Payment Method</button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Access Control */}
+                  <div className={`rounded-2xl border overflow-hidden ${D ? "border-white/5" : "border-slate-200"}`}>
+                    <button onClick={() => toggleExpandedSetting("access")} className={`w-full p-4 flex items-center gap-4 transition-all text-left ${D ? "bg-[#0e0e0e] hover:bg-white/5" : "bg-white hover:bg-slate-50"}`}>
+                      <div className={`p-2.5 rounded-xl shrink-0 ${D ? "bg-white/5" : "bg-slate-100"}`}><ShieldCheck size={18} className="text-violet-500" /></div>
+                      <div className="flex-1">
+                        <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>Access Control</p>
+                        <p className={`text-xs mt-0.5 ${D ? "text-zinc-600" : "text-slate-400"}`}>Manage team permission levels</p>
+                      </div>
+                      <ChevronRight size={16} className={`transition-transform ${expandedSetting === "access" ? "rotate-90" : ""} ${D ? "text-zinc-600" : "text-slate-300"}`} />
+                    </button>
+                    {expandedSetting === "access" && (
+                      <div className={`border-t divide-y ${D ? "bg-[#0e0e0e] border-white/5 divide-white/5" : "bg-white border-slate-100 divide-slate-100"}`}>
+                        {[
+                          { role: "Owner",   access: "Full system access",          badge: "bg-blue-500/10 text-blue-600"   },
+                          { role: "Manager", access: "Fleet + personnel management", badge: "bg-green-500/10 text-green-600" },
+                          { role: "Driver",  access: "Trip tracking only",           badge: "bg-slate-100 text-slate-500"    },
+                        ].map((r, i) => (
+                          <div key={i} className="flex items-center justify-between px-4 py-3">
+                            <div>
+                              <p className={`text-sm font-bold ${D ? "text-zinc-200" : "text-slate-800"}`}>{r.role}</p>
+                              <p className={`text-xs mt-0.5 ${D ? "text-zinc-600" : "text-slate-400"}`}>{r.access}</p>
+                            </div>
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${r.badge}`}>{r.role}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => { logout(); router.push("/auth/login"); }}
+                    className={`w-full py-3 rounded-2xl border font-bold text-sm flex items-center justify-center gap-2 transition-all ${D ? "border-red-500/20 bg-red-500/5 text-red-400 hover:bg-red-500/10" : "border-red-100 bg-red-50 text-red-500 hover:bg-red-100"}`}
+                  >
+                    <LogOut size={15} /> Sign Out
+                  </button>
                 </motion.div>
               )}
 
