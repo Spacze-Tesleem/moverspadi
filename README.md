@@ -1,134 +1,220 @@
 
-## Project Overview
+# MoversPadi
 
-**MoversPadi** is a Next.js 16 logistics platform for Nigeria. It supports four user roles — customer, mover, company, and admin — and four service types: ride, dispatch, haulage, and tow.
+MoversPadi is a Next.js 16 logistics platform for Nigeria with support for four user roles — customer, mover, company, and admin — and multiple service types such as ride, dispatch, haulage, and tow.
 
-**Stack:** Next.js 16 (App Router) · React 19 · TypeScript 5 · Tailwind CSS 4 · Zustand 5 · Framer Motion · Leaflet / React-Leaflet · pnpm
+## Stack
 
----
+- Next.js 16 (App Router)
+- React 19
+- TypeScript 5
+- Tailwind CSS 4
+- Zustand 5
+- Framer Motion
+- Leaflet / React-Leaflet
+- pnpm
 
-## Architecture
+## Project Structure
 
-The project follows a domain-driven, feature-module structure. Understand this before making changes.
+The repository is organized to keep framework-specific concerns separated from domain logic.
 
 ```
-app/                        # Next.js App Router — thin routing shells only
-  auth/                     # /auth/* routes
-  customer/                 # /customer/* routes
-  mover/, company/, admin/  # role-specific routes
+app/                        # Next.js App Router routes and layouts
+  (public)/                 # public landing and marketing page
+    page.tsx
+  (auth)/                   # auth flow group
+    auth/
+      layout.tsx
+      login/page.tsx
+      otp/page.tsx
+      role/page.tsx
+      signup/page.tsx
+  (portals)/                # authenticated portal shells
+    admin/
+      layout.tsx
+      page.tsx
+    company/
+      layout.tsx
+      onboarding/page.tsx
+      page.tsx
+    customer/
+      layout.tsx
+      book/page.tsx
+      history/page.tsx
+      price/page.tsx
+      profile/page.tsx
+      searching/page.tsx
+      track/page.tsx
+      page.tsx
+    mover/
+      layout.tsx
+      onboarding/page.tsx
+      page.tsx
+    provider/
+      layout.tsx
+      onboarding/page.tsx
+      page.tsx
+  api/                      # serverless API routes
+    auth/session/route.ts
+  become-a-mover/page.tsx
+  services/page.tsx
 
 src/
-  domain/                   # Pure TypeScript types — no framework imports
+  application/              # business logic and client-side state
+    hooks/
+      useAuth.ts
+    store/
+      authStore.ts
+      bookingStore.ts
+      notificationsStore.ts
+  components/               # shared UI components
+    map/                   # map previews and related UI
+      MapPreview.tsx
+  config/                   # runtime metadata and fonts
+    fonts.ts
+    metadata.ts
+  context/                  # app context providers
+    ThemeContext.tsx
+  domain/                   # pure TypeScript types, no framework imports
     auth/types.ts
     booking/types.ts
     user/types.ts
-
-  application/              # Business logic
-    hooks/                  # React hooks (e.g. useRequireAuth)
-    store/                  # Zustand stores (authStore, bookingStore)
-
-  infrastructure/           # External integrations
-    api/                    # HTTP client + per-domain API modules
-    geocoding/              # Nominatim (OpenStreetMap) geocoding
-
-  components/               # Shared UI components (e.g. MapPreview)
-  modules/                  # Feature modules, organized by role/journey
-    marketing/              # Landing page components + LandingView
-    auth/                   # Login, Signup, OTP, Role views
+  infrastructure/           # external integrations and API clients
+    api/
+      admin.ts
+      auth.ts
+      booking.ts
+      client.ts
+      company.ts
+      mover.ts
+      profile.ts
+    geocoding/
+      nominatim.ts
+  lib/                      # shared utilities
+    cn.ts
+    format.ts
+    index.ts
+    session.ts
+    sessionClient.ts
+  modules/                  # feature modules and views by domain
+    admin/
+      views/
+        AdminDashboardView.tsx
+    auth/
+      views/
+        LoginView.tsx
+        OtpView.tsx
+        PendingApprovalView.tsx
+        RoleView.tsx
+        SignupView.tsx
+    company/
+      views/
+        CompanyDashboardView.tsx
+        CompanyOnboardingView.tsx
     customer/
-      booking/              # 4-step booking wizard (Location→Details→Schedule→Confirm)
+      booking/
       dashboard/
       history/
       profile/
+      shared/
       tracking/
-      shared/               # Shared customer UI (Sidebar, GeoLocationButton)
-    mover/, company/, admin/
-  config/                   # fonts.ts, metadata.ts
-  lib/                      # Utilities: cn(), formatNaira(), formatDate(), truncate()
+    marketing/
+      components/
+      views/
+    mover/
+      views/
+  globals.css               # global Tailwind styles
+
+public/                      # static assets
+
+middleware.ts                # global middleware
+next.config.ts               # Next.js configuration
+vercel.json                  # deployment config
+package.json                 # dependencies and scripts
+tsconfig.json                # TypeScript config
+
 ```
 
-### Key Rules
+## Routing and Layouts
 
-- `app/` pages must stay thin — import a `*View` component from `src/modules/` and render it. No logic in `app/`.
-- `src/domain/` must stay framework-free. No React, no Zustand, no Next.js imports.
-- `src/infrastructure/api/` uses the shared `apiClient` from `client.ts`. Do not use `axios` directly in new code — `axios` is a dependency but the project uses `fetch`-based `apiClient`.
-- Map components must be loaded with `dynamic(..., { ssr: false })` to avoid SSR errors.
-- Auth guard is applied at the layout level via `useRequireAuth(role)` in `app/<role>/layout.tsx`.
+- `app/(public)/page.tsx` is the public landing experience.
+- `app/(auth)/auth/*` contains login, signup, OTP, and role selection.
+- `app/(portals)/*` contains authenticated portal shells for admin, company, customer, mover, and provider.
+- Portal layouts apply auth guards and render portal-specific views.
+- `app/api/auth/session/route.ts` exposes the auth session API route.
 
----
+## Key Conventions
+
+- Keep `app/` route files thin. Render `*View` components from `src/modules/` rather than embedding business logic in pages.
+- Keep `src/domain/` framework-free. Do not import React, Zustand, or Next.js from domain type files.
+- Use `src/infrastructure/api/client.ts` for shared API call logic.
+- Prefer application-specific API wrappers from `src/infrastructure/api/` instead of calling `fetch` directly from components.
+- Dynamic map components must be imported with `dynamic(..., { ssr: false })` to avoid SSR issues.
+- Authentication guards belong at the layout level, typically via `useRequireAuth(role)`.
 
 ## Development
 
 ```bash
-pnpm install          # install dependencies
-pnpm dev              # start dev server on :3000
-pnpm build            # production build
-pnpm lint             # ESLint (Next.js core-web-vitals + TypeScript rules)
+pnpm install
+pnpm dev
+pnpm build
+pnpm lint
+pnpm test
+pnpm test:watch
 ```
 
-**Package manager:** pnpm. Do not use npm or yarn to install packages.
+The dev server runs on port `5000` by default.
 
-**Environment variables:**
-- `NEXT_PUBLIC_API_URL` — base URL for the backend API (defaults to `""` if unset, meaning relative paths)
+## Environment
 
----
+- `NEXT_PUBLIC_API_URL` — base URL for the backend API.
 
-## Coding Conventions
+## Dependencies
 
-### TypeScript
-- `strict: true` is enforced. No `any` unless unavoidable and commented.
-- Path alias `@/*` maps to the repo root. Use `@/src/...` for source imports.
-- Domain types live in `src/domain/`. Extend them there, not inline in components.
+### Core
 
-### Components
-- All interactive components that use hooks or browser APIs must have `"use client"` at the top.
-- Use `cn()` from `@/src/lib/cn` for conditional class merging (not `clsx` directly, though it is available).
-- Currency formatting: always use `formatNaira()` from `@/src/lib/format`.
-- Date formatting: always use `formatDate()` from `@/src/lib/format`.
+- `next` ^16.2.4
+- `react` ^19.2.5
+- `react-dom` ^19.2.5
+- `tailwindcss` ^4.2.4
+- `framer-motion` ^12.38.0
+- `zustand` ^5.0.12
+- `leaflet` ^1.9.4
+- `react-leaflet` ^5.0.0
+- `leaflet-routing-machine` ^3.2.12
+- `lucide-react` ^0.575.0
+- `clsx` ^2.1.1
+- `axios` ^1.15.2
+- `@react-google-maps/api` ^2.20.8
+- `pigeon-maps` ^0.22.1
+- `tailwind-merge` ^3.5.0
 
-### Styling
-- Tailwind CSS 4. No inline `style` props unless dynamic values cannot be expressed as classes.
-- Dark theme: background `#080808` / `#0a0a0a`, text `zinc-*`, accent `violet-500`.
-- Do not introduce new color tokens without updating this file.
+### Dev
 
-### State Management
-- Global state: Zustand stores in `src/application/store/`.
-- Both stores use `persist` with `localStorage`. Keys: `moverspadi-auth`, `moverspadi-booking`.
-- Local UI state: `useState` inside the component.
+- `typescript` ^5.9.3
+- `eslint` ^9.39.4
+- `eslint-config-next` ^16.2.4
+- `vitest` ^4.1.5
+- `@vitest/coverage-v8` ^4.1.5
+- `@types/node` ^20.19.39
+- `@types/react` ^19.2.14
+- `@types/react-dom` ^19.2.3
+- `@types/leaflet` ^1.9.21
+- `@tailwindcss/postcss` ^4.2.4
 
-### API Calls
-- Use `src/infrastructure/api/` modules. Do not call `fetch` or `apiClient` directly from components.
-- Pass the auth token from `useAuthStore().token` when calling authenticated endpoints.
+## Notes
 
----
+- This repo uses `pnpm`; avoid `npm` or `yarn` for dependency management.
+- The project currently has an app router structure with top-level route groups and feature modules.
+- The `src/application` layer contains Zustand stores and reusable hooks.
+- The `src/infrastructure/api` layer contains HTTP wrappers and the shared `apiClient`.
+- `src/domain` houses type definitions and domain models only.
 
-## Adding New Features
+## Missing / Observed Gaps
 
-### New page/route
-1. Create `app/<path>/page.tsx` — import and render a `*View` from `src/modules/`.
-2. Create the view in `src/modules/<module>/views/<Name>View.tsx`.
-3. If the route requires auth, add a `layout.tsx` that calls `useRequireAuth(role)`.
-
-### New service type
-1. Add the type to `ServiceType` in `src/domain/booking/types.ts`.
-2. Add a `ServiceDefinition` entry to `SERVICE_TYPES` in the same file.
-3. Update `bookingApi.getPriceEstimate()` in `src/infrastructure/api/booking.ts`.
-
-### New domain entity
-1. Create `src/domain/<entity>/types.ts` — pure TypeScript only.
-2. Create `src/infrastructure/api/<entity>.ts` using `apiClient`.
-3. Create `src/application/store/<entity>Store.ts` if global state is needed.
-
----
-
-## What Does Not Exist Yet
-
-- No test suite (no Jest, Vitest, Playwright, or Cypress configured).
+- No dedicated test setup beyond `vitest` scripts.
 - No error boundary components.
-- No loading skeleton components.
-- No API mock / MSW setup.
-- No CI/CD pipeline (no `.github/workflows/`).
-- `NEXT_PUBLIC_API_URL` is not documented in a `.env.example`.
-- `axios` is listed as a dependency but unused — the project uses `fetch`-based `apiClient`.
-- `pigeon-maps` is listed as a dependency but appears unused (project uses Leaflet).
-- `@react-google-maps/api` is listed as a dependency but appears unused (project uses Nominatim/Leaflet).
+- No loading skeletons or global loading components.
+- No CI/CD workflow definitions in `.github/workflows/`.
+- `NEXT_PUBLIC_API_URL` is not currently documented in a `.env.example` file.
+- Some installed dependencies such as `axios`, `@react-google-maps/api`, and `pigeon-maps` are present in `package.json` but may not be actively used by the current app code.

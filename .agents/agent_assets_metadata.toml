@@ -1,8 +1,0 @@
-uploads = []
-generated = []
-
-[[outputs]]
-id = "gqeDSKg4TbPOUkM5cZNRg"
-uri = "file://API_ROUTES.md"
-type = "text"
-title = "MoversPadi — Backend API Routes Specification"
